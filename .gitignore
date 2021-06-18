@@ -1,0 +1,11 @@
+example
+pip
+*.txt
+*.user
+*.filters
+MayaNodes/bin
+MayaNodes/CMakeFiles
+MayaNodes/Debug
+MayaNodes/skelTree.dir
+MayaNodes/x64
+MayaNodes/.vs
