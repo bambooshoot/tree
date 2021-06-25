@@ -56,7 +56,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\asunlab\maya2022_sdk\include;D:\asunlab\maya2022_sdk\include\Python37;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\asunlab\maya2022_sdk\include;D:\asunlab\maya2022_sdk\include\Python37;src;%(AdditionalIncludeDirectories);D:\asunlab\outsource\vcpkg-master\installed\x64-windows\include</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -84,8 +84,8 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>D:\asunlab\maya2022_sdk\lib\OpenMaya.lib;D:\asunlab\maya2022_sdk\lib\Foundation.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>D:\asunlab\maya2022_sdk\lib\OpenMaya.lib;D:\asunlab\maya2022_sdk\lib\Foundation.lib;D:\asunlab\maya2022_sdk\lib\OpenMayaUI.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;Imath-2_3_s.lib;IexMath-2_3_s.lib;Half-2_3_s.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\asunlab\outsource\vcpkg-master\installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -99,7 +99,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\asunlab\maya2022_sdk\include;D:\asunlab\maya2022_sdk\include\Python37;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\asunlab\maya2022_sdk\include;D:\asunlab\maya2022_sdk\include\Python37;%(AdditionalIncludeDirectories);D:\asunlab\outsource\vcpkg-master\installed\x64-windows\include</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -129,8 +129,8 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>D:\asunlab\maya2022_sdk\lib\OpenMaya.lib;D:\asunlab\maya2022_sdk\lib\Foundation.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>D:\asunlab\maya2022_sdk\lib\OpenMaya.lib;D:\asunlab\maya2022_sdk\lib\Foundation.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;D:\asunlab\outsource\vcpkg-master\installed\x64-windows\lib;Imath-2_3_s.lib;IexMath-2_3_s.lib;Half-2_3_s.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\asunlab\outsource\vcpkg-master\installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -173,8 +173,16 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="D:\asunlab\github\tree\MayaNodes\src\AttachedLocalSpace.cpp" />
     <ClCompile Include="D:\asunlab\github\tree\MayaNodes\src\MayaNodes.cpp" />
+    <ClCompile Include="src\AttachedLocalSpace.cpp" />
+    <ClCompile Include="src\SkelAttachedPoint.cpp" />
+    <ClCompile Include="src\SkelChain.cpp" />
+    <ClCompile Include="src\SkelDeformedMesh.cpp" />
+    <ClCompile Include="src\SkelFrame.cpp" />
+    <ClCompile Include="src\SkelRootFrame.cpp" />
+    <ClCompile Include="src\SkelTree.cpp" />
+    <ClCompile Include="src\SkelTreeData.cpp" />
+    <ClCompile Include="src\SkelTreeNode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="D:\asunlab\github\tree\MayaNodes\ZERO_CHECK.vcxproj">
@@ -183,6 +191,25 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\AttachedLocalSpace.h" />
+    <ClInclude Include="src\SkelAttachedPoint.h" />
+    <ClInclude Include="src\SkelChain.h" />
+    <ClInclude Include="src\SkelChainData.h" />
+    <ClInclude Include="src\SkelChainOpBase.h" />
+    <ClInclude Include="src\SkelDeformedMesh.h" />
+    <ClInclude Include="src\SkelFrame.h" />
+    <ClInclude Include="src\SkelPoints.h" />
+    <ClInclude Include="src\SkelRootFrame.h" />
+    <ClInclude Include="src\SkelSpace.h" />
+    <ClInclude Include="src\SkelSpaceData.h" />
+    <ClInclude Include="src\SkelSpaceFactory.h" />
+    <ClInclude Include="src\SkelChainOpNoise.h" />
+    <ClInclude Include="src\SkelTree.h" />
+    <ClInclude Include="src\SkelTreeBase.h" />
+    <ClInclude Include="src\SkelTreeData.h" />
+    <ClInclude Include="src\SkelTreeNode.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

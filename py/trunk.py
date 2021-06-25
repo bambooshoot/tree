@@ -5,6 +5,8 @@ import trimesh
 import numpy as np
 import skeletor as sk
 
+import attachedLocalSpace as als
+
 def meshToTriMesh(meshShape):
     node=pm.PyNode(meshShape)
     transNode = node.parent(0)
@@ -71,46 +73,6 @@ def makeJointsByMesh(mesh, sortRootP, stepLen):
 
     return pList, jointList[0]
 
-def closestPolygonAndWeights(p, mesh):
-    meshNode = pm.PyNode(mesh)
-    invWorldMat = meshNode.parent(0).worldInverseMatrix.get()
-
-    wp = p * invWorldMat
-    cp, polyId = meshNode.getClosestPoint(wp)
-
-    vIds = meshNode.getPolygonVertices(polyId)
-    vpList = [meshNode.getPoint(i) for i in vIds]
-    pNum = len(vpList)
-
-    w = [1./pNum] * pNum
-    dP = sum([vpList[i] * w[i] for i in range(pNum)]) - cp
-    dPdw = [dP * p for p in vpList]
-    dP2dw = [vpList[i]*vpList[j] for i in range(pNum) for j in range(pNum)]
-    np_dPdw = np.array(dPdw)
-    np_dP2dw = np.array(dP2dw).reshape(pNum, pNum)
-    dw = np.linalg.solve(np_dP2dw, np_dPdw)
-    w -= dw
-
-    return vIds, w
-
-def attachPointSpaceToJoint(rootJoint, mesh, pIds, wList):
-    if not cmds.pluginInfo("skelTree",q=True,l=True):
-        cmds.loadPlugin("skelTree")
-
-    node = cmds.createNode("attachedLocalSpace")
-    cmds.connectAttr("{}.outMesh".format(mesh),"{}.inMesh".format(node))
-
-    transNode = cmds.listRelatives(mesh, p=True)[0]
-    cmds.connectAttr("{}.worldMatrix".format(transNode),"{}.inWorldMatrix".format(node))
-    for i in range(len(pIds)):
-        cmds.setAttr("{}.mInPList[{}].inPntId".format(node, i), pIds[i])
-        cmds.setAttr("{}.mInPList[{}].inWeight".format(node, i), wList[i])
-
-    rootTransNode = cmds.group(em=True, n="attachedGroup")
-    cmds.connectAttr("{}.outTranslate".format(node), "{}.translate".format(rootTransNode),f=True)
-    cmds.connectAttr("{}.outRotate".format(node), "{}.rotate".format(rootTransNode),f=True)
-    cmds.parent(rootJoint, rootTransNode)
-
 def makeJointsByDag(dagNode, sortRootP, stepLen):
     meshNode = cmds.listRelatives(dagNode, type="mesh")[0]
     pList, rootJoint = makeJointsByMesh(meshNode, sortRootP, stepLen)
@@ -120,9 +82,9 @@ def makeJointsByDag(dagNode, sortRootP, stepLen):
         for subDagNode in subNodeList:
             rootP = cmds.xform(subDagNode, q=True, ws=True, t=True)
             rootP = dt.Point(rootP)
-            vIds, w = closestPolygonAndWeights(rootP, meshNode)
+            vIds, w = als.closestPolygonAndWeights(rootP, meshNode)
             curRootJoint = makeJointsByDag(subDagNode, rootP, stepLen)
-            attachPointSpaceToJoint(curRootJoint, meshNode, vIds, w)
+            als.makeAttachLocalSpace(curRootJoint, meshNode, vIds, w)
 
     return rootJoint
         
