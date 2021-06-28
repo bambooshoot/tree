@@ -50,12 +50,21 @@ STRUCT(SkelTreeData,
 			pNum += points.pointNum();
 		return pNum;
 	}
+	Uint deformedPointNum() const
+	{
+		Uint pNum = 0;
+		for (auto& deformedData : deformedDataList)
+			pNum += pointsList[deformedData.pointsId].pointNum();
+		return pNum;
+	}
 	)
 
 class SkelTree {
 public:
 	// initialize
-	SkelTree(RSkelTreeData treeData);
+	SkelTree() = default;
+	SkelTree(SkelTreeDataP treeData);
+	void reset(SkelTreeDataP treeData);
 	void buildChains();
 	void computWeights();
 
@@ -66,6 +75,11 @@ public:
 	// output
 	CRMatrix44 space(CUint chainId, CUint spaceId) const;
 	CRVecList finalPositions(CUint pointsId) const;
+
+	// util
+	Uint chainNum() const;
+	Uint spaceNum() const;
+	CRChain getChain(CUint chainId) const;
 
 private:
 	SkelTreeDataP	pTreeData;

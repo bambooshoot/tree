@@ -5,7 +5,7 @@ NS_BEGIN
 void DeformedMesh::computeWeights()
 {
 	RDeformedMeshWeightList wList = pDeformedMeshData->wList;
-	CRVecList restPoints = pPoints->attrList[Points::AttrType::Rest];
+	CRVecList restPoints = pPoints->rest();
 	
 	wList.resize(restPoints.size());
 	auto pIter = restPoints.begin();
@@ -22,8 +22,8 @@ void DeformedMesh::deform()
 {
 	CRChain chain = *pChain;
 	CRDeformedMeshWeightList wList = pDeformedMeshData->wList;
-	CRVecList restPoints = pPoints->attrList[Points::AttrType::Rest];
-	RVecList  deformedPoints = pPoints->attrList[Points::AttrType::Deformed];
+	CRVecList restPoints = pPoints->rest();
+	RVecList  deformedPoints = pPoints->deformed();
 
 	auto rIter = restPoints.begin();
 	auto dIter = deformedPoints.begin();
@@ -77,9 +77,8 @@ Uint DeformedMesh::_nearestSpace(CRVec p) const
 
 	UintList idList;
 	auto zIter = zList.begin();
-	auto rIter = r2List.begin();
 	auto zlIter = zlList.begin();
-	for (Uint i = 0; i < zList.size(); ++i, ++zIter, ++rIter, ++zlIter) {
+	for (Uint i = 0; i < zList.size(); ++i, ++zIter, ++zlIter) {
 		if (*zIter > 0 && *zIter < *zlIter)
 			idList.push_back(i);
 	}

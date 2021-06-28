@@ -5,6 +5,11 @@ def connectMeshToTree(meshNode,treeNode,index):
     meshNode.outMesh.connect(treeNode.inMeshes[index].inMesh)
     meshNode.parent(0).worldMatrix.connect(treeNode.inMeshes[index].inWorldMatrix)
 
+def connectMeshToDeform(treeNode,deformIdx,chainId,meshId):
+    curDeformMesh = treeNode.deformedMeshes[deformIdx]
+    curDeformMesh.deformedChainId.set(chainId)
+    curDeformMesh.deformedMeshId.set(meshId)
+
 def connectRootFrame(rootJoint, treeNode, idx):
     rootFrameAttr = treeNode.chains[idx].rootFrame
     rootJoint.t.connect(rootFrameAttr.offset)
@@ -39,6 +44,8 @@ def skelTreeCreator(mesh, rootJoint):
 
     #input joints
     connectJointHierarchyToTree(pm.PyNode(rootJoint), treeNode, 0, -1)
+
+    connectMeshToDeform(treeNode, 0, 0, 0)
 
     treeNode.outSkelTreeData.connect(visNode.inSkelTreeData)
 

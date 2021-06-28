@@ -3,9 +3,14 @@
 
 NS_BEGIN
 
-SkelTree::SkelTree(RSkelTreeData treeData)
+SkelTree::SkelTree(SkelTreeDataP treeData)
 {
-	pTreeData = &treeData;
+	reset(treeData);
+}
+
+void SkelTree::reset(SkelTreeDataP treeData)
+{
+	pTreeData = treeData;
 	buildChains();
 }
 
@@ -54,6 +59,25 @@ void SkelTree::updateChains(CFloat time)
 		++chainId;
 	}
 	delete opP;
+}
+
+Uint SkelTree::chainNum() const
+{
+	return Uint(chainList.size());
+}
+
+Uint SkelTree::spaceNum() const
+{
+	Uint spNum = 0;
+	for (auto& chain : chainList) {
+		spNum += chain.spaceNum();
+	}
+	return spNum;
+}
+
+CRChain SkelTree::getChain(CUint chainId) const
+{
+	return chainList[chainId];
 }
 
 NS_END

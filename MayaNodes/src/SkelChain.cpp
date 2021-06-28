@@ -21,6 +21,7 @@ void Chain::build(CRChainData chainData)
 		spaceList.push_back(fac.create(Frame::typeId, &frameData, &chainData));
 
 	Matrix44 zeroMat;
+	restMatrixList.resize(spaceList.size(), zeroMat);
 	matrixList.resize(spaceList.size(), zeroMat);
 	_updateRestMatrix();
 	_updateParam();
@@ -69,7 +70,7 @@ void Chain::_updateRestMatrix()
 {
 	Matrix44 mat;
 	mat.makeIdentity();
-	auto iter = matrixList.begin();
+	auto iter = restMatrixList.begin();
 	for (auto& space : spaceList) {
 		mat *= space->restMatrix();
 		*iter = mat;

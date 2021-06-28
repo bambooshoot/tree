@@ -195,6 +195,13 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\AttachedLocalSpace.h" />
+    <ClInclude Include="src\PopulateGeometryBase.h" />
+    <ClInclude Include="src\PopulateGeometryChains.h" />
+    <ClInclude Include="src\PopulateGeometryDeformedPoints.h" />
+    <ClInclude Include="src\RenderBuffer.h" />
+    <ClInclude Include="src\RenderItemBase.h" />
+    <ClInclude Include="src\RenderItemCVPPoint.h" />
+    <ClInclude Include="src\RenderItemWireframe.h" />
     <ClInclude Include="src\SkelAttachedPoint.h" />
     <ClInclude Include="src\SkelChain.h" />
     <ClInclude Include="src\SkelChainData.h" />

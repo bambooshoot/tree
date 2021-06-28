@@ -9,6 +9,7 @@
 #include <maya/MDataBlock.h>
 
 #include <SkelTree.h>
+#include <RenderBuffer.h>
 
 class SkelTreeVisualization : public MPxLocatorNode
 {
@@ -21,10 +22,7 @@ public:
 	static  void*   creator();
 	static  MStatus initialize();
 
-	skelTree::CRSkelTreeData getSkelTreeData() const;
-
-	//bool            excludeAsLocator() const override;
-	//void            postConstructor() override;
+	skelTree::RSkelTreeData getSkelTreeData() const;
 
 	bool            isTransparent() const override { return true; }
 	bool            drawLast() const override { return true; }
@@ -60,13 +58,11 @@ public:
 
 private:
 	SkelTreeVisualizationOverride(const MObject& obj);
-	void _fillMeshPoints(float * vertices);
-	void _fillMeshPointWeights(float * weights);
-	void _setSolidPointSize(MHWRender::MShaderInstance* shaderInstance, float pointSize);
-	void _setSolidColor(MHWRender::MShaderInstance* shaderInstance, const float* value);
 
 	SkelTreeVisualization*		mVisNode;
-	skelTree::CSkelTreeDataP	pTreeData;
+	skelTree::SkelTreeDataP		pTreeData;
 
-	static const MString sMeshPoints;
+	RenderBufferManager			bufManager;
+
+	static const MString sDeformedPoints;
 };

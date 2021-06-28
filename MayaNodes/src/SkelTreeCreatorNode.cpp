@@ -194,8 +194,9 @@ void SkelTreeCreator::build(skelTree::SkelTreeData& skelTreeData, MDataBlock& bl
 	inputDeformedMeshDatas(skelTreeData, block);
 	skelTreeData.computeBox();
 	
-	skelTree::SkelTree skTree(skelTreeData);
-	skTree.computWeights();
+	skelTree::SkelTree skTree(&skelTreeData);
+	skTree.buildChains();
+	//skTree.computWeights();
 }
 
 void SkelTreeCreator::inputMeshes(skelTree::SkelTreeData& skelTreeData, MDataBlock& block)
