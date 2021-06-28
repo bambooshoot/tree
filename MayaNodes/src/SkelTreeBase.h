@@ -7,6 +7,7 @@
 #include <OpenEXR/ImathVec.h>
 #include <OpenEXR/ImathQuat.h>
 #include <OpenEXR/ImathMatrix.h>
+#include <OpenEXR/ImathBox.h>
 
 #define NS_BEGIN namespace skelTree {
 #define NS_END }
@@ -55,6 +56,7 @@ DECL_ALIAS(Imath::Vec2<Float>, Vec2)
 DECL_ALIAS(Imath::Vec3<Float>, Vec)
 DECL_ALIAS(Imath::Quat<Float>, Quat)
 DECL_ALIAS(Imath::Matrix44<Float>, Matrix44)
+DECL_ALIAS(Imath::Box<Vec>, Box)
 
 using SpaceTypeId = Ushort;
 using CSpaceTypeId = CUshort;
@@ -63,5 +65,8 @@ using Void = void;
 using VoidP = void*;
 using CVoidP = const void*;
 using VecListList = std::vector<VecList>;
+
+//constant value
+#define USHORT_MAX Ushort(-1)
 
 NS_END

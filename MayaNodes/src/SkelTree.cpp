@@ -11,6 +11,7 @@ SkelTree::SkelTree(RSkelTreeData treeData)
 
 void SkelTree::buildChains()
 {
+	chainList.clear();
 	for (auto& chainData : pTreeData->chainDataList) {
 		chainList.push_back(Chain());
 		RChain chain = chainList.back();
@@ -25,13 +26,13 @@ CRMatrix44 SkelTree::space(CUint chainId, CUint spaceId) const
 
 CRVecList SkelTree::finalPositions(CUint pointsId) const
 {
-	return pTreeData->points[pointsId].finalPositions();
+	return pTreeData->pointsList[pointsId].finalPositions();
 }
 
 void SkelTree::computWeights()
 {
 	for (auto& deformedMeshData : pTreeData->deformedDataList) {
-		DeformedMesh deformedMesh(deformedMeshData, pTreeData->points, chainList);
+		DeformedMesh deformedMesh(deformedMeshData, pTreeData->pointsList, chainList);
 		deformedMesh.computeWeights();
 	}
 }
@@ -39,7 +40,7 @@ void SkelTree::computWeights()
 void SkelTree::deform()
 {
 	for (auto& deformedMeshData : pTreeData->deformedDataList) {
-		DeformedMesh deformedMesh(deformedMeshData, pTreeData->points, chainList);
+		DeformedMesh deformedMesh(deformedMeshData, pTreeData->pointsList, chainList);
 		deformedMesh.deform();
 	}
 }

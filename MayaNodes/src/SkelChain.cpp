@@ -12,7 +12,7 @@ Chain::~Chain()
 void Chain::build(CRChainData chainData)
 {
 	SpaceFactory fac;
-	if (chainData.attachedPointData.pointsId > -1)
+	if (chainData.attachedPointData.pointsId != USHORT_MAX)
 		spaceList.push_back(fac.create(AttachedPoint::typeId, &chainData.attachedPointData, &chainData));
 
 	spaceList.push_back(fac.create(RootFrame::typeId, &chainData.rootFrameData, &chainData));

@@ -1,6 +1,5 @@
 example
 pip
-*.txt
 *.user
 *.filters
 MayaNodes/bin

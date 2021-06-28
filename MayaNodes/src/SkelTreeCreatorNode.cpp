@@ -1,4 +1,4 @@
-#include <SkelTreeNode.h>
+#include <SkelTreeCreatorNode.h>
 
 #include <maya/MFnMatrixAttribute.h>
 #include <maya/MFnTypedAttribute.h>
@@ -33,48 +33,48 @@
 #include <SkelTreeData.h>
 #include <SkelPoints.h>
 
-MTypeId SkelTree::id(0x20220002);
+MTypeId SkelTreeCreator::id(0x20220002);
 
-MObject SkelTree::mChains;
+MObject SkelTreeCreator::mChains;
 
-MObject SkelTree::mAttachedPoint;
-MObject SkelTree::mTargetMeshId;
-MObject SkelTree::mAttachedWeights;
-MObject SkelTree::mAttachedPointId;
-MObject SkelTree::mAttachedWeight;
+MObject SkelTreeCreator::mAttachedPoint;
+MObject SkelTreeCreator::mTargetMeshId;
+MObject SkelTreeCreator::mAttachedWeights;
+MObject SkelTreeCreator::mAttachedPointId;
+MObject SkelTreeCreator::mAttachedWeight;
 
-MObject SkelTree::mRootFrame;
-MObject SkelTree::mOffset;
-MObject SkelTree::mRootQ;
+MObject SkelTreeCreator::mRootFrame;
+MObject SkelTreeCreator::mOffset;
+MObject SkelTreeCreator::mRootQ;
 
-MObject SkelTree::mFrames;
-MObject SkelTree::mZOffset;
-MObject SkelTree::mFrameQ;
+MObject SkelTreeCreator::mFrames;
+MObject SkelTreeCreator::mZOffset;
+MObject SkelTreeCreator::mFrameQ;
 
-MObject SkelTree::mDeformedMeshes;
-MObject SkelTree::mDeformedChainId;
-MObject SkelTree::mDeformedMeshId;
+MObject SkelTreeCreator::mDeformedMeshes;
+MObject SkelTreeCreator::mDeformedChainId;
+MObject SkelTreeCreator::mDeformedMeshId;
 
-MObject SkelTree::mInMeshes;
-MObject SkelTree::mInMesh;
-MObject SkelTree::mInWorldMatrix;
+MObject SkelTreeCreator::mInMeshes;
+MObject SkelTreeCreator::mInMesh;
+MObject SkelTreeCreator::mInWorldMatrix;
 
-MObject SkelTree::mOutSkelTree;
+MObject SkelTreeCreator::mOutSkelTreeData;
 
-SkelTree::SkelTree()
+SkelTreeCreator::SkelTreeCreator()
 {
 }
 
-SkelTree::~SkelTree()
+SkelTreeCreator::~SkelTreeCreator()
 {
 }
 
-void* SkelTree::creator()
+void* SkelTreeCreator::creator()
 {
-	return new SkelTree();
+	return new SkelTreeCreator();
 }
 
-MStatus SkelTree::initialize()
+MStatus SkelTreeCreator::initialize()
 {
 	MStatus status;
 
@@ -154,9 +154,10 @@ MStatus SkelTree::initialize()
 
 	MFnPluginData fnDataCreator;
 	MTypeId skelTreeDataId(SkelTreeData::id);
-	mOutSkelTree = tAttr.create("outSkelTree", "ost", SkelTreeData::id, fnDataCreator.create(skelTreeDataId));
+	mOutSkelTreeData = tAttr.create("outSkelTreeData", "ost", SkelTreeData::id, fnDataCreator.create(skelTreeDataId));
 	tAttr.setStorable(false);
 	tAttr.setWritable(false);
+	status = addAttribute(mOutSkelTreeData);
 
 #define ATTRIBAFFECTS(OUTATTR) \
 	attributeAffects(mInMesh, OUTATTR); \
@@ -164,19 +165,19 @@ MStatus SkelTree::initialize()
 	attributeAffects(mRootQ, OUTATTR); \
 	attributeAffects(mFrameQ, OUTATTR);
 
-	ATTRIBAFFECTS(mOutSkelTree)
+	ATTRIBAFFECTS(mOutSkelTreeData)
 
 	return status;
 }
 
-MStatus SkelTree::compute(const MPlug& plug, MDataBlock& block)
+MStatus SkelTreeCreator::compute(const MPlug& plug, MDataBlock& block)
 {
 	MStatus status;
 	
-	if (plug != mOutSkelTree)
+	if (plug != mOutSkelTreeData)
 		return MS::kUnknownParameter;
 
-	MDataHandle outSkelTreeH = block.outputValue(mOutSkelTree);
+	MDataHandle outSkelTreeH = block.outputValue(mOutSkelTreeData);
 	SkelTreeData* pOutSeklTreeData = (SkelTreeData*)outSkelTreeH.asPluginData();
 	skelTree::SkelTreeData & skelTreeData = pOutSeklTreeData->skelTreeData;
 	build(skelTreeData, block);
@@ -185,24 +186,26 @@ MStatus SkelTree::compute(const MPlug& plug, MDataBlock& block)
 	return MS::kSuccess;
 }
 
-void SkelTree::build(skelTree::SkelTreeData& skelTreeData, MDataBlock& block)
+void SkelTreeCreator::build(skelTree::SkelTreeData& skelTreeData, MDataBlock& block)
 {
+	skelTreeData.reset();
 	inputMeshes(skelTreeData, block);
 	inputChains(skelTreeData, block);
 	inputDeformedMeshDatas(skelTreeData, block);
+	skelTreeData.computeBox();
 	
 	skelTree::SkelTree skTree(skelTreeData);
 	skTree.computWeights();
 }
 
-void SkelTree::inputMeshes(skelTree::SkelTreeData& skelTreeData, MDataBlock& block)
+void SkelTreeCreator::inputMeshes(skelTree::SkelTreeData& skelTreeData, MDataBlock& block)
 {
 	skelTree::Vec p;
 	MPoint wP;
 
 	MStatus status;
 	MArrayDataHandle inArrayMeshesH = block.inputArrayValue(mInMeshes, &status);
-	for (int i = 0; i < inArrayMeshesH.elementCount(); ++i) {
+	for (uint i = 0; i < inArrayMeshesH.elementCount(); ++i) {
 		inArrayMeshesH.jumpToElement(i);
 		MDataHandle curMeshesH = inArrayMeshesH.inputValue();
 		MFnMesh fnMesh(curMeshesH.child(mInMesh).asMesh());
@@ -212,7 +215,7 @@ void SkelTree::inputMeshes(skelTree::SkelTreeData& skelTreeData, MDataBlock& blo
 
 		skelTree::RPoints curPoints = skelTreeData.addPoints();
 		
-		for (int pId = 0; pId < pArray.length(); ++pId) {
+		for (uint pId = 0; pId < pArray.length(); ++pId) {
 			skelTree::RVecList pList = curPoints.rest();
 			wP = pArray[pId] * matrix;
 			p.setValue(wP.x, wP.y, wP.z);
@@ -221,12 +224,12 @@ void SkelTree::inputMeshes(skelTree::SkelTreeData& skelTreeData, MDataBlock& blo
 	}
 }
 
-void SkelTree::inputChains(skelTree::SkelTreeData& skelTreeData, MDataBlock& block)
+void SkelTreeCreator::inputChains(skelTree::SkelTreeData& skelTreeData, MDataBlock& block)
 {
 	MStatus status;
 	MArrayDataHandle inArrayChainsH = block.inputArrayValue(mChains, &status);
-	for (int i = 0; i < inArrayChainsH.elementCount(); ++i) {
-		inArrayChainsH.jumpToElement(i);
+	for (uint chainId = 0; chainId < inArrayChainsH.elementCount(); ++chainId) {
+		inArrayChainsH.jumpToElement(chainId);
 		MDataHandle chainH = inArrayChainsH.inputValue();
 		MDataHandle attachedPointH = chainH.child(mAttachedPoint);
 		MDataHandle rootFrameH = chainH.child(mRootFrame);
@@ -240,11 +243,11 @@ void SkelTree::inputChains(skelTree::SkelTreeData& skelTreeData, MDataBlock& blo
 		MArrayDataHandle weightsH = attachedPointH.child(mAttachedWeights);
 		skelTree::RAttachedWeightList wList = chainData.attachedPointData.wList;
 		skelTree::AttachedWeight weight;
-		for (int i = 0; i < weightsH.elementCount(); ++i) {
+		for (uint i = 0; i < weightsH.elementCount(); ++i) {
 			weightsH.jumpToElement(i);
 			MDataHandle weightH = weightsH.inputValue();
 			weight.vid = weightH.child(mAttachedPointId).asInt();
-			weight.w = weightH.child(mAttachedWeight).asDouble();
+			weight.w = weightH.child(mAttachedWeight).asFloat();
 			wList.push_back(weight);
 		}
 
@@ -254,29 +257,29 @@ void SkelTree::inputChains(skelTree::SkelTreeData& skelTreeData, MDataBlock& blo
 
 		double4 &rootQ = rootFrameH.child(mRootQ).asDouble4();
 		for (int i = 0; i < 4; ++i)
-			chainData.rootFrameData.q[i] = rootQ[i];
+			chainData.rootFrameData.q[i] = float(rootQ[i]);
 
 		// frameData
 		skelTree::FrameData frameData;
-		for (int i = 0; i < framesH.elementCount(); ++i) {
+		for (uint i = 0; i < framesH.elementCount(); ++i) {
 			framesH.jumpToElement(i);
 			MDataHandle frameH = framesH.inputValue();
-			frameData.zOffset = frameH.child(mZOffset).asDouble();
+			frameData.zOffset = frameH.child(mZOffset).asFloat();
 
 			double4& q = rootFrameH.child(mFrameQ).asDouble4();
-			for (int i = 0; i < 4; ++i)
-				frameData.q[i] = q[i];
+			for (int ii = 0; ii < 4; ++ii)
+				frameData.q[ii] = float(q[ii]);
 
 			chainData.frameDataList.push_back(frameData);
 		}
 	}
 }
 
-void SkelTree::inputDeformedMeshDatas(skelTree::SkelTreeData& skelTreeData, MDataBlock& block)
+void SkelTreeCreator::inputDeformedMeshDatas(skelTree::SkelTreeData& skelTreeData, MDataBlock& block)
 {
 	MStatus status;
 	MArrayDataHandle inDeformedMeshesH = block.inputArrayValue(mDeformedMeshes, &status);
-	for (int i = 0; i < inDeformedMeshesH.elementCount(); ++i) {
+	for (uint i = 0; i < inDeformedMeshesH.elementCount(); ++i) {
 		inDeformedMeshesH.jumpToElement(i);
 		MDataHandle deformedMeshH = inDeformedMeshesH.inputValue();
 

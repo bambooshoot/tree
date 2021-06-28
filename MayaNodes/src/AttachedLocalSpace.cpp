@@ -83,7 +83,7 @@ MStatus AttachedLocalSpace::compute(const MPlug& plug, MDataBlock& block)
 			hWeight = hInP.child(mInWeight);
 
 			int pid = hPntId.asInt();
-			double w = hWeight.asFloat();
+			float w = hWeight.asFloat();
 
 			fnMesh.getPoint(pid, pnt, MSpace::kObject);
 			pnt *= meshWorldMatrix;

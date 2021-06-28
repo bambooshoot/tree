@@ -5,11 +5,11 @@
 
 #include <SkelTree.h>
 
-class SkelTree : public MPxNode
+class SkelTreeCreator : public MPxNode
 {
 public:
-	SkelTree();
-	~SkelTree() override;
+	SkelTreeCreator();
+	~SkelTreeCreator() override;
 
 	static void* creator();
 	static MStatus initialize();
@@ -43,7 +43,7 @@ public:
 	static MObject mInMesh;
 	static MObject mInWorldMatrix;
 
-	static MObject mOutSkelTree;
+	static MObject mOutSkelTreeData;
 
 	static MTypeId id;
 

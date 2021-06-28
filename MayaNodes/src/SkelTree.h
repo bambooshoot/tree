@@ -9,19 +9,20 @@
 NS_BEGIN
 
 STRUCT(SkelTreeData,
-	PointsList points;
+	PointsList pointsList;
 	ChainDataList chainDataList;
 	DeformedMeshDataList deformedDataList;
+	Box boundBox;
 	void reset() 
 	{
-		points.clear();
+		pointsList.clear();
 		chainDataList.clear();
 		deformedDataList.clear();
 	};
 	RPoints addPoints()
 	{
-		points.push_back(Points());
-		return points.back();
+		pointsList.push_back(Points());
+		return pointsList.back();
 	}
 	RChainData addChainData()
 	{
@@ -32,6 +33,22 @@ STRUCT(SkelTreeData,
 	{
 		deformedDataList.push_back(DeformedMeshData());
 		return deformedDataList.back();
+	}
+	void computeBox()
+	{
+		boundBox.makeEmpty();
+		for (auto& points : pointsList) {
+			for (auto& p : points.rest()) {
+				boundBox.extendBy(p);
+			}
+		}
+	}
+	Uint pointNum() const
+	{
+		Uint pNum = 0;
+		for (auto& points : pointsList)
+			pNum += points.pointNum();
+		return pNum;
 	}
 	)
 

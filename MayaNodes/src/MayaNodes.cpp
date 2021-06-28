@@ -5,7 +5,8 @@
 //		A dg node to get a local space attached on a polygon of a mesh by input polygon id and weights
 
 #include <AttachedLocalSpace.h>
-#include <SkelTreeNode.h>
+#include <SkelTreeCreatorNode.h>
+#include <SkelTreeVisualization.h>
 #include <SkelTreeData.h>
 
 #include <maya/MFnPlugin.h>
@@ -24,7 +25,7 @@ MStatus initializePlugin(MObject obj)
     MStatus   status;
     MFnPlugin plugin(obj, AUTHOR, "3.0", "Any");
 
-    status = plugin.registerData("nurbsHairData", SkelTreeData::id,
+    status = plugin.registerData("skelTreeData", SkelTreeData::id,
         &SkelTreeData::creator,
         MPxData::kData);
 
@@ -36,20 +37,37 @@ MStatus initializePlugin(MObject obj)
         MPxNode::kDependNode);
 
     if (!status) {
-        status.perror("registerNode");
+        status.perror("registerNode attachedLocalSpace");
         return status;
     }
 
-    status = plugin.registerNode("skelTree",
-        SkelTree::id,
-        SkelTree::creator,
-        SkelTree::initialize,
-        MPxNode::kLocatorNode);
+    status = plugin.registerNode("skelTreeCreator",
+        SkelTreeCreator::id,
+        SkelTreeCreator::creator,
+        SkelTreeCreator::initialize,
+        MPxNode::kDependNode);
 
     if (!status) {
-        status.perror("registerNode");
+        status.perror("registerNode skelTreeCreator");
         return status;
     }
+
+    status = plugin.registerNode("skelTreeVisualization",
+        SkelTreeVisualization::id,
+        SkelTreeVisualization::creator,
+        SkelTreeVisualization::initialize,
+        MPxNode::kLocatorNode,
+        &SkelTreeVisualization::drawDbClassification);
+
+    if (!status) {
+        status.perror("registerNode skelTreeVisualization");
+        return status;
+    }
+
+    status = MDrawRegistry::registerGeometryOverrideCreator(
+        SkelTreeVisualization::drawDbClassification,
+        SkelTreeVisualization::drawRegistrantId,
+        SkelTreeVisualizationOverride::Creator);
 
     return status;
 }
@@ -63,15 +81,25 @@ MStatus uninitializePlugin(MObject obj)
 
     status = plugin.deregisterNode(AttachedLocalSpace::id);
     if (!status) {
-        status.perror("deregisterNode");
+        status.perror("deregisterNode attachedLocalSpace");
         return status;
     }
 
-    status = plugin.deregisterNode(SkelTree::id);
+    status = plugin.deregisterNode(SkelTreeCreator::id);
     if (!status) {
-        status.perror("deregisterNode");
+        status.perror("deregisterNode skelTreeCreator");
         return status;
     }
+
+    status = plugin.deregisterNode(SkelTreeVisualization::id);
+    if (!status) {
+        status.perror("deregisterNode skelTreeVisualization");
+        return status;
+    }
+
+    MDrawRegistry::deregisterGeometryOverrideCreator(
+        SkelTreeVisualization::drawDbClassification,
+        SkelTreeVisualization::drawRegistrantId);
 
     return status;
 }
