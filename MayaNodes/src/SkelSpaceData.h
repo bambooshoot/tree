@@ -21,7 +21,7 @@ STRUCT(RootFrameData,
 	)
 
 STRUCT(FrameData,
-	Float zOffset;
+	Float xOffset;
 	Quat q;
 	)
 

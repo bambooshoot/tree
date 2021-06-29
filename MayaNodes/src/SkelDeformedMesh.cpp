@@ -38,12 +38,12 @@ void DeformedMesh::_setWeight(RDeformedMeshWeight w, CRVec p, CUint id)
 {
 	CRChain chain = *pChain;
 	Vec locP;
-	Float zLen;
-	_locPAndZLen(locP, zLen, p, id);
+	Float xLen;
+	_locPAndXLen(locP, xLen, p, id);
 
-	if (locP.z >= 0 && locP.z <= zLen) {
+	if (locP.x >= 0 && locP.x <= xLen) {
 		w.spaceId[0] = id; w.spaceId[1] = id + 1;
-		w.w[1] = locP.z / zLen;
+		w.w[1] = locP.x / xLen;
 		w.w[0] = 1.0f - w.w[1];
 		return;
 	}
@@ -53,33 +53,33 @@ void DeformedMesh::_setWeight(RDeformedMeshWeight w, CRVec p, CUint id)
 	w.w[0] = 1.0f; w.w[1] = 0.0f;
 }
 
-void DeformedMesh::_locPAndZLen(RVec locP, RFloat zLen, CRVec p, CUint id) const
+void DeformedMesh::_locPAndXLen(RVec locP, RFloat zLen, CRVec p, CUint id) const
 {
 	CRChain chain = *pChain;
 	CRMatrix44 mat = chain.restMatrix(id);
 	Matrix44 invMat = mat.inverse();
 	locP = p * invMat;
-	zLen = chain.zLen(id);
+	zLen = chain.xLen(id);
 }
 
 Uint DeformedMesh::_nearestSpace(CRVec p) const
 {
 	CRChain chain = *pChain;
-	FloatList zList, r2List, zlList;
+	FloatList xList, r2List, xlList;
 	Vec locP;
-	Float zLen;
+	Float xLen;
 	for (Uint i = 0; i < chain.spaceNum(); ++i) {
-		_locPAndZLen(locP, zLen, p, i);
-		zList.push_back(locP.z);
-		r2List.push_back(locP.x * locP.x + locP.y * locP.y);
-		zlList.push_back(zLen);
+		_locPAndXLen(locP, xLen, p, i);
+		xList.push_back(locP.x);
+		r2List.push_back(locP.z * locP.z + locP.y * locP.y);
+		xlList.push_back(xLen);
 	}
 
 	UintList idList;
-	auto zIter = zList.begin();
-	auto zlIter = zlList.begin();
-	for (Uint i = 0; i < zList.size(); ++i, ++zIter, ++zlIter) {
-		if (*zIter > 0 && *zIter < *zlIter)
+	auto xIter = xList.begin();
+	auto xlIter = xlList.begin();
+	for (Uint i = 0; i < xList.size(); ++i, ++xIter, ++xlIter) {
+		if (*xIter > 0 && *xIter < *xlIter)
 			idList.push_back(i);
 	}
 
@@ -96,14 +96,14 @@ Uint DeformedMesh::_nearestSpace(CRVec p) const
 		return nearestId;
 	}
 
-	Float nearestZ = 1000.0f;
-	Float absZ;
+	Float nearestX = 1000.0f;
+	Float absX;
 	Uint nearestId = 0;
 	Uint i = 0;
-	for (zlIter = zlList.begin(); zlIter != zlList.end(); ++zlIter, ++i) {
-		absZ = abs(*zlIter);
-		if (nearestZ > absZ) {
-			nearestZ = absZ;
+	for (xlIter = xlList.begin(); xlIter != xlList.end(); ++xlIter, ++i) {
+		absX = abs(*xlIter);
+		if (nearestX > absX) {
+			nearestX = absX;
 			nearestId = i;
 		}
 	}

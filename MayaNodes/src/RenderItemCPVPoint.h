@@ -2,7 +2,7 @@
 
 #include <RenderItemBase.h>
 
-class RenderItemCVPPoint : public RenderItemBase
+class RenderItemCPVPoint : public RenderItemBase
 {
 public:
 	MHWRender::MRenderItem* create(const MString& renderItemName) override

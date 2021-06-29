@@ -18,7 +18,7 @@ def connectRootFrame(rootJoint, treeNode, idx):
 
 def connectFrame(joint, treeNode, idx, idx2):
     frame = treeNode.chains[idx].frames[idx2]
-    frame.zOffset.set(joint.tx.get())
+    frame.xOffset.set(joint.tx.get())
     q = joint.getOrientation()
     frame.frameQuat.set([q.x, q.y, q.z, q.w])
 
@@ -32,6 +32,9 @@ def connectJointHierarchyToTree(joint, treeNode, idx, idx2):
         connectJointHierarchyToTree(subJoint, treeNode, idx, idx2+1)
 
 def skelTreeCreator(mesh, rootJoint):
+    if not cmds.pluginInfo("skelTree",q=True,l=True):
+        cmds.loadPlugin("skelTree")
+        
     treeNode = pm.PyNode(cmds.createNode('skelTreeCreator'))
     visNode = pm.PyNode(cmds.createNode('skelTreeVisualization'))
     meshNode = pm.PyNode(mesh)

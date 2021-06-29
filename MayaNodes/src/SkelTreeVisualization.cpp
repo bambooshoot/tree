@@ -59,6 +59,9 @@ skelTree::RSkelTreeData SkelTreeVisualization::getSkelTreeData() const
 }
 
 const MString SkelTreeVisualizationOverride::sDeformedPoints = "skelTreeVisDeformedPoints";
+const MString SkelTreeVisualizationOverride::sSpace = "skelTreeVisSpace";
+
+const MString* SkelTreeVisualizationOverride::renderItemNames[2] = { &sDeformedPoints, &sSpace };
 
 SkelTreeVisualizationOverride::SkelTreeVisualizationOverride(const MObject& obj)
 	: MPxGeometryOverride(obj)
@@ -75,17 +78,20 @@ SkelTreeVisualizationOverride::SkelTreeVisualizationOverride(const MObject& obj)
 void SkelTreeVisualizationOverride::updateDG()
 {
 	pTreeData = &mVisNode->getSkelTreeData();
-	renderBufferManagerBuild(bufManager, sDeformedPoints);
+	renderBufferManagerBuild(bufManager, pTreeData, sDeformedPoints, sSpace);
 }
 
 void SkelTreeVisualizationOverride::updateRenderItems(const MDagPath& path, MRenderItemList& list)
 {
 	MHWRender::MRenderItem* vertexItem = NULL;
-	int index = list.indexOf(sDeformedPoints);
-	if (index < 0)
-	{
-		vertexItem = bufManager.get(sDeformedPoints).pRenderItem->create(sDeformedPoints);
-		list.append(vertexItem);
+
+	for (auto renderItemName : renderItemNames) {
+		int index = list.indexOf(*renderItemName);
+		if (index < 0)
+		{
+			vertexItem = bufManager.get(*renderItemName).pRenderItem->create(*renderItemName);
+			list.append(vertexItem);
+		}
 	}
 }
 
@@ -101,7 +107,7 @@ void SkelTreeVisualizationOverride::populateGeometry(const MGeometryRequirements
 		if (!vertexBufferDescriptorList.getDescriptor(requirmentNumber, vertexBufferDescriptor))
 			continue;
 
-		bufManager.get(sDeformedPoints).pPopulate->populateGeometryVertex(pTreeData, data, vertexBufferDescriptor);
+		bufManager.createVertexBuffer(data, vertexBufferDescriptor);
 	}
 
 	// index buffer
@@ -112,6 +118,7 @@ void SkelTreeVisualizationOverride::populateGeometry(const MGeometryRequirements
 		if (!item)
 			continue;
 
-		bufManager.get(sDeformedPoints).pPopulate->populateGeometryIndex(pTreeData, data, item, sDeformedPoints);
+		const MString& renderItemName = item->name();
+		bufManager.get(renderItemName).pPopulate->populateGeometryIndex(data, item, renderItemName);
 	}
 }

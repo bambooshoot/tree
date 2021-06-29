@@ -65,4 +65,7 @@ private:
 	RenderBufferManager			bufManager;
 
 	static const MString sDeformedPoints;
+	static const MString sSpace;
+
+	static const MString* renderItemNames[2];
 };

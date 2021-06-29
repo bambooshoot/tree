@@ -32,7 +32,7 @@ public:
 	static MObject mRootQ;
 
 	static MObject mFrames;
-	static MObject mZOffset;
+	static MObject mXOffset;
 	static MObject mFrameQ;
 
 	static MObject mDeformedMeshes;

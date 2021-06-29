@@ -48,7 +48,7 @@ Matrix44 AttachedPoint::matrix(CRQuat q) const
 	return restMatrix();
 }
 
-Float AttachedPoint::zParam() const
+Float AttachedPoint::xParam() const
 {
 	return 0.0f;
 }

@@ -37,7 +37,7 @@ private:
 
 	Uint _nearestSpace(CRVec p) const;
 	void _setWeight(RDeformedMeshWeight w, CRVec p, CUint id);
-	void _locPAndZLen(RVec locP, RFloat zLen, CRVec p, CUint id) const;
+	void _locPAndXLen(RVec locP, RFloat zLen, CRVec p, CUint id) const;
 };
 
 NS_END

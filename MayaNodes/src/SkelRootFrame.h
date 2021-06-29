@@ -10,7 +10,7 @@ public:
 	RootFrame(CRootFrameDataP pData, CChainDataP pChainData);
 	Matrix44 matrix(CRQuat q) const override;
 	Matrix44 restMatrix() const override;
-	Float zParam() const override;
+	Float xParam() const override;
 
 	static SpaceP create(CVoidP data, CChainDataP pChainData);
 	static SpaceTypeId typeId;

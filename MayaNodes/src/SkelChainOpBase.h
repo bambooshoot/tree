@@ -13,7 +13,7 @@ public:
 		CFloat chainParam = Float(chainId);
 		QuatList qList(spaceNum);
 		for (Uint i = 0; i < spaceNum; ++i) {
-			qList[i] = computeQ(chainParam, chain.zParam(i), time);
+			qList[i] = computeQ(chainParam, chain.xParam(i), time);
 		}
 		
 		chain.updateMatrix(qList);

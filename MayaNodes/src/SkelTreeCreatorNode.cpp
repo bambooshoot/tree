@@ -29,6 +29,7 @@
 #include <maya/MPointArray.h>
 #include <maya/MIntArray.h>
 #include <maya/MFloatArray.h>
+#include <maya/MGlobal.h>
 
 #include <SkelTreeData.h>
 #include <SkelPoints.h>
@@ -48,7 +49,7 @@ MObject SkelTreeCreator::mOffset;
 MObject SkelTreeCreator::mRootQ;
 
 MObject SkelTreeCreator::mFrames;
-MObject SkelTreeCreator::mZOffset;
+MObject SkelTreeCreator::mXOffset;
 MObject SkelTreeCreator::mFrameQ;
 
 MObject SkelTreeCreator::mDeformedMeshes;
@@ -123,11 +124,11 @@ MStatus SkelTreeCreator::initialize()
 	// root frame
 
 	// frame
-	mZOffset = numAttr.create("zOffset", "zft", MFnNumericData::kDouble, 0.0, &status);
+	mXOffset = numAttr.create("xOffset", "xft", MFnNumericData::kDouble, 0.0, &status);
 	mFrameQ = numAttr.create("frameQuat", "fqt", MFnNumericData::k4Double, 0.0, &status);
 	mFrames = compoundAttrib.create("frames", "frm");
 
-	compoundAttrib.addChild(mZOffset);
+	compoundAttrib.addChild(mXOffset);
 	compoundAttrib.addChild(mFrameQ);
 	compoundAttrib.setArray(true);
 	// frame
@@ -196,7 +197,26 @@ void SkelTreeCreator::build(skelTree::SkelTreeData& skelTreeData, MDataBlock& bl
 	
 	skelTree::SkelTree skTree(&skelTreeData);
 	skTree.buildChains();
-	//skTree.computWeights();
+	skTree.computWeights();
+
+	for (uint chainId = 0; chainId < skTree.chainNum(); ++chainId) {
+		skelTree::CRChain chain = skTree.getChain(chainId);
+		for (uint spaceId = 0; spaceId < chain.spaceNum(); ++spaceId) {
+			skelTree::CRMatrix44 mat = chain.space(spaceId)->restMatrix();
+			MString info;
+			info += spaceId;
+			info += "\n";
+			for (int i = 0; i < 4; ++i) {
+				for (int j = 0; j < 4; ++j) {
+					info += mat[i][j];
+					info += " ";
+				}
+				info += "\n";
+			}
+					
+			MGlobal::displayInfo(info);
+		}
+	}
 }
 
 void SkelTreeCreator::inputMeshes(skelTree::SkelTreeData& skelTreeData, MDataBlock& block)
@@ -248,7 +268,7 @@ void SkelTreeCreator::inputChains(skelTree::SkelTreeData& skelTreeData, MDataBlo
 			weightsH.jumpToElement(i);
 			MDataHandle weightH = weightsH.inputValue();
 			weight.vid = weightH.child(mAttachedPointId).asInt();
-			weight.w = weightH.child(mAttachedWeight).asFloat();
+			weight.w = float(weightH.child(mAttachedWeight).asDouble());
 			wList.push_back(weight);
 		}
 
@@ -257,19 +277,49 @@ void SkelTreeCreator::inputChains(skelTree::SkelTreeData& skelTreeData, MDataBlo
 		chainData.rootFrameData.offset.setValue(offset[0], offset[1], offset[2]);
 
 		double4 &rootQ = rootFrameH.child(mRootQ).asDouble4();
-		for (int i = 0; i < 4; ++i)
-			chainData.rootFrameData.q[i] = float(rootQ[i]);
+		chainData.rootFrameData.q.r = float(rootQ[3]);
+		chainData.rootFrameData.q.v.x = float(rootQ[0]);
+		chainData.rootFrameData.q.v.y = float(rootQ[1]);
+		chainData.rootFrameData.q.v.z = float(rootQ[2]);
+
+		MString info("root frame data");
+		info += "\n";
+		info += offset[0];
+		info += " ";
+		info += offset[1];
+		info += " ";
+		info += offset[2];
+		info += "\n";
+		for (int i = 0; i < 4; ++i) {
+			info += rootQ[i];
+			info += " ";
+		}
+		info += "\n";
+		MGlobal::displayInfo(info);
 
 		// frameData
 		skelTree::FrameData frameData;
 		for (uint i = 0; i < framesH.elementCount(); ++i) {
 			framesH.jumpToElement(i);
 			MDataHandle frameH = framesH.inputValue();
-			frameData.zOffset = frameH.child(mZOffset).asFloat();
+			frameData.xOffset = float(frameH.child(mXOffset).asDouble());
+			MString info("frame data");
+			info += i;
+			info += "\n";
+			info += frameData.xOffset;
 
-			double4& q = rootFrameH.child(mFrameQ).asDouble4();
-			for (int ii = 0; ii < 4; ++ii)
-				frameData.q[ii] = float(q[ii]);
+			double4& q = frameH.child(mFrameQ).asDouble4();
+			frameData.q.r = float(q[3]);
+			frameData.q.v.x = float(q[0]);
+			frameData.q.v.y = float(q[1]);
+			frameData.q.v.z = float(q[2]);
+
+			for (int ii = 0; ii < 4; ++ii) {
+				info += " ";
+				info += q[ii];
+			}
+
+			MGlobal::displayInfo(info);
 
 			chainData.frameDataList.push_back(frameData);
 		}

@@ -8,3 +8,5 @@ MayaNodes/Debug
 MayaNodes/skelTree.dir
 MayaNodes/x64
 MayaNodes/.vs
+*.vcxproj
+*.sln

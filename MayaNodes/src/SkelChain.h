@@ -14,15 +14,17 @@ public:
 
 	CRMatrix44 matrix(CUint spaceId) const;
 	CRMatrix44 restMatrix(CUint spaceId) const;
-	Float zParam(CUint spaceId) const;
-	Float zLen(CUint spaceId) const;
+	Float xParam(CUint spaceId) const;
+	Float xLen(CUint spaceId) const;
 	Uint spaceNum() const;
+	CSpaceP space(CUint spaceId) const;
 
 private:
 	SpacePList		spaceList;
 	Matrix44List	restMatrixList;
 	Matrix44List	matrixList;
-	FloatList		zParamList;
+	FloatList		xParamList;
+	FloatList		xLenList;
 
 	void _updateParam();
 	void _updateRestMatrix();

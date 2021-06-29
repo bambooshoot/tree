@@ -19,10 +19,10 @@ public:
 		vertexItem->depthPriority(MHWRender::MRenderItem::sDormantPointDepthPriority);
 
 		MHWRender::MShaderInstance* shader = shaderMgr->getStockShader(
-			MHWRender::MShaderManager::k3dThickLineShader);
+			MHWRender::MShaderManager::k3dCPVThickLineShader);
 
 		// Set lines a bit thicker to stand out
-		static const float lineSize = 5.0f;
+		static const float lineSize = 3.0f;
 		_setLineWidth(shader, lineSize);
 
 		// Set affected color

@@ -56,14 +56,19 @@ void Chain::updateMatrix(CRQuatList qList)
 	}
 }
 
-Float Chain::zParam(CUint spaceId) const
+Float Chain::xParam(CUint spaceId) const
 {
-	return zParamList[spaceId + 1];
+	return xParamList[spaceId + 1];
 }
 
-Float Chain::zLen(CUint spaceId) const
+Float Chain::xLen(CUint spaceId) const
 {
-	return spaceList[spaceId + 1]->zParam();
+	return xLenList[spaceId + 1];
+}
+
+CSpaceP Chain::space(CUint spaceId) const
+{
+	return spaceList[spaceId];
 }
 
 void Chain::_updateRestMatrix()
@@ -72,7 +77,7 @@ void Chain::_updateRestMatrix()
 	mat.makeIdentity();
 	auto iter = restMatrixList.begin();
 	for (auto& space : spaceList) {
-		mat *= space->restMatrix();
+		mat = space->restMatrix() * mat;
 		*iter = mat;
 		++iter;
 	}
@@ -80,12 +85,18 @@ void Chain::_updateRestMatrix()
 
 void Chain::_updateParam()
 {
-	Float z = 0.0f;
+	Float x = 0.0f, xLen;
+
 	for (auto& space : spaceList) {
-		z += space->zParam();
-		zParamList.push_back(z);
+		xLen = space->xParam();
+		x += xLen;
+
+		xLenList.push_back(xLen);
+		xParamList.push_back(x);
 	}
-	zParamList.push_back(0.0f);
+
+	xLenList.push_back(0.0f);
+	xParamList.push_back(x);
 }
 
 NS_END
