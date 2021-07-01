@@ -5,19 +5,13 @@
 class PopulateGeometryChains : public PopulateGeometryBase
 {
 public:
-	void prepare(skelTree::SkelTreeDataP pTreeData, const uint vertexOffsetId, const uint indexOffsetId) override
-	{
-		PopulateGeometryBase::prepare(pTreeData, vertexOffsetId, indexOffsetId);
-		skTree.reset(pTreeData);
-		skTree.buildChains();
-	}
 	uint vertexSize() const
 	{
-		return  skTree.spaceNum() * 4;
+		return  _pTree->spaceNum() * 4;
 	}
 	uint indexSize() const
 	{
-		return  skTree.spaceNum() * 6;
+		return  _pTree->spaceNum() * 6;
 	}
 	void populateGeometryPosition(MGeometry& data, MVertexBufferDescriptor& vertexBufferDescriptor, float* buf) override
 	{
@@ -29,8 +23,8 @@ public:
 			skelTree::Vec(0, 0, 1)
 		}, p1;
 
-		for (uint i = 0; i < skTree.chainNum(); ++i) {
-			skelTree::CRChain chain = skTree.getChain(i);
+		for (uint i = 0; i < _pTree->chainNum(); ++i) {
+			skelTree::CRChain chain = _pTree->getChain(i);
 			for (uint frameId = 0; frameId < chain.spaceNum(); ++frameId) {
 				skelTree::Matrix44 mat = chain.matrix(frameId);
 				for (auto& p : p4) {
@@ -51,7 +45,7 @@ public:
 		};
 
 		uint idx = _colorOffsetId();
-		for (uint i = 0; i < skTree.spaceNum(); ++i) {
+		for (uint i = 0; i < _pTree->spaceNum(); ++i) {
 			for (uint i4 = 0; i4 < 4; ++i4) {
 				buf[idx++] = c4[i4].x;
 				buf[idx++] = c4[i4].y;
@@ -76,14 +70,13 @@ public:
 	}
 
 private:
-	skelTree::SkelTree skTree;
 
 	void _fillIndex(unsigned int* indices)
 	{
 		uint idx = 0, frameBeginId = _indexOffsetId;
 		uint idOffset[6] = { 0,1,0,2,0,3 };
-		for (uint i = 0; i < skTree.chainNum(); ++i) {
-			skelTree::CRChain chain = skTree.getChain(i);
+		for (uint i = 0; i < _pTree->chainNum(); ++i) {
+			skelTree::CRChain chain = _pTree->getChain(i);
 			for (uint frameId = 0; frameId < chain.spaceNum(); ++frameId, frameBeginId+=4) {
 				for (auto pId : idOffset)
 					indices[idx++] = frameBeginId + pId;

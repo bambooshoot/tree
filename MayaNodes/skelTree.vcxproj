@@ -215,6 +215,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="src\SkelSpace.h" />
     <ClInclude Include="src\SkelSpaceData.h" />
     <ClInclude Include="src\SkelSpaceFactory.h" />
+    <ClInclude Include="src\SkelSpline.h" />
     <ClInclude Include="src\SkelTree.h" />
     <ClInclude Include="src\SkelTreeBase.h" />
     <ClInclude Include="src\SkelTreeCreatorNode.h" />

@@ -3,13 +3,11 @@
 #include <SkelTreeBase.h>
 #include <SkelChain.h>
 #include <SkelPoints.h>
+#include <SkelSpline.h>
 
 NS_BEGIN
 
-STRUCT(DeformedMeshWeight,
-	Ushort spaceId[2];
-	Float w[2];
-	)
+DECL_ALIAS(SplineWeight, DeformedMeshWeight)
 
 STRUCT(DeformedMeshData,
 	Ushort chainId;
@@ -37,7 +35,7 @@ private:
 
 	Uint _nearestSpace(CRVec p) const;
 	void _setWeight(RDeformedMeshWeight w, CRVec p, CUint id);
-	void _locPAndXLen(RVec locP, RFloat zLen, CRVec p, CUint id) const;
+	void _locPAndXLen(RVec locP, CRVec p, CUint id) const;
 };
 
 NS_END

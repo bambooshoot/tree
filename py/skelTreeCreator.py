@@ -1,11 +1,16 @@
 import maya.cmds as cmds
 import pymel.core as pm
 
-def connectMeshToTree(meshNode,treeNode,index):
+import attachedLocalSpace as als
+
+def connectMeshToTree(meshNode, treeNode):
+    index = treeNode.inMeshes.get(s=True)
     meshNode.outMesh.connect(treeNode.inMeshes[index].inMesh)
     meshNode.parent(0).worldMatrix.connect(treeNode.inMeshes[index].inWorldMatrix)
+    return index
 
-def connectMeshToDeform(treeNode,deformIdx,chainId,meshId):
+def connectMeshToDeform(treeNode,chainId,meshId):
+    deformIdx = treeNode.deformedMeshes.get(s=True)
     curDeformMesh = treeNode.deformedMeshes[deformIdx]
     curDeformMesh.deformedChainId.set(chainId)
     curDeformMesh.deformedMeshId.set(meshId)
@@ -22,33 +27,48 @@ def connectFrame(joint, treeNode, idx, idx2):
     q = joint.getOrientation()
     frame.frameQuat.set([q.x, q.y, q.z, q.w])
 
-def connectJointHierarchyToTree(joint, treeNode, idx, idx2):
+def connectJointHierarchyToTree(joint, treeNode, chainId, idx2):
     if idx2 == -1:
-        connectRootFrame(joint, treeNode, idx)
+        connectRootFrame(joint, treeNode, chainId)
     else:
-        connectFrame(joint, treeNode, idx, idx2)
+        connectFrame(joint, treeNode, chainId, idx2)
 
     for subJoint in joint.getChildren():
-        connectJointHierarchyToTree(subJoint, treeNode, idx, idx2+1)
+        connectJointHierarchyToTree(subJoint, treeNode, chainId, idx2+1)
 
-def skelTreeCreator(mesh, rootJoint):
-    if not cmds.pluginInfo("skelTree",q=True,l=True):
-        cmds.loadPlugin("skelTree")
-        
-    treeNode = pm.PyNode(cmds.createNode('skelTreeCreator'))
-    visNode = pm.PyNode(cmds.createNode('skelTreeVisualization'))
+def setTreeInputForMesh(treeNode, mesh, rootJoint, rootMesh=None):
     meshNode = pm.PyNode(mesh)
 
-    #input meshes
-    connectMeshToTree(meshNode, treeNode, 0)
+    # input meshes
+    connectMeshToTree(meshNode, treeNode)
 
-    # #input rootMeshes
-    # connectMeshToTree(pm.PyNode(rootMesh), treeNode, 0)
+    chainId = treeNode.chains.get(s=True)
 
-    #input joints
-    connectJointHierarchyToTree(pm.PyNode(rootJoint), treeNode, 0, -1)
+    # input rootMeshes
+    if rootMesh:
+        vIds, w = als.closestPolygonAndWeights(rootJoint, rootMesh)
+        rootMeshId = connectMeshToTree(pm.PyNode(rootMesh), treeNode)
+        attachedPointAttr = treeNode.chain[chainId].attachedPoint
+        attachedPointAttr.targetMeshId.set(rootMeshId)
+        for i in range(len(vIds)):
+            attachedPointAttr.attachedWeights[i].attachedPointId.set(vIds[i])
+            attachedPointAttr.attachedWeights[i].attachedWeight.set(w[i])
 
-    connectMeshToDeform(treeNode, 0, 0, 0)
+    # input joints
+    connectJointHierarchyToTree(pm.PyNode(rootJoint), treeNode, chainId, -1)
+
+    connectMeshToDeform(treeNode, 0, 0)
+
+
+def skelTreeCreator(meshDataList):
+    if not cmds.pluginInfo("skelTree",q=True,l=True):
+        cmds.loadPlugin("skelTree")
+
+    treeNode = pm.PyNode(cmds.createNode('skelTreeCreator'))
+    visNode = pm.PyNode(cmds.createNode('skelTreeVisualization'))
+
+    for meshData in meshDataList:
+        setTreeInputForMesh(treeNode, meshData[0], meshData[1], meshData[2])
 
     treeNode.outSkelTreeData.connect(visNode.inSkelTreeData)
 
@@ -60,7 +80,7 @@ def skelTreeCreatorSel():
     rootJoint = jointList[0]
     #rootMesh = meshList[1]
 
-    skelTreeCreator(mesh,rootJoint)
+    skelTreeCreator([[mesh,rootJoint, None]])
 
 cmds.select(['joint1','pCylinder1'])
 skelTreeCreatorSel()

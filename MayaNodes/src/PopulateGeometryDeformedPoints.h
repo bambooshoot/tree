@@ -31,7 +31,7 @@ public:
 			for (auto& w : deformedData.wList) {
 				buf[idx++] = w.w[0];
 				buf[idx++] = w.w[1];
-				buf[idx++] = 0.0f;
+				buf[idx++] = w.w[2];
 				buf[idx++] = 1.0f;
 			}
 	}

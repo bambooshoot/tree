@@ -6,6 +6,7 @@ import numpy as np
 import skeletor as sk
 
 import attachedLocalSpace as als
+import skelTreeCreator as stc
 
 def meshToTriMesh(meshShape):
     node=pm.PyNode(meshShape)
@@ -73,7 +74,7 @@ def makeJointsByMesh(mesh, sortRootP, stepLen):
 
     return pList, jointList[0]
 
-def makeJointsByDag(dagNode, sortRootP, stepLen):
+def makeJointsByDag(dagNode, sortRootP, stepLen, meshDataList):
     meshNode = cmds.listRelatives(dagNode, type="mesh")[0]
     pList, rootJoint = makeJointsByMesh(meshNode, sortRootP, stepLen)
 
@@ -82,10 +83,15 @@ def makeJointsByDag(dagNode, sortRootP, stepLen):
         for subDagNode in subNodeList:
             rootP = cmds.xform(subDagNode, q=True, ws=True, t=True)
             rootP = dt.Point(rootP)
-            vIds, w = als.closestPolygonAndWeights(rootP, meshNode)
-            curRootJoint = makeJointsByDag(subDagNode, rootP, stepLen)
-            als.makeAttachLocalSpace(curRootJoint, meshNode, vIds, w)
+            # vIds, w = als.closestPolygonAndWeights(rootP, meshNode)
+            curRootJoint, curMeshNode = makeJointsByDag(subDagNode, rootP, stepLen, meshDataList)
+            # als.makeAttachLocalSpace(curRootJoint, meshNode, vIds, w)
+            meshDataList.append([curMeshNode, curRootJoint, meshNode])
 
-    return rootJoint
+    return rootJoint, meshNode
         
-makeJointsByDag("Trunk", dt.Point(0,0,0), 0.5)
+def buildTree(rootNode):
+    meshDataList = []
+    rootJoint, meshNode = makeJointsByDag(rootNode, dt.Point(0,0,0), 0.5, meshDataList)
+    meshDataList.append([meshNode, rootJoint, None])
+    stc.skelTreeCreator(meshDataList)

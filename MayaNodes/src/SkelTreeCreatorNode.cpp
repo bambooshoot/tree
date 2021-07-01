@@ -198,25 +198,6 @@ void SkelTreeCreator::build(skelTree::SkelTreeData& skelTreeData, MDataBlock& bl
 	skelTree::SkelTree skTree(&skelTreeData);
 	skTree.buildChains();
 	skTree.computWeights();
-
-	for (uint chainId = 0; chainId < skTree.chainNum(); ++chainId) {
-		skelTree::CRChain chain = skTree.getChain(chainId);
-		for (uint spaceId = 0; spaceId < chain.spaceNum(); ++spaceId) {
-			skelTree::CRMatrix44 mat = chain.space(spaceId)->restMatrix();
-			MString info;
-			info += spaceId;
-			info += "\n";
-			for (int i = 0; i < 4; ++i) {
-				for (int j = 0; j < 4; ++j) {
-					info += mat[i][j];
-					info += " ";
-				}
-				info += "\n";
-			}
-					
-			MGlobal::displayInfo(info);
-		}
-	}
 }
 
 void SkelTreeCreator::inputMeshes(skelTree::SkelTreeData& skelTreeData, MDataBlock& block)

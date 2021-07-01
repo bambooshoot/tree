@@ -26,17 +26,19 @@ public:
 	virtual void populateGeometryColor(MGeometry& data, MVertexBufferDescriptor& vertexBufferDescriptor, float* buf) = 0;
 	virtual void populateGeometryIndex(MGeometry& data, const MRenderItem* item, const MString& renderItemName) = 0;
 
-	virtual void prepare(skelTree::SkelTreeDataP pTreeData, const uint vertexOffsetId, const uint indexOffsetId)
+	virtual void prepare(skelTree::SkelTreeDataP pTreeData, skelTree::SkelTreeP pTree, const uint vertexOffsetId, const uint indexOffsetId)
 	{
 		_pTreeData = pTreeData;
+		_pTree = pTree;
 		_vertexOffsetId = vertexOffsetId;
 		_indexOffsetId = indexOffsetId;
 	}
 
 protected:
-	uint _vertexOffsetId;
-	uint _indexOffsetId;
+	uint					_vertexOffsetId;
+	uint					_indexOffsetId;
 	skelTree::SkelTreeDataP _pTreeData;
+	skelTree::SkelTreeP		_pTree;
 
 	uint _positionOffsetId() const
 	{

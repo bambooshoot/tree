@@ -22,6 +22,7 @@ void Chain::build(CRChainData chainData)
 
 	Matrix44 zeroMat;
 	restMatrixList.resize(spaceList.size(), zeroMat);
+	restInvMatrixList.resize(spaceList.size(), zeroMat);
 	matrixList.resize(spaceList.size(), zeroMat);
 	_updateRestMatrix();
 	_updateParam();
@@ -42,6 +43,11 @@ CRMatrix44 Chain::restMatrix(CUint spaceId) const
 	return restMatrixList[spaceId];
 }
 
+CRMatrix44 Chain::restInvMatrix(CUint spaceId) const
+{
+	return restInvMatrixList[spaceId];
+}
+
 void Chain::updateMatrix(CRQuatList qList)
 {
 	Matrix44 mat;
@@ -49,7 +55,7 @@ void Chain::updateMatrix(CRQuatList qList)
 	auto iter = matrixList.begin();
 	auto qIter = qList.begin();
 	for (auto& space : spaceList) {
-		mat *= space->matrix(*qIter);
+		mat = space->matrix(*qIter) * mat;
 		*iter = mat;
 		++iter;
 		++qIter;
@@ -58,7 +64,7 @@ void Chain::updateMatrix(CRQuatList qList)
 
 Float Chain::xParam(CUint spaceId) const
 {
-	return xParamList[spaceId + 1];
+	return xParamList[spaceId];
 }
 
 Float Chain::xLen(CUint spaceId) const
@@ -76,16 +82,19 @@ void Chain::_updateRestMatrix()
 	Matrix44 mat;
 	mat.makeIdentity();
 	auto iter = restMatrixList.begin();
+	auto invIter = restInvMatrixList.begin();
 	for (auto& space : spaceList) {
 		mat = space->restMatrix() * mat;
 		*iter = mat;
+		*invIter = mat.inverse();
 		++iter;
+		++invIter;
 	}
 }
 
 void Chain::_updateParam()
 {
-	Float x = 0.0f, xLen;
+	Float x = 0.0f, xLen, xMaxFactor;
 
 	for (auto& space : spaceList) {
 		xLen = space->xParam();
@@ -97,6 +106,29 @@ void Chain::_updateParam()
 
 	xLenList.push_back(0.0f);
 	xParamList.push_back(x);
+
+	xMaxFactor = 1.0f / xParamList.back();
+
+	for (auto& x : xParamList)
+		x *= xMaxFactor;
+}
+
+VecList Chain::restPointList() const
+{
+	VecList pList;
+	for (auto& mat : restMatrixList) {
+		pList.push_back(mat.translation());
+	}
+	return pList;
+}
+
+VecList Chain::pointList() const
+{
+	VecList pList;
+	for (auto& mat : matrixList) {
+		pList.push_back(mat.translation());
+	}
+	return pList;
 }
 
 NS_END

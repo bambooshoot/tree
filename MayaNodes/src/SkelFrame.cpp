@@ -24,7 +24,12 @@ Matrix44 Frame::restMatrix() const
 
 Matrix44 Frame::matrix(CRQuat q) const
 {
-	return restMatrix() * q.toMatrix44();
+	Matrix44 mat;
+	Quat q2 = _data->q * q;
+	q2.normalize();
+	mat = q2.toMatrix44();
+	mat[3][0] = _data->xOffset;
+	return mat;
 }
 
 Float Frame::xParam() const

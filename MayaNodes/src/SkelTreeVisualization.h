@@ -22,18 +22,22 @@ public:
 	static  void*   creator();
 	static  MStatus initialize();
 
-	skelTree::RSkelTreeData getSkelTreeData() const;
-
 	bool            isTransparent() const override { return true; }
 	bool            drawLast() const override { return true; }
 	bool            isBounded() const override { return true; }
 	MBoundingBox    boundingBox() const override;
+
+	skelTree::RSkelTreeData getSkelTreeData() const;
+	float time() const;
+	float noiseValue() const;
 
 	static MTypeId id;
 	static MString drawDbClassification;
 	static MString drawRegistrantId;
 
 	static MObject mInSkelTreeData;
+	static MObject mTime;
+	static MObject mNoiseValue;
 };
 
 using namespace MHWRender;
@@ -53,7 +57,7 @@ public:
 	void updateRenderItems(const MDagPath& path, MRenderItemList& list) override;
 
 	// Geometry update functions, major entry for support VP2 Custom Caching
-	//bool requiresGeometryUpdate() const override;
+	bool requiresGeometryUpdate() const override;
 	void populateGeometry(const MGeometryRequirements& requirements, const MRenderItemList& renderItems, MGeometry& data) override;
 
 private:
@@ -61,6 +65,7 @@ private:
 
 	SkelTreeVisualization*		mVisNode;
 	skelTree::SkelTreeDataP		pTreeData;
+	skelTree::SkelTree			skelTree;
 
 	RenderBufferManager			bufManager;
 

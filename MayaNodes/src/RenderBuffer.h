@@ -62,12 +62,12 @@ public:
 	{
 		bufMap.insert(std::pair<std::string, RenderBuffer>(std::string(renderItemName.asChar()), buffer));
 	}
-	void perpare(skelTree::SkelTreeDataP pTreeData)
+	void perpare(skelTree::SkelTreeDataP pTreeData, skelTree::SkelTreeP pTree)
 	{
 		uint indexOffsetId = 0;
 		uint vertexOffsetId = 0;
 		for (auto& buf : bufMap) {
-			buf.second.pPopulate->prepare(pTreeData, vertexOffsetId, indexOffsetId);
+			buf.second.pPopulate->prepare(pTreeData, pTree, vertexOffsetId, indexOffsetId);
 			indexOffsetId += buf.second.pPopulate->indexSize();
 			vertexOffsetId += buf.second.pPopulate->vertexSize();
 		}
@@ -92,6 +92,7 @@ private:
 
 inline void renderBufferManagerBuild(RenderBufferManager & manager,
 	skelTree::SkelTreeDataP pTreeData,
+	skelTree::SkelTreeP		pTree,
 	const MString & deformedPointsName,
 	const MString & spaceName)
 {
@@ -108,5 +109,5 @@ inline void renderBufferManagerBuild(RenderBufferManager & manager,
 	buf.pPopulate = new PopulateGeometryDeformedPoints();
 	manager.registerBuffer(deformedPointsName, buf);
 
-	manager.perpare(pTreeData);
+	manager.perpare(pTreeData, pTree);
 }

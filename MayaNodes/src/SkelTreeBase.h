@@ -3,11 +3,14 @@
 #include <vector>
 #include <array>
 #include <map>
+#include <limits>
+#include <assert.h>
 
 #include <OpenEXR/ImathVec.h>
 #include <OpenEXR/ImathQuat.h>
 #include <OpenEXR/ImathMatrix.h>
 #include <OpenEXR/ImathBox.h>
+#include <OpenEXR/ImathRandom.h>
 
 #define NS_BEGIN namespace skelTree {
 #define NS_END }
@@ -58,6 +61,8 @@ DECL_ALIAS(Imath::Quat<Float>, Quat)
 DECL_ALIAS(Imath::Matrix44<Float>, Matrix44)
 DECL_ALIAS(Imath::Box<Vec>, Box)
 
+using Random = Imath::Rand32;
+
 using SpaceTypeId = Ushort;
 using CSpaceTypeId = CUshort;
 
@@ -68,5 +73,6 @@ using VecListList = std::vector<VecList>;
 
 //constant value
 #define USHORT_MAX Ushort(-1)
+#define FLOATMAX std::numeric_limits<Float>::max()
 
 NS_END

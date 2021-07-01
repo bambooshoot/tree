@@ -9,6 +9,10 @@
 #include <maya/MArrayDataHandle.h>
 #include <maya/MFnTypedAttribute.h>
 #include <maya/MFnDependencyNode.h>
+#include <maya/MFnNumericAttribute.h>
+#include <maya/MGlobal.h>
+
+#include <maya/MFnUnitAttribute.h>
 
 #include <maya/MFnPluginData.h>
 
@@ -17,6 +21,8 @@ MString	SkelTreeVisualization::drawDbClassification("drawdb/geometry/skelTreeVis
 MString	SkelTreeVisualization::drawRegistrantId("skelTreeVisualization");
 
 MObject SkelTreeVisualization::mInSkelTreeData;
+MObject SkelTreeVisualization::mTime;
+MObject SkelTreeVisualization::mNoiseValue;
 
 void* SkelTreeVisualization::creator()
 {
@@ -35,6 +41,14 @@ MStatus SkelTreeVisualization::initialize()
 
 	status = addAttribute(mInSkelTreeData);
 
+	MFnUnitAttribute		uAttr;
+	mTime = uAttr.create("time", "tim", MFnUnitAttribute::kTime, 1);
+	status = addAttribute(mTime);
+
+	MFnNumericAttribute nAttr;
+	mNoiseValue = nAttr.create("noiseValue","noi", MFnNumericData::kDouble, 1.0, &status);
+	status = addAttribute(mNoiseValue);
+	
 	return status;
 }
 
@@ -58,6 +72,20 @@ skelTree::RSkelTreeData SkelTreeVisualization::getSkelTreeData() const
 	return ((SkelTreeData*)skelTreeDataPlug.asMDataHandle().asPluginData())->skelTreeData;
 }
 
+float SkelTreeVisualization::time() const
+{
+	MObject thisNode = thisMObject();
+	MPlug timePlug(thisNode, mTime);
+	return float(timePlug.asMTime().value());
+}
+
+float SkelTreeVisualization::noiseValue() const
+{
+	MObject thisNode = thisMObject();
+	MPlug timePlug(thisNode, mNoiseValue);
+	return float(timePlug.asDouble());
+}
+
 const MString SkelTreeVisualizationOverride::sDeformedPoints = "skelTreeVisDeformedPoints";
 const MString SkelTreeVisualizationOverride::sSpace = "skelTreeVisSpace";
 
@@ -75,10 +103,22 @@ SkelTreeVisualizationOverride::SkelTreeVisualizationOverride(const MObject& obj)
 	mVisNode = dynamic_cast<SkelTreeVisualization*>(footPrintNode);
 }
 
+bool SkelTreeVisualizationOverride::requiresGeometryUpdate() const
+{
+	return true;
+}
+
 void SkelTreeVisualizationOverride::updateDG()
 {
+	float curTime = mVisNode->time();
+	float noiseValue = mVisNode->noiseValue();
 	pTreeData = &mVisNode->getSkelTreeData();
-	renderBufferManagerBuild(bufManager, pTreeData, sDeformedPoints, sSpace);
+	skelTree.reset(pTreeData);
+	skelTree.buildChains();
+	skelTree.updateChains(curTime, noiseValue);
+	skelTree.deform();
+
+	renderBufferManagerBuild(bufManager, pTreeData, &skelTree, sDeformedPoints, sSpace);
 }
 
 void SkelTreeVisualizationOverride::updateRenderItems(const MDagPath& path, MRenderItemList& list)

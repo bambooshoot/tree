@@ -15,6 +15,7 @@ import pymel.core.datatypes as dt
 import trimesh
 import numpy as np
 import skeletor as sk
+import maya.cmds as cmds
 
 def closestPolygonAndWeights(p, mesh):
     meshNode = pm.PyNode(mesh)
@@ -71,4 +72,4 @@ def transformAttachToMeshSel():
     for trans in transList[:-1]:
         transformAttachToMesh(trans, targetMesh)
         
-transformAttachToMeshSel()
+# transformAttachToMeshSel()

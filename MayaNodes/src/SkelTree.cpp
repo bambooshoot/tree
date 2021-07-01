@@ -50,14 +50,11 @@ void SkelTree::deform()
 	}
 }
 
-void SkelTree::updateChains(CFloat time)
+void SkelTree::updateChains(CFloat time, CFloat value)
 {
 	ChainOpBaseP opP = new ChainOpNoise();
 	Uint chainId = 0;
-	for (auto& chain : chainList) {
-		(*opP)(chain, chainId, time);
-		++chainId;
-	}
+	(*opP)(chainList, time, value);
 	delete opP;
 }
 
