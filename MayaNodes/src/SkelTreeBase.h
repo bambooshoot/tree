@@ -9,6 +9,7 @@
 #include <OpenEXR/ImathVec.h>
 #include <OpenEXR/ImathQuat.h>
 #include <OpenEXR/ImathMatrix.h>
+#include <OpenEXR/ImathMatrixAlgo.h>
 #include <OpenEXR/ImathBox.h>
 #include <OpenEXR/ImathRandom.h>
 
@@ -59,6 +60,7 @@ DECL_ALIAS(Imath::Vec2<Float>, Vec2)
 DECL_ALIAS(Imath::Vec3<Float>, Vec)
 DECL_ALIAS(Imath::Quat<Float>, Quat)
 DECL_ALIAS(Imath::Matrix44<Float>, Matrix44)
+DECL_ALIAS(Imath::Matrix33<Float>, Matrix33)
 DECL_ALIAS(Imath::Box<Vec>, Box)
 
 using Random = Imath::Rand32;
@@ -74,5 +76,25 @@ using VecListList = std::vector<VecList>;
 //constant value
 #define USHORT_MAX Ushort(-1)
 #define FLOATMAX std::numeric_limits<Float>::max()
+
+#define DELETE_POINTER(P) { \
+if (P) { \
+	delete P; \
+	P = nullptr; \
+} \
+}
+
+inline Matrix33 Matrix4To3(CRMatrix44 mat44)
+{
+	return Matrix33(
+		mat44[0][0], mat44[0][1], mat44[0][2],
+		mat44[1][0], mat44[1][1], mat44[1][2],
+		mat44[2][0], mat44[2][1], mat44[2][2] );
+}
+
+inline Quat Matrix44ToQuat(CRMatrix44 mat)
+{
+	return extractQuat(mat);
+}
 
 NS_END

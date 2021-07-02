@@ -1,5 +1,5 @@
 #include <SkelTreeVisualization.h>
-#include <SkelTreeData.h>
+#include <SkelTreeNodeData.h>
 
 #include <maya/MTypeId.h>
 #include <maya/MPlug.h>
@@ -37,8 +37,6 @@ MStatus SkelTreeVisualization::initialize()
 	MFnPluginData			fnDataCreator;
 	MTypeId					skelTreeDataId(SkelTreeData::id);
 	mInSkelTreeData = tAttr.create("inSkelTreeData", "ist", SkelTreeData::id, fnDataCreator.create(skelTreeDataId));
-	tAttr.setStorable(false);
-
 	status = addAttribute(mInSkelTreeData);
 
 	MFnUnitAttribute		uAttr;
@@ -115,8 +113,7 @@ void SkelTreeVisualizationOverride::updateDG()
 	pTreeData = &mVisNode->getSkelTreeData();
 	skelTree.reset(pTreeData);
 	skelTree.buildChains();
-	skelTree.updateChains(curTime, noiseValue);
-	skelTree.deform();
+	skelTree.deform(curTime, noiseValue);
 
 	renderBufferManagerBuild(bufManager, pTreeData, &skelTree, sDeformedPoints, sSpace);
 }

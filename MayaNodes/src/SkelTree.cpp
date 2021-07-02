@@ -1,4 +1,6 @@
 #include <SkelTree.h>
+#include <SkelTreeData.h>
+#include <SkelDeformedMesh.h>
 #include <SkelChainOpNoise.h>
 
 NS_BEGIN
@@ -11,7 +13,6 @@ SkelTree::SkelTree(SkelTreeDataP treeData)
 void SkelTree::reset(SkelTreeDataP treeData)
 {
 	pTreeData = treeData;
-	buildChains();
 }
 
 void SkelTree::buildChains()
@@ -19,8 +20,12 @@ void SkelTree::buildChains()
 	chainList.clear();
 	for (auto& chainData : pTreeData->chainDataList) {
 		chainList.push_back(Chain());
-		RChain chain = chainList.back();
-		chain.build(chainData);
+	}
+
+	auto iter = pTreeData->chainDataList.begin();
+	for (auto& chain : chainList) {
+		chain.build(*iter, pTreeData);
+		++iter;
 	}
 }
 
@@ -42,20 +47,16 @@ void SkelTree::computWeights()
 	}
 }
 
-void SkelTree::deform()
+void SkelTree::deform(CFloat time, CFloat value)
 {
 	for (auto& deformedMeshData : pTreeData->deformedDataList) {
+		ChainOpBaseP opP = new ChainOpNoise();
+		(*opP)(chainList, deformedMeshData.chainId, time, value);
+		DELETE_POINTER(opP);
+
 		DeformedMesh deformedMesh(deformedMeshData, pTreeData->pointsList, chainList);
 		deformedMesh.deform();
 	}
-}
-
-void SkelTree::updateChains(CFloat time, CFloat value)
-{
-	ChainOpBaseP opP = new ChainOpNoise();
-	Uint chainId = 0;
-	(*opP)(chainList, time, value);
-	delete opP;
 }
 
 Uint SkelTree::chainNum() const

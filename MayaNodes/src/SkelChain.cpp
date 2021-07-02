@@ -5,20 +5,21 @@ NS_BEGIN
 
 Chain::~Chain()
 {
-	for (auto* pSpace : spaceList)
-		delete pSpace;
+	for (auto pSpace : spaceList) {
+		DELETE_POINTER(pSpace);
+	}
 }
 
-void Chain::build(CRChainData chainData)
+void Chain::build(CRChainData chainData, CSkelTreeDataP pTreeData)
 {
 	SpaceFactory fac;
 	if (chainData.attachedPointData.pointsId != USHORT_MAX)
-		spaceList.push_back(fac.create(AttachedPoint::typeId, &chainData.attachedPointData, &chainData));
+		spaceList.push_back(fac.create(AttachedPoint::typeId, &chainData.attachedPointData, pTreeData));
 
-	spaceList.push_back(fac.create(RootFrame::typeId, &chainData.rootFrameData, &chainData));
+	spaceList.push_back(fac.create(RootFrame::typeId, &chainData.rootFrameData, pTreeData));
 
 	for (auto& frameData : chainData.frameDataList)
-		spaceList.push_back(fac.create(Frame::typeId, &frameData, &chainData));
+		spaceList.push_back(fac.create(Frame::typeId, &frameData, pTreeData));
 
 	Matrix44 zeroMat;
 	restMatrixList.resize(spaceList.size(), zeroMat);
@@ -53,12 +54,15 @@ void Chain::updateMatrix(CRQuatList qList)
 	Matrix44 mat;
 	mat.makeIdentity();
 	auto iter = matrixList.begin();
+	//auto invMatIter = restInvMatrixList.begin();
 	auto qIter = qList.begin();
 	for (auto& space : spaceList) {
+		//Quat gQ = Matrix44ToQuat((*qIter).toMatrix44() * (*invMatIter));
 		mat = space->matrix(*qIter) * mat;
 		*iter = mat;
 		++iter;
 		++qIter;
+		//++invMatIter;
 	}
 }
 

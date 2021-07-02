@@ -31,7 +31,7 @@
 #include <maya/MFloatArray.h>
 #include <maya/MGlobal.h>
 
-#include <SkelTreeData.h>
+#include <SkelTreeNodeData.h>
 #include <SkelPoints.h>
 
 MTypeId SkelTreeCreator::id(0x20220002);
@@ -99,19 +99,15 @@ MStatus SkelTreeCreator::initialize()
 	// in meshes
 
 	// attached point
-	mAttachedPointId = numAttr.create("attachedPointId", "apd", MFnNumericData::kInt, -1, &status);
-	mAttachedWeight = numAttr.create("attachedWeight", "awt", MFnNumericData::kDouble, 0.0, &status);
-
-	mAttachedWeights = compoundAttrib.create("attachedWeights", "ahw");
-	compoundAttrib.addChild(mAttachedPointId);
-	compoundAttrib.addChild(mAttachedWeight);
-	compoundAttrib.setArray(true);
+	mAttachedPointId = numAttr.create("attachedPointId", "apd", MFnNumericData::k3Int, -1, &status);
+	mAttachedWeight = numAttr.create("attachedWeight", "awt", MFnNumericData::k2Double, 0.0, &status);
 
 	mTargetMeshId = numAttr.create("targetMeshId","tmd", MFnNumericData::kInt, -1, &status);
 
 	mAttachedPoint = compoundAttrib.create("attachedPoint", "ahp");
 	compoundAttrib.addChild(mTargetMeshId);
-	compoundAttrib.addChild(mAttachedWeights);
+	compoundAttrib.addChild(mAttachedPointId);
+	compoundAttrib.addChild(mAttachedWeight);
 	// attached point
 
 	// root frame
@@ -240,18 +236,17 @@ void SkelTreeCreator::inputChains(skelTree::SkelTreeData& skelTreeData, MDataBlo
 		skelTree::RChainData chainData = skelTreeData.addChainData();
 
 		// attachedPointData
-		chainData.attachedPointData.pointsId = attachedPointH.child(mAttachedPointId).asInt();
+		chainData.attachedPointData.pointsId = attachedPointH.child(mTargetMeshId).asInt();
+		skelTree::RAttachedPointData apd = chainData.attachedPointData;
 
-		MArrayDataHandle weightsH = attachedPointH.child(mAttachedWeights);
-		skelTree::RAttachedWeightList wList = chainData.attachedPointData.wList;
-		skelTree::AttachedWeight weight;
-		for (uint i = 0; i < weightsH.elementCount(); ++i) {
-			weightsH.jumpToElement(i);
-			MDataHandle weightH = weightsH.inputValue();
-			weight.vid = weightH.child(mAttachedPointId).asInt();
-			weight.w = float(weightH.child(mAttachedWeight).asDouble());
-			wList.push_back(weight);
-		}
+		int3& id3 = attachedPointH.child(mAttachedPointId).asInt3();
+		apd.vid[0] = id3[0];
+		apd.vid[1] = id3[1];
+		apd.vid[2] = id3[2];
+
+		double2& d2 = attachedPointH.child(mAttachedWeight).asDouble2();
+		apd.w[0] = float(d2[0]);
+		apd.w[1] = float(d2[1]);
 
 		// rootFrameData
 		double3 &offset = rootFrameH.child(mOffset).asDouble3();

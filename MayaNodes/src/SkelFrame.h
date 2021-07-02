@@ -1,18 +1,19 @@
 #pragma once
 
 #include <SkelSpace.h>
-#include <SkelChainData.h>
+#include <SkelTreeData.h>
 
 NS_BEGIN
 
 CLASSDERIVED(Frame, Space,
 public:
-	Frame(CFrameDataP pData, CChainDataP pChainData);
+	~Frame() override {};
+	Frame(CFrameDataP pData, CSkelTreeDataP pTreeData);
 	Matrix44 matrix(CRQuat q) const override;
 	Matrix44 restMatrix() const override;
 	Float xParam() const override;
 
-	static SpaceP create(CVoidP data, CChainDataP pChainData);
+	static SpaceP create(CVoidP data, CSkelTreeDataP pTreeData);
 	static SpaceTypeId typeId;
 
 private:

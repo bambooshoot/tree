@@ -3,17 +3,9 @@
 #include <SkelTreeBase.h>
 #include <SkelChain.h>
 #include <SkelPoints.h>
-#include <SkelSpline.h>
+#include <SkelDeformedMeshData.h>
 
 NS_BEGIN
-
-DECL_ALIAS(SplineWeight, DeformedMeshWeight)
-
-STRUCT(DeformedMeshData,
-	Ushort chainId;
-	Ushort pointsId;
-	DeformedMeshWeightList wList;
-	)
 
 class DeformedMesh
 {

@@ -1,14 +1,14 @@
 #pragma once
 
 #include <SkelSpace.h>
-#include <SkelChainData.h>
+#include <SkelTreeData.h>
 
 NS_BEGIN
 
 CLASS(Chain,
 public:
 	~Chain();
-	void build( CRChainData chainData );
+	void build( CRChainData chainData, CSkelTreeDataP pTreeData);
 
 	void updateMatrix(CRQuatList qList);
 

@@ -10,3 +10,4 @@ MayaNodes/x64
 MayaNodes/.vs
 *.vcxproj
 *.sln
+*.pyc

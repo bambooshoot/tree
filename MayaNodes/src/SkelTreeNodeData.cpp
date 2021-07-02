@@ -1,4 +1,4 @@
-#include <SkelTreeData.h>
+#include <SkelTreeNodeData.h>
 
 const MString SkelTreeData::typeName("SkelTreeData");
 const MTypeId SkelTreeData::id(0x20220003);

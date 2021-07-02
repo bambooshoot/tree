@@ -4,14 +4,15 @@ NS_BEGIN
 
 SpaceTypeId AttachedPoint::typeId(0x01);
 
-SpaceP AttachedPoint::create(CVoidP data, CChainDataP pChainData)
+SpaceP AttachedPoint::create(CVoidP data, CSkelTreeDataP pTreeData)
 {
-	return new AttachedPoint((CAttachedPointDataP)data, pChainData);
+	return new AttachedPoint((CAttachedPointDataP)data, pTreeData);
 }
 
-AttachedPoint::AttachedPoint(CAttachedPointDataP pData, CChainDataP pChainData)
+AttachedPoint::AttachedPoint(CAttachedPointDataP pData, CSkelTreeDataP pTreeData)
 {
 	_data = pData;
+	_pPointsList = &pTreeData->pointsList;
 }
 
 CRVecList AttachedPoint::_points() const
@@ -22,19 +23,17 @@ CRVecList AttachedPoint::_points() const
 Matrix44 AttachedPoint::restMatrix() const
 {
 	CRVecList pnts = _points();
-	Vec xAxis = pnts[1] - pnts[0];
-	Vec zAxis = pnts[2] - pnts[0];
+	Vec p3[3] = { pnts[_data->vid[0]], pnts[_data->vid[1]], pnts[_data->vid[2]] };
+	Vec xAxis = p3[1] - p3[0];
+	Vec zAxis = p3[2] - p3[0];
+
+	Vec orgP = p3[0] + xAxis * _data->w[0] + zAxis * _data->w[1];
+
 	Vec yAxis = xAxis.cross(zAxis);
 	yAxis.normalize();
 	xAxis.normalize();
 	zAxis = xAxis.cross(yAxis);
 	zAxis.normalize();
-
-	Vec orgP(0, 0, 0);
-	auto pIter = pnts.begin();
-	for (auto wIter = _data->wList.begin(); wIter != _data->wList.end(); ++wIter, ++pIter) {
-		orgP += *pIter * wIter->w;
-	}
 
 	return Matrix44(
 		xAxis.x, xAxis.y, xAxis.z, 0.0f,

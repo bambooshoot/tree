@@ -8,7 +8,7 @@
 
 NS_BEGIN
 
-using CreateFunc = SpaceP(*)(CVoidP, CChainDataP pChainData);
+using CreateFunc = SpaceP(*)(CVoidP, CSkelTreeDataP pChainData);
 
 class SpaceFactory
 {
@@ -22,9 +22,9 @@ public:
 		registerType(RootFrame::typeId, RootFrame::create);
 		registerType(Frame::typeId, Frame::create);
 	}
-	SpaceP create(CSpaceTypeId typeId, CVoidP data, CChainDataP pChainData)
+	SpaceP create(CSpaceTypeId typeId, CVoidP data, CSkelTreeDataP pTreeData)
 	{
-		return (*createFuncMap[typeId])(data, pChainData);
+		return (*createFuncMap[typeId])(data, pTreeData);
 	}
 	void registerType(CSpaceTypeId typeId, CreateFunc pFunc)
 	{

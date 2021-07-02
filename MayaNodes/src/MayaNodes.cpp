@@ -7,7 +7,7 @@
 #include <AttachedLocalSpace.h>
 #include <SkelTreeCreatorNode.h>
 #include <SkelTreeVisualization.h>
-#include <SkelTreeData.h>
+#include <SkelTreeNodeData.h>
 
 #include <maya/MFnPlugin.h>
 

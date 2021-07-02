@@ -9,6 +9,7 @@ public:
 	virtual Matrix44 matrix(CRQuat q) const = 0;
 	virtual Matrix44 restMatrix() const = 0;
 	virtual Float xParam() const = 0;
+	virtual ~Space() {};
 	)
 
 NS_END

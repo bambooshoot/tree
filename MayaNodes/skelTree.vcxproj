@@ -183,7 +183,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="D:\asunlab\github\tree\MayaNodes\src\SkelRootFrame.cpp" />
     <ClCompile Include="D:\asunlab\github\tree\MayaNodes\src\SkelTree.cpp" />
     <ClCompile Include="D:\asunlab\github\tree\MayaNodes\src\SkelTreeCreatorNode.cpp" />
-    <ClCompile Include="D:\asunlab\github\tree\MayaNodes\src\SkelTreeData.cpp" />
+    <ClCompile Include="src\SkelTreeNodeData.cpp" />
     <ClCompile Include="D:\asunlab\github\tree\MayaNodes\src\SkelTreeVisualization.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -209,6 +209,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="src\SkelChainOpBase.h" />
     <ClInclude Include="src\SkelChainOpNoise.h" />
     <ClInclude Include="src\SkelDeformedMesh.h" />
+    <ClInclude Include="src\SkelDeformedMeshData.h" />
     <ClInclude Include="src\SkelFrame.h" />
     <ClInclude Include="src\SkelPoints.h" />
     <ClInclude Include="src\SkelRootFrame.h" />
@@ -219,6 +220,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="src\SkelTree.h" />
     <ClInclude Include="src\SkelTreeBase.h" />
     <ClInclude Include="src\SkelTreeCreatorNode.h" />
+    <ClInclude Include="src\SkelTreeNodeData.h" />
     <ClInclude Include="src\SkelTreeData.h" />
     <ClInclude Include="src\SkelTreeVisualization.h" />
   </ItemGroup>

@@ -1,28 +1,61 @@
 #pragma once
 
-#include <maya/MPxData.h>
-#include <SkelTree.h>
+#include <SkelTreeBase.h>
+#include <SkelPoints.h>
+#include <SkelChainData.h>
+#include <SkelDeformedMeshData.h>
 
-#include <maya/MTypeId.h>
-#include <maya/MString.h>
+NS_BEGIN
 
-class SkelTreeData : public MPxData
+STRUCT(SkelTreeData,
+	PointsList pointsList;
+ChainDataList chainDataList;
+DeformedMeshDataList deformedDataList;
+Box boundBox;
+void reset()
 {
-public:
-	static void* creator();
-	SkelTreeData() {};
-	virtual ~SkelTreeData() {}
-	virtual MStatus			readASCII(const MArgList& argList,
-		unsigned int& endOfTheLastParsedElement);
-	virtual MStatus			readBinary(std::istream& in, unsigned int length);
-	virtual MStatus			writeASCII(std::ostream& out);
-	virtual MStatus			writeBinary(std::ostream& out);
-	virtual MString name() const;
-	virtual MTypeId typeId() const;
-	virtual void copy(const MPxData& src);
-
-	skelTree::SkelTreeData skelTreeData;
-
-	static const MString typeName;
-	static const MTypeId id;
+	pointsList.clear();
+	chainDataList.clear();
+	deformedDataList.clear();
 };
+RPoints addPoints()
+{
+	pointsList.push_back(Points());
+	return pointsList.back();
+};
+RChainData addChainData()
+{
+	chainDataList.push_back(ChainData());
+	return chainDataList.back();
+};
+RDeformedMeshData addDeformedData()
+{
+	deformedDataList.push_back(DeformedMeshData());
+	return deformedDataList.back();
+};
+void computeBox()
+{
+	boundBox.makeEmpty();
+	for (auto& points : pointsList) {
+		for (auto& p : points.rest()) {
+			boundBox.extendBy(p);
+		}
+	}
+};
+Uint pointNum() const
+{
+	Uint pNum = 0;
+	for (auto& points : pointsList)
+		pNum += points.pointNum();
+	return pNum;
+};
+Uint deformedPointNum() const
+{
+	Uint pNum = 0;
+	for (auto& deformedData : deformedDataList)
+		pNum += pointsList[deformedData.pointsId].pointNum();
+	return pNum;
+};
+)
+
+NS_END

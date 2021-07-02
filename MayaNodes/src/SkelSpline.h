@@ -1,7 +1,6 @@
 #pragma once
 
 #include <SkelTreeBase.h>
-#include <SkelChain.h>
 
 NS_BEGIN
 

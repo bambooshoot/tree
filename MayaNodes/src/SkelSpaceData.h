@@ -5,14 +5,10 @@
 
 NS_BEGIN
 
-STRUCT(AttachedWeight,
-	Uint	vid;
-	Float	w;
-)
-
 STRUCT(AttachedPointData,
-	Ushort					pointsId;
-	AttachedWeightList		wList;
+	Ushort	pointsId;
+	Uint	vid[3];
+	Float	w[2];
 	)
 
 STRUCT(RootFrameData,

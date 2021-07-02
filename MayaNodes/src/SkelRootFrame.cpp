@@ -4,12 +4,12 @@ NS_BEGIN
 
 SpaceTypeId RootFrame::typeId(0x02);
 
-SpaceP RootFrame::create(CVoidP pData, CChainDataP pChainData)
+SpaceP RootFrame::create(CVoidP pData, CSkelTreeDataP pTreeData)
 {
-	return new RootFrame((RootFrameData*)pData, pChainData);
+	return new RootFrame((RootFrameData*)pData, pTreeData);
 }
 
-RootFrame::RootFrame(CRootFrameDataP pData, CChainDataP pChainData)
+RootFrame::RootFrame(CRootFrameDataP pData, CSkelTreeDataP pTreeData)
 {
 	_data = pData;
 }

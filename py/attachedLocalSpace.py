@@ -17,28 +17,73 @@ import numpy as np
 import skeletor as sk
 import maya.cmds as cmds
 
-def closestPolygonAndWeights(p, mesh):
+def pointInTriangle(a,b,c,p):
+    v0 = b - a
+    v1 = c - a
+    v2 = p - a
+
+    dot00 = v0.dot(v0)
+    dot01 = v0.dot(v1)
+    dot02 = v0.dot(v2)
+    dot11 = v1.dot(v1)
+    dot12 = v1.dot(v2)
+
+    inverDeno = 1 / (dot00 * dot11 - dot01 * dot01)
+
+    u = (dot11 * dot02 - dot01 * dot12) * inverDeno
+    if u < 0 or u > 1:
+        return False,u,0
+
+    v = (dot00 * dot12 - dot01 * dot02) * inverDeno
+    if v < 0 or v > 1:
+        return False,u,v
+
+    return u + v <= 1,u,v
+
+def meshNodeAndMaxtrix(mesh):
     meshNode = pm.PyNode(mesh)
     parentNode = meshNode.parent(0)
     invWorldMat = parentNode.worldInverseMatrix.get()
     worldMat = parentNode.worldMatrix.get()
+    return meshNode, worldMat, invWorldMat
+
+def closestPolygonAndWeights(p, mesh):
+    meshNode, worldMat, invWorldMat = meshNodeAndMaxtrix(mesh)
 
     wp = p * invWorldMat
     cp, polyId = meshNode.getClosestPoint(wp)
-    cp *= worldMat
-
     vIds = meshNode.getPolygonVertices(polyId)
-    vpList = [meshNode.getPoint(i) * worldMat for i in vIds]
-    pNum = len(vpList)
 
-    bTb = [vpList[i] * vpList[j] for i in range(pNum) for j in range(pNum)]
-    y = [p * cp for p in vpList]
-    np_bTb = np.array(bTb)
-    np_bTb = np_bTb.reshape(pNum,pNum)
-    np_y = np.array(y)
-    w = np.linalg.lstsq(np_bTb, np_y,rcond=None)[0]
+    cp = dt.Point(cp)
 
-    return vIds, w
+    triNum = len(vIds) - 2
+    for triId in range(triNum):
+        triVids = meshNode.getPolygonTriangleVertices(polyId, triId)
+        triPList = [dt.Point(meshNode.getPoint(i)) for i in triVids]
+        inTri,u,v = pointInTriangle(triPList[0],triPList[1],triPList[2],cp)
+        if inTri:
+            return triVids,u,v
+
+def closestMatrix(u, v, mesh, vids):
+    meshNode, worldMat, invWorldMat = meshNodeAndMaxtrix(mesh)
+
+    p3 = [ dt.Point(meshNode.getPoint(i)) * worldMat for i in vids ]
+    xAxis = p3[1] - p3[0];
+    zAxis = p3[2] - p3[0];
+
+    orgP = p3[0] + xAxis * u + zAxis * v;
+
+    yAxis = xAxis.cross(zAxis);
+    yAxis.normalize();
+    xAxis.normalize();
+    zAxis = xAxis.cross(yAxis);
+    zAxis.normalize();
+
+    return dt.Matrix(
+        xAxis.x, xAxis.y, xAxis.z, 0.0,
+        yAxis.x, yAxis.y, yAxis.z, 0.0,
+        zAxis.x, zAxis.y, zAxis.z, 0.0,
+        orgP.x, orgP.y, orgP.z, 1.0 );
 
 def makeAttachLocalSpace(attachedTransNode, mesh, pIds, wList):
     if not cmds.pluginInfo("skelTree",q=True,l=True):
