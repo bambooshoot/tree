@@ -1,18 +1,21 @@
 import pymel.core as pm
 import pymel.core.datatypes as dt
-# import maya.api.OpenMaya as om
 import trimesh
 import numpy as np
 import skeletor as sk
-
+import maya.cmds as cmds
 import attachedLocalSpace as als
 import skelTreeCreator as stc
+import importlib
+importlib.reload(stc)
+importlib.reload(als)
 
 def meshToTriMesh(meshShape):
     node=pm.PyNode(meshShape)
     transNode = node.parent(0)
     worldMtx = transNode.getMatrix(worldSpace=True)
     triCounts, triIds = node.getTriangles()
+    print(triCounts,triIds)
     triVertices=[]
     triId=0
     for triCount in triCounts:
@@ -64,34 +67,59 @@ def makeJointsByMesh(mesh, sortRootP, stepLen):
     sortRootP2 = sortRootP * w_invMatrix
     pList.sort(key=lambda p : abs(p.x - sortRootP2.x) )
     pList = [ p * w_matrix for p in removeOverlayPoints(pList, stepLen) ]
+    pList = [ pList[i] for i in range(len(pList)-1) if (pList[i+1] - pList[i]).length() > 1e-8 ]
 
-    cmds.select( d=True )
-    jointList = []
-    for p in pList:
-        jointNode = cmds.joint( p=[p.x,p.y,p.z] )
-        cmds.joint( jointNode, e=True, zso=True, oj='xyz', radius=0.1 )
-        jointList.append(jointNode)
+    if len(pList) > 1:
+        cmds.select( d=True )
+        jointList = []
+        for p in pList:
+            jointNode = cmds.joint( p=[p.x,p.y,p.z] )
+            cmds.joint(jointNode, e=True, radius=0.1 )
+            if len(jointList)>0:
+                cmds.joint( jointNode, jointList[-1], e=True, zso=True, oj='xyz', sao="yup" )
 
-    return pList, jointList[0]
+            jointList.append(jointNode)
 
-def makeJointsByDag(dagNode, sortRootP, stepLen, meshDataList):
+        return pList, jointList[0]
+
+    return None,None
+
+def makeJointsByDag(dagNode, rootMesh, sortRootP, stepLen, meshDataList):
     meshNode = cmds.listRelatives(dagNode, type="mesh")[0]
     pList, rootJoint = makeJointsByMesh(meshNode, sortRootP, stepLen)
+    if not pList:
+        return
+
+    meshDataList.append([meshNode, rootJoint, rootMesh])
 
     subNodeList = cmds.listRelatives(dagNode, type="transform")
     if subNodeList:
         for subDagNode in subNodeList:
             rootP = cmds.xform(subDagNode, q=True, ws=True, t=True)
             rootP = dt.Point(rootP)
-            # vIds, w = als.closestPolygonAndWeights(rootP, meshNode)
-            curRootJoint, curMeshNode = makeJointsByDag(subDagNode, rootP, stepLen, meshDataList)
-            # als.makeAttachLocalSpace(curRootJoint, meshNode, vIds, w)
-            meshDataList.append([curMeshNode, curRootJoint, meshNode])
+            makeJointsByDag(subDagNode, meshNode, rootP, stepLen, meshDataList)
 
-    return rootJoint, meshNode
         
 def buildTree(rootNode):
     meshDataList = []
-    rootJoint, meshNode = makeJointsByDag(rootNode, dt.Point(0,0,0), 0.5, meshDataList)
-    meshDataList.append([meshNode, rootJoint, None])
-    stc.skelTreeCreator(meshDataList)
+    makeJointsByDag(rootNode, None, dt.Point(0,0,0), 0.5, meshDataList)
+
+    from functools import reduce
+    import operator
+
+    meshList = [meshData[0] for meshData in meshDataList] + [meshData[2] for meshData in meshDataList]
+    meshList = list(set(meshList))
+    if None in meshList:
+        meshList.remove(None)
+
+    dataDict = {
+        "mesh":meshList,
+        "chain":[meshData[1] for meshData in meshDataList],
+        "deform":meshDataList
+        }
+
+    # print(dataDict)
+
+    stc.skelTreeCreator(dataDict)
+
+buildTree("Trunk")

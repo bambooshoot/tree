@@ -3,6 +3,7 @@
 
 #include <maya/MTypeId.h>
 #include <maya/MPlug.h>
+#include <maya/MFnMesh.h>
 
 #include <maya/MDataBlock.h>
 #include <maya/MDataHandle.h>
@@ -16,6 +17,8 @@
 
 #include <maya/MFnPluginData.h>
 
+#include <SkelTreeCreatorNode.h>
+
 MTypeId SkelTreeVisualization::id(0x20220003);
 MString	SkelTreeVisualization::drawDbClassification("drawdb/geometry/skelTreeVisualization");
 MString	SkelTreeVisualization::drawRegistrantId("skelTreeVisualization");
@@ -23,6 +26,17 @@ MString	SkelTreeVisualization::drawRegistrantId("skelTreeVisualization");
 MObject SkelTreeVisualization::mInSkelTreeData;
 MObject SkelTreeVisualization::mTime;
 MObject SkelTreeVisualization::mNoiseValue;
+MObject SkelTreeVisualization::mNoiseFreqU;
+MObject SkelTreeVisualization::mNoiseFreqChain;
+MObject SkelTreeVisualization::mNoiseOffset;
+MObject SkelTreeVisualization::mWindDirection;
+
+MObject SkelTreeVisualization::mDispChainAxisScale;
+
+MObject SkelTreeVisualization::mDispEnableDeformedPoints;
+MObject SkelTreeVisualization::mDispEnableDeformedMeshes;
+MObject SkelTreeVisualization::mDispEnableChainAxis;
+MObject SkelTreeVisualization::mDispEnableChainLine;
 
 void* SkelTreeVisualization::creator()
 {
@@ -44,8 +58,36 @@ MStatus SkelTreeVisualization::initialize()
 	status = addAttribute(mTime);
 
 	MFnNumericAttribute nAttr;
-	mNoiseValue = nAttr.create("noiseValue","noi", MFnNumericData::kDouble, 1.0, &status);
+	mNoiseFreqU = nAttr.create("noiseFreqU", "nfu", MFnNumericData::kDouble, 1.0, &status);
+	status = addAttribute(mNoiseFreqU);
+
+	mNoiseFreqChain = nAttr.create("noiseFreqChain", "nfc", MFnNumericData::kDouble, 1.0, &status);
+	status = addAttribute(mNoiseFreqChain);
+
+	mNoiseValue = nAttr.create("noiseValue","noi", MFnNumericData::kDouble, 0.1, &status);
 	status = addAttribute(mNoiseValue);
+
+	mNoiseOffset = nAttr.create("noiseOffset", "nof", MFnNumericData::kDouble, 0.5, &status);
+	status = addAttribute(mNoiseOffset);
+
+	mWindDirection = nAttr.createPoint("windDirection", "wdn", &status);
+	nAttr.setDefault(0, 0, 1, 0);
+	status = addAttribute(mWindDirection);
+
+	mDispChainAxisScale = nAttr.create("dispChainScale", "dcs", MFnNumericData::kDouble, 0.1, &status);
+	status = addAttribute(mDispChainAxisScale);
+
+	mDispEnableDeformedPoints = nAttr.create("dispEnableDeformedPoints", "edp", MFnNumericData::kBoolean, 1, &status);
+	status = addAttribute(mDispEnableDeformedPoints);
+
+	mDispEnableDeformedMeshes = nAttr.create("dispEnableDeformedMeshes", "edm", MFnNumericData::kBoolean, 1, &status);
+	status = addAttribute(mDispEnableDeformedMeshes);
+
+	mDispEnableChainAxis = nAttr.create("dispEnableChainAxis", "eca", MFnNumericData::kBoolean, 1, &status);
+	status = addAttribute(mDispEnableChainAxis);
+
+	mDispEnableChainLine = nAttr.create("dispEnableChainLine", "ecl", MFnNumericData::kBoolean, 1, &status);
+	status = addAttribute(mDispEnableChainLine);
 	
 	return status;
 }
@@ -70,24 +112,96 @@ skelTree::RSkelTreeData SkelTreeVisualization::getSkelTreeData() const
 	return ((SkelTreeData*)skelTreeDataPlug.asMDataHandle().asPluginData())->skelTreeData;
 }
 
-float SkelTreeVisualization::time() const
+skelTree::ChainOpData SkelTreeVisualization::chainOpData()
 {
+	skelTree::ChainOpData opData;
+
 	MObject thisNode = thisMObject();
+
 	MPlug timePlug(thisNode, mTime);
-	return float(timePlug.asMTime().value());
+	opData.time = float(timePlug.asMTime().value());
+
+	MPlug noisePlug(thisNode, mNoiseValue);
+	opData.scale = float(noisePlug.asDouble());
+
+	MPlug offsetPlug(thisNode, mNoiseOffset);
+	opData.offset = float(offsetPlug.asDouble());
+
+	MPlug noiseFreqUPlug(thisNode, mNoiseFreqU);
+	opData.freqU = float(noiseFreqUPlug.asDouble());
+
+	MPlug noiseFreqChainPlug(thisNode, mNoiseFreqChain);
+	opData.freqChain = float(noiseFreqChainPlug.asDouble());
+
+	MPlug windDirPlug(thisNode, mWindDirection);
+	opData.windDirection.x = float(windDirPlug.child(0).asDouble());
+	opData.windDirection.y = float(windDirPlug.child(1).asDouble());
+	opData.windDirection.z = float(windDirPlug.child(2).asDouble());
+
+	return opData;
 }
 
-float SkelTreeVisualization::noiseValue() const
+PopulateGeometryData SkelTreeVisualization::popGeoData() const
+{
+	PopulateGeometryData geoData;
+
+	MObject thisNode = thisMObject();
+
+	MPlug chainAxisScalePlug(thisNode, mDispChainAxisScale);
+	geoData.chainAxisScale = float(chainAxisScalePlug.asDouble());
+
+	deformedMeshVertexIndices(geoData.triangleVtx);
+
+	return geoData;
+}
+
+void SkelTreeVisualization::deformedMeshVertexIndices(std::vector<MIntArray>& idxArray) const
 {
 	MObject thisNode = thisMObject();
-	MPlug timePlug(thisNode, mNoiseValue);
-	return float(timePlug.asDouble());
+	MPlug inTreeDataPlug(thisNode, mInSkelTreeData);
+
+	MPlugArray plugArray;
+
+	if (inTreeDataPlug.connectedTo(plugArray, 1, 0) == 0)
+		return;
+
+	MFnDependencyNode treeNode(plugArray[0].node());
+	MPlug inMeshesPlug = treeNode.findPlug(SkelTreeCreator::mInMeshes);
+
+	idxArray.resize(inMeshesPlug.numElements());
+	for (uint i = 0; i < inMeshesPlug.numElements(); ++i) {
+		MPlug curMeshPlug = inMeshesPlug.elementByPhysicalIndex(i);
+		MFnMesh fnMesh(curMeshPlug.child(SkelTreeCreator::mInMesh).asMDataHandle().asMesh());
+		MIntArray countArray;
+		fnMesh.getTriangles(countArray, idxArray[i]);
+	}
 }
 
 const MString SkelTreeVisualizationOverride::sDeformedPoints = "skelTreeVisDeformedPoints";
 const MString SkelTreeVisualizationOverride::sSpace = "skelTreeVisSpace";
+const MString SkelTreeVisualizationOverride::sJointName = "skelTreeJoint";
+const MString SkelTreeVisualizationOverride::sMeshName = "skelTreeMesh";
 
-const MString* SkelTreeVisualizationOverride::renderItemNames[2] = { &sDeformedPoints, &sSpace };
+DispEnableMap SkelTreeVisualization::dispEnableData() const
+{
+	MObject thisNode = thisMObject();
+
+	DispEnableMap visElementMap;
+
+	MPlug enChainAxisPlug(thisNode, mDispEnableChainAxis);
+	visElementMap[VIS_ELEMENT_CHAIN_AXIS] = { &SkelTreeVisualizationOverride::sSpace, enChainAxisPlug.asBool() };
+
+	MPlug enChainLinePlug(thisNode, mDispEnableChainLine);
+	visElementMap[VIS_ELEMENT_CHAIN_LINE] = { &SkelTreeVisualizationOverride::sJointName, enChainLinePlug.asBool() };
+
+	MPlug enDeformedPointsPlug(thisNode, mDispEnableDeformedPoints);
+	visElementMap[VIS_ELEMENT_DEFORMED_POINTS] = { &SkelTreeVisualizationOverride::sDeformedPoints, enDeformedPointsPlug.asBool() };
+
+	MPlug enDeformedMeshesPlug(thisNode, mDispEnableDeformedMeshes);
+	visElementMap[VIS_ELEMENT_DEFORMED_TRIANGLES] = { &SkelTreeVisualizationOverride::sMeshName, enDeformedMeshesPlug.asBool() };
+
+	return visElementMap;
+}
 
 SkelTreeVisualizationOverride::SkelTreeVisualizationOverride(const MObject& obj)
 	: MPxGeometryOverride(obj)
@@ -96,9 +210,9 @@ SkelTreeVisualizationOverride::SkelTreeVisualizationOverride(const MObject& obj)
 	MStatus returnStatus;
 	MFnDependencyNode dependNode(obj, &returnStatus);
 	if (returnStatus != MStatus::kSuccess) return;
-	MPxNode* footPrintNode = dependNode.userNode(&returnStatus);
-	if (returnStatus != MStatus::kSuccess) footPrintNode = nullptr;
-	mVisNode = dynamic_cast<SkelTreeVisualization*>(footPrintNode);
+	MPxNode* userNode = dependNode.userNode(&returnStatus);
+	if (returnStatus != MStatus::kSuccess) userNode = nullptr;
+	mVisNode = dynamic_cast<SkelTreeVisualization*>(userNode);
 }
 
 bool SkelTreeVisualizationOverride::requiresGeometryUpdate() const
@@ -108,26 +222,35 @@ bool SkelTreeVisualizationOverride::requiresGeometryUpdate() const
 
 void SkelTreeVisualizationOverride::updateDG()
 {
-	float curTime = mVisNode->time();
-	float noiseValue = mVisNode->noiseValue();
+	skelTree::ChainOpData opData = mVisNode->chainOpData();
+	popGeoData = mVisNode->popGeoData();
 	pTreeData = &mVisNode->getSkelTreeData();
+	visElementMap = mVisNode->dispEnableData();
+
 	skelTree.reset(pTreeData);
 	skelTree.buildChains();
-	skelTree.deform(curTime, noiseValue);
+	skelTree.deform(opData);
 
-	renderBufferManagerBuild(bufManager, pTreeData, &skelTree, sDeformedPoints, sSpace);
+	renderBufferManagerBuild(bufManager, pTreeData, &skelTree, &popGeoData, visElementMap);
 }
 
 void SkelTreeVisualizationOverride::updateRenderItems(const MDagPath& path, MRenderItemList& list)
 {
 	MHWRender::MRenderItem* vertexItem = NULL;
 
-	for (auto renderItemName : renderItemNames) {
-		int index = list.indexOf(*renderItemName);
+	for (auto renderItemData : visElementMap) {
+		const MString& renderItemName = *renderItemData.second.name;
+		int index = list.indexOf(renderItemName);
 		if (index < 0)
 		{
-			vertexItem = bufManager.get(*renderItemName).pRenderItem->create(*renderItemName);
-			list.append(vertexItem);
+			RenderBuffer* pBuf = bufManager.get(renderItemName);
+			if (pBuf) {
+				vertexItem = pBuf->pRenderItem->create(renderItemName);
+				list.append(vertexItem);
+			}
+		}
+		else if (renderItemData.second.enable == false){
+			list.removeAt(index);
 		}
 	}
 }
@@ -156,6 +279,10 @@ void SkelTreeVisualizationOverride::populateGeometry(const MGeometryRequirements
 			continue;
 
 		const MString& renderItemName = item->name();
-		bufManager.get(renderItemName).pPopulate->populateGeometryIndex(data, item, renderItemName);
+		RenderBuffer* pBuf = bufManager.get(renderItemName);
+
+		if (pBuf) {
+			pBuf->pPopulate->populateGeometryIndex(data, item, renderItemName);
+		}
 	}
 }

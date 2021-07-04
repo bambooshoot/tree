@@ -19,13 +19,14 @@ def connectRootFrame(rootJoint, treeNode, idx, attachedMatrix):
     rootP = dt.Point(rootJoint.getTranslation("world"))
     locP = rootP * attachedMatrix
     rootFrameAttr.offset.set([locP.x, locP.y, locP.z])
-    q = rootJoint.getOrientation() * dt.Quaternion(attachedMatrix)
+    q = rootJoint.getRotation(quaternion=True) * rootJoint.getOrientation()
+    q *= dt.Quaternion(attachedMatrix)
     rootFrameAttr.rootQuat.set([q.x, q.y, q.z, q.w])
 
 def connectFrame(joint, treeNode, idx, idx2):
     frame = treeNode.chains[idx].frames[idx2]
     frame.xOffset.set(joint.tx.get())
-    q = joint.getOrientation()
+    q = joint.getRotation(quaternion=True) * joint.getOrientation()
     frame.frameQuat.set([q.x, q.y, q.z, q.w])
 
 def connectJointHierarchyToTree(joint, treeNode, chainId, idx2):
@@ -40,6 +41,7 @@ def setTreeInputForMesh(treeNode, meshId, rootJoint, chainId, rootMesh=None, roo
     if rootMesh:
         rootP = cmds.xform(rootJoint, q=True, ws=True, t=True)
         rootP = dt.Point(rootP)
+        print(rootP,rootMesh)
         vIds, u, v = als.closestPolygonAndWeights(rootP, rootMesh)
         attachedPointAttr = treeNode.chains[chainId].attachedPoint
         attachedPointAttr.targetMeshId.set(rootMeshId)
@@ -65,6 +67,15 @@ def skelTreeCreator(meshDataDict):
     treeNode = pm.PyNode(cmds.createNode('skelTreeCreator'))
     visNode = pm.PyNode(cmds.createNode('skelTreeVisualization'))
 
+    visNode.noiseFreqU.set(4.351)
+    visNode.noiseFreqChain.set(5.321)
+    visNode.noiseValue.set(0.01)
+    visNode.noiseOffset.set(0.2)
+    visNode.windDirection.set([1,0,0])
+    visNode.dispChainScale.set(0.1)
+
+    cmds.expression(s="{}.time=frame*0.01;".format(visNode.name()),o=visNode.name(), ae=1, uc="all")
+
     # input meshes
     meshList = meshDataDict["mesh"]
     idx = 0
@@ -76,15 +87,26 @@ def skelTreeCreator(meshDataDict):
     deformDataList = meshDataDict["deform"]
 
     for meshData in deformDataList:
-        setTreeInputForMesh(treeNode, meshList.index(meshData[0]), meshData[1], meshDataDict["chain"].index(meshData[1]), meshData[2], meshList.index(meshData[2]))
+        print(meshData)
+        if meshData[2]:
+            setTreeInputForMesh(treeNode, meshList.index(meshData[0]), meshData[1], meshDataDict["chain"].index(meshData[1]), meshData[2], meshList.index(meshData[2]))
+        else:
+            setTreeInputForMesh(treeNode, meshList.index(meshData[0]), meshData[1], meshDataDict["chain"].index(meshData[1]))
 
     treeNode.outSkelTreeData.connect(visNode.inSkelTreeData)
 
-skelTreeCreator({
-    "mesh":["pPlaneShape1", "pCylinderShape1", "pCylinderShape2"],
-    "chain":["joint1","joint13"],
-    "deform":[
-        ["pCylinderShape1", "joint1", "pPlaneShape1"], 
-        ["pCylinderShape2", "joint13", "pCylinderShape1"] 
-    ]
-})
+# skelTreeCreator({
+#     "mesh":["pPlaneShape1", "pCylinderShape1", "pCylinderShape2","pCylinderShape3"],
+#     "chain":["joint1","joint10","joint16"],
+#     "deform":[
+#         ["pCylinderShape1", "joint1", "pPlaneShape1"], 
+#         ["pCylinderShape2", "joint10", "pCylinderShape1"],
+#         ["pCylinderShape3", "joint16", "pCylinderShape1"]
+#     ]
+# })
+
+# skelTreeCreator({
+#     "mesh":["pCylinderShape1"],
+#     "chain":["joint1"],
+#     "deform":[["pCylinderShape1","joint1",None]]
+# })

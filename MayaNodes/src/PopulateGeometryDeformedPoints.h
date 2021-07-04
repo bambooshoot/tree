@@ -35,23 +35,15 @@ public:
 				buf[idx++] = 1.0f;
 			}
 	}
-
-	void populateGeometryIndex(MGeometry& data, const MRenderItem* item, const MString& renderItemName) override
+	void populateGeometryNormal(MGeometry& data, MVertexBufferDescriptor& vertexBufferDescriptor, float* buf) override
 	{
-		uint vertexDataSize = indexSize();
-		MIndexBuffer* indexBuffer = data.createIndexBuffer(MGeometry::kUnsignedInt32);
+	}
 
-		if (item->name() == renderItemName)
-		{
-			int numIndex = vertexDataSize;
-
-			unsigned int* indices = (unsigned int*)indexBuffer->acquire(numIndex, true);
-
-			for (int i = 0; i < numIndex; ++i)
-				indices[i] = i + _indexOffsetId;
-
-			indexBuffer->commit(indices);
-		}
-		item->associateWithIndexBuffer(indexBuffer);
+protected:
+	void _fillIndex(unsigned int* indices) override
+	{
+		uint numIndex = indexSize();
+		for (uint i = 0; i < numIndex; ++i)
+			indices[i] = i + _vertexOffsetId;
 	}
 };

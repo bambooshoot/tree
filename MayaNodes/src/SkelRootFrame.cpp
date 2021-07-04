@@ -41,4 +41,9 @@ Float RootFrame::xParam() const
 	return 0.0f;
 }
 
+CRQuat RootFrame::q() const
+{
+	return _data->q;
+}
+
 NS_END

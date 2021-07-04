@@ -8,6 +8,7 @@
 #include <maya/MHWGeometryUtilities.h>
 #include <maya/MDataBlock.h>
 
+#include <SkelChainOpBase.h>
 #include <SkelTree.h>
 #include <RenderBuffer.h>
 
@@ -28,8 +29,10 @@ public:
 	MBoundingBox    boundingBox() const override;
 
 	skelTree::RSkelTreeData getSkelTreeData() const;
-	float time() const;
-	float noiseValue() const;
+	skelTree::ChainOpData chainOpData();
+	PopulateGeometryData popGeoData() const;
+	DispEnableMap dispEnableData() const;
+	void deformedMeshVertexIndices(std::vector<MIntArray>& idxArray) const;
 
 	static MTypeId id;
 	static MString drawDbClassification;
@@ -38,9 +41,20 @@ public:
 	static MObject mInSkelTreeData;
 	static MObject mTime;
 	static MObject mNoiseValue;
+	static MObject mNoiseFreqU;
+	static MObject mNoiseFreqChain;
+	static MObject mNoiseOffset;
+	static MObject mWindDirection;
+
+	static MObject mDispChainAxisScale;
+	static MObject mDispEnableDeformedPoints;
+	static MObject mDispEnableChainAxis;
+	static MObject mDispEnableChainLine;
+	static MObject mDispEnableDeformedMeshes;
 };
 
 using namespace MHWRender;
+
 
 class SkelTreeVisualizationOverride : public MPxGeometryOverride
 {
@@ -60,6 +74,11 @@ public:
 	bool requiresGeometryUpdate() const override;
 	void populateGeometry(const MGeometryRequirements& requirements, const MRenderItemList& renderItems, MGeometry& data) override;
 
+	static const MString sDeformedPoints;
+	static const MString sSpace;
+	static const MString sJointName;
+	static const MString sMeshName;
+
 private:
 	SkelTreeVisualizationOverride(const MObject& obj);
 
@@ -67,10 +86,8 @@ private:
 	skelTree::SkelTreeDataP		pTreeData;
 	skelTree::SkelTree			skelTree;
 
+	PopulateGeometryData		popGeoData;
+	DispEnableMap				visElementMap;
 	RenderBufferManager			bufManager;
 
-	static const MString sDeformedPoints;
-	static const MString sSpace;
-
-	static const MString* renderItemNames[2];
 };

@@ -37,4 +37,9 @@ Float Frame::xParam() const
 	return _data->xOffset;
 }
 
+CRQuat Frame::q() const
+{
+	return _data->q;
+}
+
 NS_END

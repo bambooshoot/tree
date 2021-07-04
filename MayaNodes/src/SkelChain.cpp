@@ -5,33 +5,40 @@ NS_BEGIN
 
 Chain::~Chain()
 {
-	for (auto pSpace : spaceList) {
+	for (auto pSpace : jointList) {
 		DELETE_POINTER(pSpace);
 	}
 }
 
 void Chain::build(CRChainData chainData, CSkelTreeDataP pTreeData)
 {
-	SpaceFactory fac;
-	if (chainData.attachedPointData.pointsId != USHORT_MAX)
-		spaceList.push_back(fac.create(AttachedPoint::typeId, &chainData.attachedPointData, pTreeData));
+	if (chainData.attachedPointData.pointsId != USHORT_MAX) {
+		attachedPoint.reset(&chainData.attachedPointData, pTreeData);
+	}
 
-	spaceList.push_back(fac.create(RootFrame::typeId, &chainData.rootFrameData, pTreeData));
+	SpaceFactory fac;
+	jointList.push_back(fac.create(RootFrame::typeId, &chainData.rootFrameData, pTreeData));
 
 	for (auto& frameData : chainData.frameDataList)
-		spaceList.push_back(fac.create(Frame::typeId, &frameData, pTreeData));
+		jointList.push_back(fac.create(Frame::typeId, &frameData, pTreeData));
 
 	Matrix44 zeroMat;
-	restMatrixList.resize(spaceList.size(), zeroMat);
-	restInvMatrixList.resize(spaceList.size(), zeroMat);
-	matrixList.resize(spaceList.size(), zeroMat);
+	CUint cSpaceNum = Uint(jointList.size()) + 1;
+	restMatrixList.resize(cSpaceNum, zeroMat);
+	restInvMatrixList.resize(cSpaceNum, zeroMat);
+	matrixList.resize(cSpaceNum, zeroMat);
 	_updateRestMatrix();
 	_updateParam();
 }
 
 Uint Chain::spaceNum() const
 {
-	return Uint(spaceList.size());
+	return Uint(matrixList.size());
+}
+
+Uint Chain::jointNum() const
+{
+	return Uint(jointList.size());
 }
 
 CRMatrix44 Chain::matrix(CUint spaceId) const
@@ -52,17 +59,18 @@ CRMatrix44 Chain::restInvMatrix(CUint spaceId) const
 void Chain::updateMatrix(CRQuatList qList)
 {
 	Matrix44 mat;
-	mat.makeIdentity();
+
 	auto iter = matrixList.begin();
-	//auto invMatIter = restInvMatrixList.begin();
+	*iter = attachedPoint.matrix();
+	mat = *iter;
+	++iter;
+
 	auto qIter = qList.begin();
-	for (auto& space : spaceList) {
-		//Quat gQ = Matrix44ToQuat((*qIter).toMatrix44() * (*invMatIter));
+	for (auto& space : jointList) {
 		mat = space->matrix(*qIter) * mat;
 		*iter = mat;
 		++iter;
 		++qIter;
-		//++invMatIter;
 	}
 }
 
@@ -71,23 +79,22 @@ Float Chain::xParam(CUint spaceId) const
 	return xParamList[spaceId];
 }
 
-Float Chain::xLen(CUint spaceId) const
-{
-	return xLenList[spaceId + 1];
-}
-
-CSpaceP Chain::space(CUint spaceId) const
-{
-	return spaceList[spaceId];
-}
-
 void Chain::_updateRestMatrix()
 {
 	Matrix44 mat;
-	mat.makeIdentity();
+
 	auto iter = restMatrixList.begin();
+	*iter = attachedPoint.matrix();
+
 	auto invIter = restInvMatrixList.begin();
-	for (auto& space : spaceList) {
+	*invIter = iter->inverse();
+
+	mat = *iter;
+
+	++iter;
+	++invIter;
+
+	for (auto& space : jointList) {
 		mat = space->restMatrix() * mat;
 		*iter = mat;
 		*invIter = mat.inverse();
@@ -98,41 +105,48 @@ void Chain::_updateRestMatrix()
 
 void Chain::_updateParam()
 {
-	Float x = 0.0f, xLen, xMaxFactor;
+	if (jointList.size() <= 2) {
+		xParamList.resize(jointList.size(), 1.0f);
+		return;
+	}
 
-	for (auto& space : spaceList) {
+	Float x = 0.0f, xLen;
+
+	for (auto& space : jointList) {
 		xLen = space->xParam();
 		x += xLen;
 
-		xLenList.push_back(xLen);
 		xParamList.push_back(x);
 	}
 
-	xLenList.push_back(0.0f);
-	xParamList.push_back(x);
-
-	xMaxFactor = 1.0f / xParamList.back();
+	CFloat xMaxFactor = 1.0f / xParamList.back();
 
 	for (auto& x : xParamList)
 		x *= xMaxFactor;
 }
 
-VecList Chain::restPointList() const
+VecList Chain::restJointList() const
 {
 	VecList pList;
-	for (auto& mat : restMatrixList) {
-		pList.push_back(mat.translation());
+	for (auto iter = restMatrixList.begin() + 1; iter != restMatrixList.end();++iter) {
+		pList.push_back(iter->translation());
 	}
 	return pList;
 }
 
-VecList Chain::pointList() const
+CRMatrix44 Chain::jointMatrix(CUint jointId) const
 {
-	VecList pList;
-	for (auto& mat : matrixList) {
-		pList.push_back(mat.translation());
-	}
-	return pList;
+	return matrixList[jointId + 1];
+}
+
+CRMatrix44 Chain::jointRestMatrix(CUint jointId) const
+{
+	return restMatrixList[jointId + 1];
+}
+
+CRMatrix44 Chain::jointRestInvMatrix(CUint jointId) const
+{
+	return restInvMatrixList[jointId + 1];
 }
 
 NS_END

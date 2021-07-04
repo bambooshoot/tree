@@ -19,35 +19,12 @@ public:
 		_uList = uList;
 	}
 
-	void weights(RSplineWeight w, CFloat x, CUint n_idx) const
-	{
-		Float xi[3];
-		if (n_idx == 0) {
-			for (Uint k = 0; k < 3; ++k) {
-				w.id[k] = n_idx + k;
-				xi[k] = _uList[w.id[k]];
-			}
-		}
-		else {
-			for (Uint k = 0; k < 3; ++k) {
-				w.id[k] = n_idx + k - 1;
-				xi[k] = _uList[w.id[k]];
-			}
-		}
-
-		CUint idx[3][2] = { {1,2},{2,0},{0,1} };
-		for (Uint k = 0; k < 3; ++k) {
-			w.w[k] = 1.0f;
-			for (Uint i = 0; i < 2; ++i) {
-				w.w[k] *= (x - xi[idx[k][i]]) / (xi[k] - xi[idx[k][i]]);
-			}
-		}
-	}
-
 	Float u(CUint idx) const
 	{
 		return _uList[idx];
 	}
+
+	virtual void weights(RSplineWeight w, CFloat x, CUint n_idx) const = 0;
 
 	template<typename T>
 	T interpolate(CFloat u, const std::vector<T> & dataList) const
@@ -63,7 +40,9 @@ public:
 		return value;
 	}
 
-private:
+	static UParamTrain* create(CFloatList uList);
+
+protected:
 	FloatList _uList;
 
 	Uint _segementId(CFloat u) const
@@ -77,13 +56,73 @@ private:
 	}
 };
 
+class UParamTrain3 : public UParamTrain
+{
+public:
+	UParamTrain3(CFloatList uList)
+	{
+		reset(uList);
+	}
+	void weights(RSplineWeight w, CFloat x, CUint n_idx) const override
+	{
+		Float xi[SPLINE_WEIGHT_NUM];
+		if (n_idx == 0) {
+			for (Uint k = 0; k < SPLINE_WEIGHT_NUM; ++k) {
+				w.id[k] = n_idx + k;
+				xi[k] = _uList[w.id[k]];
+			}
+		}
+		else {
+			for (Uint k = 0; k < SPLINE_WEIGHT_NUM; ++k) {
+				w.id[k] = n_idx + k - 1;
+				xi[k] = _uList[w.id[k]];
+			}
+		}
+
+		CUint idx[SPLINE_WEIGHT_NUM][2] = { {1,2},{2,0},{0,1} };
+		for (Uint k = 0; k < SPLINE_WEIGHT_NUM; ++k) {
+			w.w[k] = 1.0f;
+			for (Uint i = 0; i < 2; ++i) {
+				w.w[k] *= (x - xi[idx[k][i]]) / (xi[k] - xi[idx[k][i]]);
+			}
+		}
+	}
+};
+
+class UParamTrain2 : public UParamTrain
+{
+public:
+	UParamTrain2(CFloatList uList)
+	{
+		reset(uList);
+	}
+	void weights(RSplineWeight w, CFloat x, CUint n_idx) const override
+	{
+		w.id[0] = 0;
+		w.id[1] = 1;
+		w.id[2] = 1;
+
+		w.w[1] = (x - _uList[0]) / (_uList[1] - _uList[0]);
+		w.w[0] = 1.0f - w.w[1];
+		w.w[2] = 0;
+	}
+};
+
+inline UParamTrain* UParamTrain::create(CFloatList uList)
+{
+	if (uList.size() > 2)
+		return new UParamTrain3(uList);
+
+	return new UParamTrain2(uList);
+}
+
+
 class Spline1D
 {
 public:
-	Spline1D(CRFloatList valueList, CRFloatList uList)
+	Spline1D(CRFloatList valueList, CRFloatList uList) : _uTrain(uList)
 	{
 		_valueList = valueList;
-		_uTrain.reset(uList);
 	}
 
 	Float value(CFloat u) const
@@ -93,7 +132,7 @@ public:
 
 private:
 	FloatList	_valueList;
-	UParamTrain _uTrain;
+	UParamTrain3 _uTrain;
 };
 
 class Spline3D
@@ -115,27 +154,41 @@ public:
 			uList.push_back(curU);
 		}
 
-		_uTrain.reset(uList);
+		_pUTrain = UParamTrain::create(uList);
+	}
+	~Spline3D()
+	{
+		delete _pUTrain;
 	}
 	
 	void weights(RSplineWeight w, CRVec p) const
 	{
 		Uint n_idx;
 		Float x = _nearestU(n_idx, p);
-		_uTrain.weights(w, x, n_idx);
+		_pUTrain->weights(w, x, n_idx);
 	}
 
-private:
+	static Spline3D* create(CRVecList pList);
+
+protected:
 	VecList		_pList;
 	FloatList   _locUList;
-	UParamTrain _uTrain;
+	UParamTrain *_pUTrain;
 
+	virtual Float _nearestU(RUint n_idx, CRVec sp) const = 0;
+};
+
+class Spline3 : public Spline3D
+{
+public:
+	Spline3(CRVecList pList) : Spline3D(pList) {}
+
+protected:
 	Vec _lineSegment(CUint idx) const
 	{
 		return (_pList[idx + 1u] - _pList[idx]).normalize();
 	}
-
-	Float _nearestU(RUint n_idx, CRVec sp) const
+	Float _nearestU(RUint n_idx, CRVec sp) const override
 	{
 		Float nearestDist2 = FLOATMAX, dist2;
 		Uint nearestIdx = 0, idx = 0;
@@ -165,8 +218,35 @@ private:
 
 		n_idx = nearestIdx;
 		locU = std::min(_locUList[n_idx], locU);
-		return _uTrain.u(n_idx) + locU;
+		return _pUTrain->u(n_idx) + locU;
 	}
 };
+
+class Line2 : public Spline3D
+{
+public:
+	Line2(CRVecList pList) : Spline3D(pList) {}
+
+protected:
+	Float _nearestU(RUint n_idx, CRVec sp) const override
+	{
+		n_idx = 0;
+		CVec lineV = _pList[1] - _pList[0];
+		Vec pV = sp - _pList[0];
+		Float pf = pV.dot(lineV);
+		CFloat l=lineV.length();
+		
+		pf = std::max(0.0f, std::min(pf, l));
+		return pf;
+	};
+};
+
+inline Spline3D* Spline3D::create(CRVecList pList)
+{
+	if (pList.size() > 2)
+		return new Spline3(pList);
+
+	return new Line2(pList);
+}
 
 NS_END

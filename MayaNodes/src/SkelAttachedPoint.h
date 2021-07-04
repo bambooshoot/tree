@@ -1,20 +1,14 @@
 #pragma once
 
-#include <SkelSpace.h>
 #include <SkelTreeData.h>
 
 NS_BEGIN
 
-CLASSDERIVED(AttachedPoint, Space,
+CLASS(AttachedPoint,
 public:
-	~AttachedPoint() override {};
-	AttachedPoint(CAttachedPointDataP pData, CSkelTreeDataP pTreeData);
-	Matrix44 matrix(CRQuat q) const override;
-	Matrix44 restMatrix() const override;
-	Float xParam() const override;
-
-	static SpaceP create(CVoidP data, CSkelTreeDataP pTreeData);
-	static SpaceTypeId typeId;
+	AttachedPoint();
+	void reset(CAttachedPointDataP pData, CSkelTreeDataP pTreeData);
+	Matrix44 matrix() const;
 
 private:
 	CAttachedPointDataP _data;

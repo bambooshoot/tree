@@ -1,7 +1,7 @@
 #include <SkelTree.h>
 #include <SkelTreeData.h>
 #include <SkelDeformedMesh.h>
-#include <SkelChainOpNoise.h>
+#include <SkelChainOpDirectionalWind.h>
 
 NS_BEGIN
 
@@ -47,11 +47,11 @@ void SkelTree::computWeights()
 	}
 }
 
-void SkelTree::deform(CFloat time, CFloat value)
+void SkelTree::deform(CRChainOpData data)
 {
 	for (auto& deformedMeshData : pTreeData->deformedDataList) {
-		ChainOpBaseP opP = new ChainOpNoise();
-		(*opP)(chainList, deformedMeshData.chainId, time, value);
+		ChainOpBaseP opP = new ChainOpDirectionalWind();
+		(*opP)(chainList, deformedMeshData.chainId, data);
 		DELETE_POINTER(opP);
 
 		DeformedMesh deformedMesh(deformedMeshData, pTreeData->pointsList, chainList);
@@ -71,6 +71,11 @@ Uint SkelTree::spaceNum() const
 		spNum += chain.spaceNum();
 	}
 	return spNum;
+}
+
+Uint SkelTree::jointNum() const
+{
+	return spaceNum() - chainNum();
 }
 
 CRChain SkelTree::getChain(CUint chainId) const

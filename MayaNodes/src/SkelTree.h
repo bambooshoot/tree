@@ -2,6 +2,7 @@
 
 #include <SkelChain.h>
 #include <SkelTreeData.h>
+#include <SkelChainOpBase.h>
 
 NS_BEGIN
 
@@ -13,13 +14,14 @@ public:
 	void buildChains();
 	void computWeights();
 
-	void deform(CFloat time, CFloat value);
+	void deform(CRChainOpData data);
 
 	CRMatrix44 space(CUint chainId, CUint spaceId) const;
 	CRVecList finalPositions(CUint pointsId) const;
 
 	Uint chainNum() const;
 	Uint spaceNum() const;
+	Uint jointNum() const;
 	CRChain getChain(CUint chainId) const;
 
 private:

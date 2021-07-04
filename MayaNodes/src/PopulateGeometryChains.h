@@ -18,9 +18,9 @@ public:
 		uint idx = _positionOffsetId();
 		skelTree::Vec p4[4] = {
 			skelTree::Vec(0, 0, 0),
-			skelTree::Vec(1, 0, 0),
-			skelTree::Vec(0, 1, 0),
-			skelTree::Vec(0, 0, 1)
+			skelTree::Vec(_pPopGeoData->chainAxisScale, 0, 0),
+			skelTree::Vec(0, _pPopGeoData->chainAxisScale, 0),
+			skelTree::Vec(0, 0, _pPopGeoData->chainAxisScale)
 		}, p1;
 
 		for (uint i = 0; i < _pTree->chainNum(); ++i) {
@@ -54,26 +54,15 @@ public:
 			}
 		}
 	}
-
-	void populateGeometryIndex(MGeometry& data, const MRenderItem* item, const MString& renderItemName) override
+	void populateGeometryNormal(MGeometry& data, MVertexBufferDescriptor& vertexBufferDescriptor, float* buf) override
 	{
-		uint indexSze = indexSize();
-		MIndexBuffer* indexBuffer = data.createIndexBuffer(MGeometry::kUnsignedInt32);
-
-		if (item->name() == renderItemName)
-		{
-			unsigned int* indices = (unsigned int*)indexBuffer->acquire(indexSze, true);
-			_fillIndex(indices);
-			indexBuffer->commit(indices);
-		}
-		item->associateWithIndexBuffer(indexBuffer);
 	}
 
-private:
+protected:
 
-	void _fillIndex(unsigned int* indices)
+	void _fillIndex(unsigned int* indices) override
 	{
-		uint idx = 0, frameBeginId = _indexOffsetId;
+		uint idx = 0, frameBeginId = _vertexOffsetId;
 		uint idOffset[6] = { 0,1,0,2,0,3 };
 		for (uint i = 0; i < _pTree->chainNum(); ++i) {
 			skelTree::CRChain chain = _pTree->getChain(i);

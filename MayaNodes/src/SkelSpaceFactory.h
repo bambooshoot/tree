@@ -18,7 +18,6 @@ class SpaceFactory
 public:
 	SpaceFactory()
 	{
-		registerType(AttachedPoint::typeId, AttachedPoint::create);
 		registerType(RootFrame::typeId, RootFrame::create);
 		registerType(Frame::typeId, Frame::create);
 	}

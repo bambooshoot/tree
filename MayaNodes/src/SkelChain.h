@@ -2,6 +2,7 @@
 
 #include <SkelSpace.h>
 #include <SkelTreeData.h>
+#include <SkelAttachedPoint.h>
 
 NS_BEGIN
 
@@ -15,20 +16,25 @@ public:
 	CRMatrix44 matrix(CUint spaceId) const;
 	CRMatrix44 restMatrix(CUint spaceId) const;
 	CRMatrix44 restInvMatrix(CUint spaceId) const;
+
 	Float xParam(CUint spaceId) const;
-	Float xLen(CUint spaceId) const;
 	Uint spaceNum() const;
-	CSpaceP space(CUint spaceId) const;
-	VecList restPointList() const;
-	VecList pointList() const;
+
+	Uint jointNum() const;
+	VecList restJointList() const;
+	CRMatrix44 jointMatrix(CUint spaceId) const;
+	CRMatrix44 jointRestMatrix(CUint spaceId) const;
+	CRMatrix44 jointRestInvMatrix(CUint spaceId) const;
 
 private:
-	SpacePList		spaceList;
+	AttachedPoint   attachedPoint;
+	SpacePList		jointList;
+
+	// cached data
 	Matrix44List	restMatrixList;
 	Matrix44List	restInvMatrixList;
 	Matrix44List	matrixList;
 	FloatList		xParamList;
-	FloatList		xLenList;
 
 	void _updateParam();
 	void _updateRestMatrix();

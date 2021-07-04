@@ -7,15 +7,31 @@
 
 #include <PopulateGeometryChains.h>
 #include <PopulateGeometryDeformedPoints.h>
+#include <PopulateGeometryChainLine.h>
+#include <PopulateGeometryMesh.h>
 
 #include <RenderItemWireframe.h>
 #include <RenderItemCPVPoint.h>
+#include <RenderItemTriangles.h>
 
 struct RenderBuffer
 {
 	PopulateGeometryBase*	pPopulate;
 	RenderItemBase*			pRenderItem;
 };
+
+#define VIS_ELEMENT_CHAIN_LINE				0
+#define VIS_ELEMENT_CHAIN_AXIS				1
+#define VIS_ELEMENT_DEFORMED_POINTS			2
+#define VIS_ELEMENT_DEFORMED_TRIANGLES		3
+
+struct DispElementEnableData
+{
+	const MString* name;
+	bool enable;
+};
+
+using DispEnableMap = std::map<uint, DispElementEnableData>;
 
 class RenderBufferManager
 {
@@ -53,28 +69,39 @@ public:
 			cpvBuffer->commit(clr);
 		}
 		break;
+		case MGeometry::kNormal:
+		{
+			MVertexBuffer* cpvBuffer = data.createVertexBuffer(vertexBufferDescriptor);
+			float* nml = (float*)cpvBuffer->acquire(vertexSize, true);
+			for (auto& buf : bufMap) {
+				buf.second.pPopulate->populateGeometryNormal(data, vertexBufferDescriptor, nml);
+			}
+			cpvBuffer->commit(nml);
+		}
+		break;
 		default:
 			// do nothing for stuff we don't understand
 			break;
 		}
 	}
-	void registerBuffer(const MString& renderItemName, RenderBuffer& buffer)
+	void registerBuffer(const MString* renderItemName, RenderBuffer& buffer)
 	{
-		bufMap.insert(std::pair<std::string, RenderBuffer>(std::string(renderItemName.asChar()), buffer));
+		bufMap.insert(std::pair<std::string, RenderBuffer>(std::string(renderItemName->asChar()), buffer));
 	}
-	void perpare(skelTree::SkelTreeDataP pTreeData, skelTree::SkelTreeP pTree)
+	void perpare(skelTree::SkelTreeDataP pTreeData, skelTree::SkelTreeP pTree, PopulateGeometryData* pPopGeoData)
 	{
-		uint indexOffsetId = 0;
 		uint vertexOffsetId = 0;
 		for (auto& buf : bufMap) {
-			buf.second.pPopulate->prepare(pTreeData, pTree, vertexOffsetId, indexOffsetId);
-			indexOffsetId += buf.second.pPopulate->indexSize();
+			buf.second.pPopulate->prepare(pTreeData, pTree, pPopGeoData, vertexOffsetId);
 			vertexOffsetId += buf.second.pPopulate->vertexSize();
 		}
 	}
-	RenderBuffer& get(const MString& renderItemName)
+	RenderBuffer* get(const MString& renderItemName)
 	{
-		return bufMap[std::string(renderItemName.asChar())];
+		std::string keyStr = std::string(renderItemName.asChar());
+		if (bufMap.find(keyStr) != bufMap.end())
+			return &bufMap[keyStr];
+		return nullptr;
 	}
 	void clear()
 	{
@@ -90,24 +117,44 @@ private:
 	std::map<std::string, RenderBuffer> bufMap;
 };
 
-inline void renderBufferManagerBuild(RenderBufferManager & manager,
+inline void renderBufferManagerBuild(
+	RenderBufferManager &	manager,
 	skelTree::SkelTreeDataP pTreeData,
 	skelTree::SkelTreeP		pTree,
-	const MString & deformedPointsName,
-	const MString & spaceName)
+	PopulateGeometryData*	pPopGeoData,
+	DispEnableMap&			dispEnableMap)
 {
 	manager.clear();
 
-	// draw space
 	RenderBuffer buf;
-	buf.pRenderItem = new RenderItemWireframe();
-	buf.pPopulate = new PopulateGeometryChains();
-	manager.registerBuffer(spaceName, buf);
+
+	// draw space
+	if (dispEnableMap[VIS_ELEMENT_CHAIN_AXIS].enable) {
+		buf.pRenderItem = new RenderItemWireframe();
+		buf.pPopulate = new PopulateGeometryChains();
+		manager.registerBuffer(dispEnableMap[VIS_ELEMENT_CHAIN_AXIS].name, buf);
+	}
 
 	// draw deformed points
-	buf.pRenderItem = new RenderItemCPVPoint();
-	buf.pPopulate = new PopulateGeometryDeformedPoints();
-	manager.registerBuffer(deformedPointsName, buf);
+	if (dispEnableMap[VIS_ELEMENT_DEFORMED_POINTS].enable) {
+		buf.pRenderItem = new RenderItemCPVPoint();
+		buf.pPopulate = new PopulateGeometryDeformedPoints();
+		manager.registerBuffer(dispEnableMap[VIS_ELEMENT_DEFORMED_POINTS].name, buf);
+	}
 
-	manager.perpare(pTreeData, pTree);
+	// draw chain lines
+	if (dispEnableMap[VIS_ELEMENT_CHAIN_LINE].enable) {
+		buf.pRenderItem = new RenderItemWireframe();
+		buf.pPopulate = new PopulateGeometryChainLine();
+		manager.registerBuffer(dispEnableMap[VIS_ELEMENT_CHAIN_LINE].name, buf);
+	}
+
+	// draw deformed triangles
+	if (dispEnableMap[VIS_ELEMENT_DEFORMED_TRIANGLES].enable) {
+		buf.pRenderItem = new RenderItemTriangles();
+		buf.pPopulate = new PopulateGeometryMesh();
+		manager.registerBuffer(dispEnableMap[VIS_ELEMENT_DEFORMED_TRIANGLES].name, buf);
+	}
+
+	manager.perpare(pTreeData, pTree, pPopGeoData);
 }
