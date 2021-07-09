@@ -5,7 +5,9 @@
 
 NS_BEGIN
 
-DECL_ALIAS(SplineWeight, DeformedMeshWeight)
+STRUCT(DeformedMeshWeight,
+	Uint pId;
+SplineWeight w;)
 
 STRUCT(DeformedMeshData,
 	Ushort chainId;

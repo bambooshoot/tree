@@ -5,14 +5,17 @@
 #include <maya/MString.h>
 #include <RenderItemBase.h>
 
-#include <PopulateGeometryChains.h>
+#include <PopulateGeometryAttachedPoint.h>
 #include <PopulateGeometryDeformedPoints.h>
 #include <PopulateGeometryChainLine.h>
 #include <PopulateGeometryMesh.h>
+#include <PopulateGeometryChainBoxes.h>
+#include <PopulateGeometryFoliages.h>
 
 #include <RenderItemWireframe.h>
 #include <RenderItemCPVPoint.h>
 #include <RenderItemTriangles.h>
+#include <RenderItemCPVTriangles.h>
 
 struct RenderBuffer
 {
@@ -21,9 +24,11 @@ struct RenderBuffer
 };
 
 #define VIS_ELEMENT_CHAIN_LINE				0
-#define VIS_ELEMENT_CHAIN_AXIS				1
+#define VIS_ELEMENT_ATTACHED_POINT			1
 #define VIS_ELEMENT_DEFORMED_POINTS			2
 #define VIS_ELEMENT_DEFORMED_TRIANGLES		3
+#define VIS_ELEMENT_CHAIN_BOXES				4
+#define VIS_ELEMENT_FOLIAGES				5
 
 struct DispElementEnableData
 {
@@ -42,10 +47,11 @@ public:
 	}
 	void createVertexBuffer(MGeometry& data, MVertexBufferDescriptor& vertexBufferDescriptor)
 	{
-		uint vertexSize = 0;
-		for (auto& buf : bufMap) {
-			vertexSize += buf.second.pPopulate->vertexSize();
-		}
+		RenderBuffer* pBuf = get(vertexBufferDescriptor.name());
+		if (pBuf == nullptr)
+			return;
+
+		uint vertexSize = pBuf->pPopulate->vertexSize();
 
 		switch (vertexBufferDescriptor.semantic())
 		{
@@ -53,9 +59,7 @@ public:
 		{
 			MVertexBuffer* verticesBuffer = data.createVertexBuffer(vertexBufferDescriptor);
 			float* vert = (float*)verticesBuffer->acquire(vertexSize, true);
-			for (auto& buf : bufMap) {
-				buf.second.pPopulate->populateGeometryPosition(data, vertexBufferDescriptor, vert);
-			}
+			pBuf->pPopulate->populateGeometryPosition(data, vertexBufferDescriptor, vert);
 			verticesBuffer->commit(vert);
 		}
 		break;
@@ -63,20 +67,16 @@ public:
 		{
 			MVertexBuffer* cpvBuffer = data.createVertexBuffer(vertexBufferDescriptor);
 			float* clr = (float*)cpvBuffer->acquire(vertexSize, true);
-			for (auto& buf : bufMap) {
-				buf.second.pPopulate->populateGeometryColor(data, vertexBufferDescriptor, clr);
-			}
+			pBuf->pPopulate->populateGeometryColor(data, vertexBufferDescriptor, clr);
 			cpvBuffer->commit(clr);
 		}
 		break;
 		case MGeometry::kNormal:
 		{
-			MVertexBuffer* cpvBuffer = data.createVertexBuffer(vertexBufferDescriptor);
-			float* nml = (float*)cpvBuffer->acquire(vertexSize, true);
-			for (auto& buf : bufMap) {
-				buf.second.pPopulate->populateGeometryNormal(data, vertexBufferDescriptor, nml);
-			}
-			cpvBuffer->commit(nml);
+			MVertexBuffer* nmlBuffer = data.createVertexBuffer(vertexBufferDescriptor);
+			float* nml = (float*)nmlBuffer->acquire(vertexSize, true);
+			pBuf->pPopulate->populateGeometryNormal(data, vertexBufferDescriptor, nml);
+			nmlBuffer->commit(nml);
 		}
 		break;
 		default:
@@ -90,10 +90,8 @@ public:
 	}
 	void perpare(skelTree::SkelTreeDataP pTreeData, skelTree::SkelTreeP pTree, PopulateGeometryData* pPopGeoData)
 	{
-		uint vertexOffsetId = 0;
 		for (auto& buf : bufMap) {
-			buf.second.pPopulate->prepare(pTreeData, pTree, pPopGeoData, vertexOffsetId);
-			vertexOffsetId += buf.second.pPopulate->vertexSize();
+			buf.second.pPopulate->prepare(pTreeData, pTree, pPopGeoData);
 		}
 	}
 	RenderBuffer* get(const MString& renderItemName)
@@ -128,11 +126,11 @@ inline void renderBufferManagerBuild(
 
 	RenderBuffer buf;
 
-	// draw space
-	if (dispEnableMap[VIS_ELEMENT_CHAIN_AXIS].enable) {
-		buf.pRenderItem = new RenderItemWireframe();
-		buf.pPopulate = new PopulateGeometryChains();
-		manager.registerBuffer(dispEnableMap[VIS_ELEMENT_CHAIN_AXIS].name, buf);
+	// draw chain boxes
+	if (dispEnableMap[VIS_ELEMENT_CHAIN_BOXES].enable) {
+		buf.pRenderItem = new RenderItemCPVTriangles();
+		buf.pPopulate = new PopulateGeometryChainBoxes();
+		manager.registerBuffer(dispEnableMap[VIS_ELEMENT_CHAIN_BOXES].name, buf);
 	}
 
 	// draw deformed points
@@ -154,6 +152,20 @@ inline void renderBufferManagerBuild(
 		buf.pRenderItem = new RenderItemTriangles();
 		buf.pPopulate = new PopulateGeometryMesh();
 		manager.registerBuffer(dispEnableMap[VIS_ELEMENT_DEFORMED_TRIANGLES].name, buf);
+	}
+
+	// draw attached point
+	if (dispEnableMap[VIS_ELEMENT_ATTACHED_POINT].enable) {
+		buf.pRenderItem = new RenderItemWireframe();
+		buf.pPopulate = new PopulateGeometryAttachedPoint();
+		manager.registerBuffer(dispEnableMap[VIS_ELEMENT_ATTACHED_POINT].name, buf);
+	}
+
+	// draw foliages
+	if (dispEnableMap[VIS_ELEMENT_FOLIAGES].enable) {
+		buf.pRenderItem = new RenderItemTriangles();
+		buf.pPopulate = new PopulateGeometryFoliages();
+		manager.registerBuffer(dispEnableMap[VIS_ELEMENT_FOLIAGES].name, buf);
 	}
 
 	manager.perpare(pTreeData, pTree, pPopGeoData);

@@ -35,8 +35,10 @@ MObject SkelTreeVisualization::mDispChainAxisScale;
 
 MObject SkelTreeVisualization::mDispEnableDeformedPoints;
 MObject SkelTreeVisualization::mDispEnableDeformedMeshes;
-MObject SkelTreeVisualization::mDispEnableChainAxis;
+MObject SkelTreeVisualization::mDispEnableChainBoxes;
 MObject SkelTreeVisualization::mDispEnableChainLine;
+MObject SkelTreeVisualization::mDispEnableAttachedPoint;
+MObject SkelTreeVisualization::mDispEnableFoliages;
 
 void* SkelTreeVisualization::creator()
 {
@@ -83,11 +85,17 @@ MStatus SkelTreeVisualization::initialize()
 	mDispEnableDeformedMeshes = nAttr.create("dispEnableDeformedMeshes", "edm", MFnNumericData::kBoolean, 1, &status);
 	status = addAttribute(mDispEnableDeformedMeshes);
 
-	mDispEnableChainAxis = nAttr.create("dispEnableChainAxis", "eca", MFnNumericData::kBoolean, 1, &status);
-	status = addAttribute(mDispEnableChainAxis);
+	mDispEnableChainBoxes = nAttr.create("dispEnableChainBoxes", "ecb", MFnNumericData::kBoolean, 1, &status);
+	status = addAttribute(mDispEnableChainBoxes);
 
 	mDispEnableChainLine = nAttr.create("dispEnableChainLine", "ecl", MFnNumericData::kBoolean, 1, &status);
 	status = addAttribute(mDispEnableChainLine);
+
+	mDispEnableAttachedPoint = nAttr.create("dispEnableAttachedPoint", "eap", MFnNumericData::kBoolean, 1, &status);
+	status = addAttribute(mDispEnableAttachedPoint);
+
+	mDispEnableFoliages = nAttr.create("dispEnableFoliages", "efg", MFnNumericData::kBoolean, 1, &status);
+	status = addAttribute(mDispEnableFoliages);
 	
 	return status;
 }
@@ -180,7 +188,9 @@ void SkelTreeVisualization::deformedMeshVertexIndices(std::vector<MIntArray>& id
 const MString SkelTreeVisualizationOverride::sDeformedPoints = "skelTreeVisDeformedPoints";
 const MString SkelTreeVisualizationOverride::sSpace = "skelTreeVisSpace";
 const MString SkelTreeVisualizationOverride::sJointName = "skelTreeJoint";
+const MString SkelTreeVisualizationOverride::sAttachedPointName = "skelTreeAttachedPoint";
 const MString SkelTreeVisualizationOverride::sMeshName = "skelTreeMesh";
+const MString SkelTreeVisualizationOverride::sFoliageName = "skelTreeFoliages";
 
 DispEnableMap SkelTreeVisualization::dispEnableData() const
 {
@@ -188,8 +198,8 @@ DispEnableMap SkelTreeVisualization::dispEnableData() const
 
 	DispEnableMap visElementMap;
 
-	MPlug enChainAxisPlug(thisNode, mDispEnableChainAxis);
-	visElementMap[VIS_ELEMENT_CHAIN_AXIS] = { &SkelTreeVisualizationOverride::sSpace, enChainAxisPlug.asBool() };
+	MPlug enChainAxisPlug(thisNode, mDispEnableChainBoxes);
+	visElementMap[VIS_ELEMENT_CHAIN_BOXES] = { &SkelTreeVisualizationOverride::sSpace, enChainAxisPlug.asBool() };
 
 	MPlug enChainLinePlug(thisNode, mDispEnableChainLine);
 	visElementMap[VIS_ELEMENT_CHAIN_LINE] = { &SkelTreeVisualizationOverride::sJointName, enChainLinePlug.asBool() };
@@ -199,6 +209,12 @@ DispEnableMap SkelTreeVisualization::dispEnableData() const
 
 	MPlug enDeformedMeshesPlug(thisNode, mDispEnableDeformedMeshes);
 	visElementMap[VIS_ELEMENT_DEFORMED_TRIANGLES] = { &SkelTreeVisualizationOverride::sMeshName, enDeformedMeshesPlug.asBool() };
+
+	MPlug enAttachedPointPlug(thisNode, mDispEnableAttachedPoint);
+	visElementMap[VIS_ELEMENT_ATTACHED_POINT] = { &SkelTreeVisualizationOverride::sMeshName, enAttachedPointPlug.asBool() };
+
+	MPlug enFoliagePlug(thisNode, mDispEnableFoliages);
+	visElementMap[VIS_ELEMENT_FOLIAGES] = { &SkelTreeVisualizationOverride::sMeshName, enFoliagePlug.asBool() };
 
 	return visElementMap;
 }
@@ -227,9 +243,7 @@ void SkelTreeVisualizationOverride::updateDG()
 	pTreeData = &mVisNode->getSkelTreeData();
 	visElementMap = mVisNode->dispEnableData();
 
-	skelTree.reset(pTreeData);
-	skelTree.buildChains();
-	skelTree.deform(opData);
+	skelTree.buildDeform(pTreeData, opData);
 
 	renderBufferManagerBuild(bufManager, pTreeData, &skelTree, &popGeoData, visElementMap);
 }
@@ -255,7 +269,8 @@ void SkelTreeVisualizationOverride::updateRenderItems(const MDagPath& path, MRen
 	}
 }
 
-void SkelTreeVisualizationOverride::populateGeometry(const MGeometryRequirements& requirements, const MRenderItemList& renderItems, MGeometry& data)
+void SkelTreeVisualizationOverride::populateGeometry(
+	const MGeometryRequirements& requirements, const MRenderItemList& renderItems, MGeometry& data)
 {
 	const MVertexBufferDescriptorList& vertexBufferDescriptorList = requirements.vertexRequirements();
 	const int numberOfVertexRequirments = vertexBufferDescriptorList.length();

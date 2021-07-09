@@ -32,6 +32,10 @@ using T##List = std::vector<T>; \
 using T##PList = std::vector<T##P>; \
 DECL_VAR_TYPE(T##List)
 
+#define DECL_ARRAY(M,T,N) \
+using M = std::array<T,N>; \
+DECL_VAR_TYPE(M) 
+
 #define DECL_ALIAS(D, T) \
 using T = D; \
 DECL_TYPE(T)

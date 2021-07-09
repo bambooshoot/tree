@@ -12,7 +12,6 @@
 
 import pymel.core as pm
 import pymel.core.datatypes as dt
-import numpy as np
 import maya.cmds as cmds
 
 def pointInTriangle(a,b,c,p):
@@ -31,10 +30,10 @@ def pointInTriangle(a,b,c,p):
     u = (dot11 * dot02 - dot01 * dot12) * inverDeno
     v = (dot00 * dot12 - dot01 * dot02) * inverDeno
 
-    if v < -1e-5 or v > 1 or u < -1e-5 or u > 1:
+    if v < -1e-3 or v > 1 or u < -1e-3 or u > 1:
         return False,u,v
 
-    return u + v <= 1 + 1e-5,u,v
+    return u + v <= 1 + 1e-3,u,v
 
 def meshNodeAndMatrix(mesh):
     meshNode = pm.PyNode(mesh)
@@ -48,8 +47,8 @@ def closestPolygonAndWeights(p, mesh):
 
     wp = p * invWorldMat
     cp, polyId = meshNode.getClosestPoint(wp)
-    vIds = meshNode.getPolygonVertices(polyId)
 
+    vIds = meshNode.getPolygonVertices(polyId)
     cp = dt.Point(cp)
 
     triNum = len(vIds) - 2
@@ -59,13 +58,13 @@ def closestPolygonAndWeights(p, mesh):
     triPList = None
     for triId in range(triNum):
         triVids = meshNode.getPolygonTriangleVertices(polyId, triId)
-        print(triVids)
         triPList = [dt.Point(meshNode.getPoint(i)) for i in triVids]
         inTri,u,v = pointInTriangle(triPList[0],triPList[1],triPList[2],cp)
         if inTri:
             return triVids,u,v
 
-    raise NameError("{} {} {} {}".format(triPList,u,v,cp))
+    # raise NameError("{} {} {}".format(triVids,u,v))
+    return triVids,u,v
 
 def closestMatrix(u, v, mesh, vids):
     meshNode, worldMat, invWorldMat = meshNodeAndMatrix(mesh)

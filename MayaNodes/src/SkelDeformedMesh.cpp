@@ -9,11 +9,8 @@ void DeformedMesh::computeWeights()
 	CRVecList restPoints = pPoints->rest();
 	Spline3D* spline = Spline3D::create(pChain->restJointList());
 
-	wList.resize(restPoints.size());
-	auto pIter = restPoints.begin();
 	for (auto& w : wList) {
-		spline->weights(w, *pIter);
-		++pIter;
+		spline->weights(w.w, restPoints[w.pId]);
 	}
 
 	DELETE_POINTER(spline)
@@ -34,10 +31,10 @@ void DeformedMesh::deform()
 	for (auto& w : wList) {
 		*dIter = Vec(0.0f, 0.0f, 0.0f);
 		for (int i = 0; i < SPLINE_WEIGHT_NUM; ++i) {
-			CRMatrix44 restInvMat = chain.jointRestInvMatrix(w.id[i]);
-			CRMatrix44 mat = chain.jointMatrix(w.id[i]);
+			CRMatrix44 restInvMat = chain.jointRestInvMatrix(w.w.id[i]);
+			CRMatrix44 mat = chain.jointMatrix(w.w.id[i]);
 
-			*dIter += ((*rIter * restInvMat) * mat) * w.w[i];
+			*dIter += ((*rIter * restInvMat) * mat) * w.w.w[i];
 		}
 		++dIter;
 		++rIter;

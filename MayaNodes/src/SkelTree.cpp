@@ -2,6 +2,7 @@
 #include <SkelTreeData.h>
 #include <SkelDeformedMesh.h>
 #include <SkelChainOpDirectionalWind.h>
+#include <SkelFoliageOpDirectionalWind.h>
 
 NS_BEGIN
 
@@ -49,14 +50,14 @@ void SkelTree::computWeights()
 
 void SkelTree::deform(CRChainOpData data)
 {
+	ChainOpBaseP opP = new ChainOpDirectionalWind();
 	for (auto& deformedMeshData : pTreeData->deformedDataList) {
-		ChainOpBaseP opP = new ChainOpDirectionalWind();
 		(*opP)(chainList, deformedMeshData.chainId, data);
-		DELETE_POINTER(opP);
 
 		DeformedMesh deformedMesh(deformedMeshData, pTreeData->pointsList, chainList);
 		deformedMesh.deform();
 	}
+	DELETE_POINTER(opP);
 }
 
 Uint SkelTree::chainNum() const
@@ -73,14 +74,61 @@ Uint SkelTree::spaceNum() const
 	return spNum;
 }
 
+Uint SkelTree::boneNum() const
+{
+	return spaceNum() - chainNum() * 2;
+}
+
 Uint SkelTree::jointNum() const
 {
 	return spaceNum() - chainNum();
 }
 
+Uint SkelTree::foliageNum() const
+{
+	return foliageList.size();
+}
+
 CRChain SkelTree::getChain(CUint chainId) const
 {
 	return chainList[chainId];
+}
+
+CRMatrix44 SkelTree::getFoliageMatrix(CUint foliageId) const
+{
+	return foliageList[foliageId].matrix();
+}
+
+void SkelTree::updateFoliages(CRFoliageOpData opData)
+{
+	foliageList.resize(pTreeData->foliageDataList.size());
+	Quat q;
+	FoliageOpBaseP opP = new FoliageOpDirectionalWind();
+	for (Uint i = 0; i < foliageList.size(); ++i) {
+		q = (*opP)(pTreeData->foliageDataList[i], opData);
+		foliageList[i].update(pTreeData->foliageDataList[i], q, pTreeData);
+	}
+	DELETE_POINTER(opP);
+}
+
+void SkelTree::buildRest(SkelTreeDataP pTreeData)
+{
+	reset(pTreeData);
+	buildChains();
+	computWeights();
+}
+
+void SkelTree::buildDeform(SkelTreeDataP pTreeData, CRChainOpData opData)
+{
+	reset(pTreeData);
+	buildChains();
+	deform(opData);
+}
+
+void SkelTree::buildFoliages(SkelTreeDataP pTreeData, CRFoliageOpData opData)
+{
+	reset(pTreeData);
+	updateFoliages(opData);
 }
 
 NS_END

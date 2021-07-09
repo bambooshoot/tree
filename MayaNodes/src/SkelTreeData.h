@@ -3,6 +3,7 @@
 #include <SkelTreeBase.h>
 #include <SkelPoints.h>
 #include <SkelChainData.h>
+#include <SkelFoliageData.h>
 #include <SkelDeformedMeshData.h>
 
 NS_BEGIN
@@ -11,6 +12,7 @@ STRUCT(SkelTreeData,
 	PointsList pointsList;
 ChainDataList chainDataList;
 DeformedMeshDataList deformedDataList;
+FoliageDataList foliageDataList;
 Box boundBox;
 void reset()
 {
@@ -32,6 +34,11 @@ RDeformedMeshData addDeformedData()
 {
 	deformedDataList.push_back(DeformedMeshData());
 	return deformedDataList.back();
+};
+RFoliageData addFoliageData()
+{
+	foliageDataList.push_back(FoliageData());
+	return foliageDataList.back();
 };
 void computeBox()
 {

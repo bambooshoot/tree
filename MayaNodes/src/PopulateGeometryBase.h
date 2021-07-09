@@ -32,12 +32,11 @@ public:
 	virtual void populateGeometryColor(MGeometry& data, MVertexBufferDescriptor& vertexBufferDescriptor, float* buf) = 0;
 	virtual void populateGeometryNormal(MGeometry& data, MVertexBufferDescriptor& vertexBufferDescriptor, float* buf) = 0;
 
-	virtual void prepare(skelTree::SkelTreeDataP pTreeData, skelTree::SkelTreeP pTree, PopulateGeometryData* pPopGeoData, const uint vertexOffsetId)
+	virtual void prepare(skelTree::SkelTreeDataP pTreeData, skelTree::SkelTreeP pTree, PopulateGeometryData* pPopGeoData)
 	{
 		_pTreeData = pTreeData;
 		_pTree = pTree;
 		_pPopGeoData = pPopGeoData;
-		_vertexOffsetId = vertexOffsetId;
 	}
 
 	void populateGeometryIndex(MGeometry& data, const MRenderItem* item, const MString& renderItemName)
@@ -59,20 +58,9 @@ public:
 	}
 
 protected:
-	uint					_vertexOffsetId;
 	skelTree::SkelTreeDataP _pTreeData;
 	skelTree::SkelTreeP		_pTree;
 	PopulateGeometryData* _pPopGeoData;
-
-	uint _positionOffsetId() const
-	{
-		return _vertexOffsetId * 3;
-	}
-
-	uint _colorOffsetId() const
-	{
-		return _vertexOffsetId * 4;
-	}
 
 	virtual void _fillIndex(unsigned int* indices) = 0;
 };

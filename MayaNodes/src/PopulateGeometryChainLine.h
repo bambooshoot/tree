@@ -21,7 +21,7 @@ public:
 	void populateGeometryPosition(MGeometry& data, MVertexBufferDescriptor& vertexBufferDescriptor, float* buf) override
 	{
 		skelTree::Vec p;
-		uint idx = _positionOffsetId();
+		uint idx = 0;
 		for (uint i = 0; i < _pTree->chainNum(); ++i) {
 			skelTree::CRChain chain = _pTree->getChain(i);
 			for (uint jointId = 0; jointId < chain.jointNum(); ++jointId) {
@@ -33,7 +33,7 @@ public:
 	}
 	void populateGeometryColor(MGeometry& data, MVertexBufferDescriptor& vertexBufferDescriptor, float* buf) override
 	{
-		uint idx = _colorOffsetId();
+		uint idx = 0;
 		float u;
 		for (uint i = 0; i < _pTree->chainNum(); ++i) {
 			skelTree::CRChain chain = _pTree->getChain(i);
@@ -54,7 +54,7 @@ protected:
 	void _fillIndex(unsigned int* indices)
 	{
 		uint chainNum = _pTree->chainNum();
-		uint indexBeginId = _vertexOffsetId;
+		uint indexBeginId = 0;
 		uint idx = 0;
 		for (uint i = 0; i < chainNum; ++i) {
 			skelTree::CRChain chain = _pTree->getChain(i);

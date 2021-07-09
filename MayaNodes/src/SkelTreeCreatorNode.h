@@ -37,7 +37,15 @@ public:
 
 	static MObject mDeformedMeshes;
 	static MObject mDeformedChainId;
+	static MObject mDeformedPointIds;
 	static MObject mDeformedMeshId;
+
+	static MObject mFoliages;
+	static MObject mFoliageMeshId;
+	static MObject mFoliageAttachedMeshId;
+	static MObject mFoliageAttachedPointId;
+	static MObject mFoliageAttachedWeight;
+	static MObject mFoliageQ;
 
 	static MObject mInMeshes;
 	static MObject mInMesh;
@@ -52,4 +60,5 @@ private:
 	void inputMeshes(skelTree::SkelTreeData& skelTree, MDataBlock& block);
 	void inputChains(skelTree::SkelTreeData& skelTree, MDataBlock& block);
 	void inputDeformedMeshDatas(skelTree::SkelTreeData& skelTree, MDataBlock& block);
+	void inputFoliages(skelTree::SkelTreeData& skelTree, MDataBlock& block);
 };

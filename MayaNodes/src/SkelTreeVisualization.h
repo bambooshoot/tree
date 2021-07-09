@@ -48,9 +48,11 @@ public:
 
 	static MObject mDispChainAxisScale;
 	static MObject mDispEnableDeformedPoints;
-	static MObject mDispEnableChainAxis;
+	static MObject mDispEnableChainBoxes;
 	static MObject mDispEnableChainLine;
 	static MObject mDispEnableDeformedMeshes;
+	static MObject mDispEnableAttachedPoint;
+	static MObject mDispEnableFoliages;
 };
 
 using namespace MHWRender;
@@ -78,6 +80,8 @@ public:
 	static const MString sSpace;
 	static const MString sJointName;
 	static const MString sMeshName;
+	static const MString sAttachedPointName;
+	static const MString sFoliageName;
 
 private:
 	SkelTreeVisualizationOverride(const MObject& obj);

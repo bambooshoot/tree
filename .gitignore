@@ -14,3 +14,7 @@ MayaNodes/.vs
 *.pyc
 MayaNodes/CMakeCache.txt
 MayaNodes/ALL_BUILD.vcxproj
+*.pyc
+*.lib
+*.pdb
+*.exp

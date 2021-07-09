@@ -15,7 +15,7 @@ public:
 	}
 	void populateGeometryPosition(MGeometry& data, MVertexBufferDescriptor& vertexBufferDescriptor, float* buf) override
 	{
-		uint idx = _positionOffsetId();
+		uint idx = 0;
 		for (auto& deformedData : _pTreeData->deformedDataList)
 			for (auto& p : _pTreeData->pointsList[deformedData.pointsId].finalPositions()) {
 				buf[idx++] = p.x;
@@ -26,12 +26,12 @@ public:
 
 	void populateGeometryColor(MGeometry& data, MVertexBufferDescriptor& vertexBufferDescriptor, float* buf) override
 	{
-		uint idx = _colorOffsetId();
+		uint idx = 0;
 		for (auto& deformedData : _pTreeData->deformedDataList)
 			for (auto& w : deformedData.wList) {
-				buf[idx++] = w.w[0];
-				buf[idx++] = w.w[1];
-				buf[idx++] = w.w[2];
+				buf[idx++] = w.w.w[0];
+				buf[idx++] = w.w.w[1];
+				buf[idx++] = w.w.w[2];
 				buf[idx++] = 1.0f;
 			}
 	}
@@ -44,6 +44,6 @@ protected:
 	{
 		uint numIndex = indexSize();
 		for (uint i = 0; i < numIndex; ++i)
-			indices[i] = i + _vertexOffsetId;
+			indices[i] = i;
 	}
 };

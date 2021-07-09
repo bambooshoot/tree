@@ -26,6 +26,9 @@ public:
 	CRMatrix44 jointRestMatrix(CUint spaceId) const;
 	CRMatrix44 jointRestInvMatrix(CUint spaceId) const;
 
+	Uint boneNum() const;
+	CFloat xLen(CUint boneId) const;
+
 private:
 	AttachedPoint   attachedPoint;
 	SpacePList		jointList;

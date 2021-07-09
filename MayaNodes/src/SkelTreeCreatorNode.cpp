@@ -19,6 +19,9 @@
 #include <maya/MDataBlock.h>
 #include <maya/MDataHandle.h>
 #include <maya/MArrayDataHandle.h>
+#include <maya/MFnIntArrayData.h>
+#include <maya/MFnDoubleArrayData.h>
+#include <maya/MFnArrayAttrsData.h>
 
 #include <maya/MFloatPoint.h>
 #include <maya/MFloatVector.h>
@@ -54,7 +57,15 @@ MObject SkelTreeCreator::mFrameQ;
 
 MObject SkelTreeCreator::mDeformedMeshes;
 MObject SkelTreeCreator::mDeformedChainId;
+MObject SkelTreeCreator::mDeformedPointIds;
 MObject SkelTreeCreator::mDeformedMeshId;
+
+MObject SkelTreeCreator::mFoliages;
+MObject SkelTreeCreator::mFoliageMeshId;
+MObject SkelTreeCreator::mFoliageAttachedMeshId;
+MObject SkelTreeCreator::mFoliageAttachedPointId;
+MObject SkelTreeCreator::mFoliageAttachedWeight;
+MObject SkelTreeCreator::mFoliageQ;
 
 MObject SkelTreeCreator::mInMeshes;
 MObject SkelTreeCreator::mInMesh;
@@ -141,13 +152,33 @@ MStatus SkelTreeCreator::initialize()
 	// deformed meshes
 	mDeformedChainId = numAttr.create("deformedChainId", "dci", MFnNumericData::kInt, -1, &status);
 	mDeformedMeshId = numAttr.create("deformedMeshId", "dmi", MFnNumericData::kInt, -1, &status);
+	mDeformedPointIds = tAttr.create("deformedPointIds", "dpi", MFnData::kIntArray, &status);
 	
 	mDeformedMeshes = compoundAttrib.create("deformedMeshes", "dms");
 	compoundAttrib.addChild(mDeformedChainId);
 	compoundAttrib.addChild(mDeformedMeshId);
+	compoundAttrib.addChild(mDeformedPointIds);
 	compoundAttrib.setArray(true);
 	status = addAttribute(mDeformedMeshes);
 	// deformed meshes
+
+	// foliages
+	mFoliageMeshId = numAttr.create("foliageMeshId", "fmd", MFnNumericData::kInt, -1, &status);
+	mFoliageAttachedMeshId = numAttr.create("foliageAttachedMeshId", "fad", MFnNumericData::kInt, -1, &status);
+	mFoliageAttachedPointId = tAttr.create("foliageAttachedPointId", "fpd", MFnData::kIntArray, &status);
+	mFoliageAttachedWeight = tAttr.create("foliageAttachedWeight", "fwt", MFnData::kDoubleArray, &status);
+
+	mFoliageQ = tAttr.create("foliageQuat", "foq", MFnData::kDoubleArray, &status);
+
+	mFoliages = compoundAttrib.create("foliages", "flg");
+	compoundAttrib.addChild(mFoliageMeshId);
+	compoundAttrib.addChild(mFoliageAttachedMeshId);
+	compoundAttrib.addChild(mFoliageAttachedPointId);
+	compoundAttrib.addChild(mFoliageAttachedWeight);
+	compoundAttrib.addChild(mFoliageQ);
+
+	status = addAttribute(mFoliages);
+	// foliages
 
 	MFnPluginData fnDataCreator;
 	MTypeId skelTreeDataId(SkelTreeData::id);
@@ -189,11 +220,11 @@ void SkelTreeCreator::build(skelTree::SkelTreeData& skelTreeData, MDataBlock& bl
 	inputMeshes(skelTreeData, block);
 	inputChains(skelTreeData, block);
 	inputDeformedMeshDatas(skelTreeData, block);
+	inputFoliages(skelTreeData, block);
 	skelTreeData.computeBox();
 	
 	skelTree::SkelTree skTree(&skelTreeData);
-	skTree.buildChains();
-	skTree.computWeights();
+	skTree.buildRest(&skelTreeData);
 }
 
 void SkelTreeCreator::inputMeshes(skelTree::SkelTreeData& skelTreeData, MDataBlock& block)
@@ -258,44 +289,18 @@ void SkelTreeCreator::inputChains(skelTree::SkelTreeData& skelTreeData, MDataBlo
 		chainData.rootFrameData.q.v.y = float(rootQ[1]);
 		chainData.rootFrameData.q.v.z = float(rootQ[2]);
 
-		MString info("root frame data");
-		info += "\n";
-		info += offset[0];
-		info += " ";
-		info += offset[1];
-		info += " ";
-		info += offset[2];
-		info += "\n";
-		for (int i = 0; i < 4; ++i) {
-			info += rootQ[i];
-			info += " ";
-		}
-		info += "\n";
-		MGlobal::displayInfo(info);
-
 		// frameData
 		skelTree::FrameData frameData;
 		for (uint i = 0; i < framesH.elementCount(); ++i) {
 			framesH.jumpToElement(i);
 			MDataHandle frameH = framesH.inputValue();
 			frameData.xOffset = float(frameH.child(mXOffset).asDouble());
-			MString info("frame data");
-			info += i;
-			info += "\n";
-			info += frameData.xOffset;
 
 			double4& q = frameH.child(mFrameQ).asDouble4();
 			frameData.q.r = float(q[3]);
 			frameData.q.v.x = float(q[0]);
 			frameData.q.v.y = float(q[1]);
 			frameData.q.v.z = float(q[2]);
-
-			for (int ii = 0; ii < 4; ++ii) {
-				info += " ";
-				info += q[ii];
-			}
-
-			MGlobal::displayInfo(info);
 
 			chainData.frameDataList.push_back(frameData);
 		}
@@ -313,5 +318,49 @@ void SkelTreeCreator::inputDeformedMeshDatas(skelTree::SkelTreeData& skelTreeDat
 		skelTree::RDeformedMeshData curDeformedMeshData = skelTreeData.addDeformedData();
 		curDeformedMeshData.chainId = deformedMeshH.child(mDeformedChainId).asInt();
 		curDeformedMeshData.pointsId = deformedMeshH.child(mDeformedMeshId).asInt();
+		MFnIntArrayData fnPidData(deformedMeshH.child(mDeformedPointIds).data());
+		MIntArray pIdArray = fnPidData.array();
+		curDeformedMeshData.wList.resize(pIdArray.length());
+		for (uint j = 0; j < pIdArray.length(); ++j) {
+			curDeformedMeshData.wList[j].pId = pIdArray[j];
+		}
+	}
+}
+
+void SkelTreeCreator::inputFoliages(skelTree::SkelTreeData& skelTreeData, MDataBlock& block)
+{
+	MStatus status;
+	MDataHandle foliageH = block.inputValue(mFoliages, &status);
+
+	uint meshId = foliageH.child(mFoliageMeshId).asInt();
+	uint attachedMeshId = foliageH.child(mFoliageAttachedMeshId).asInt();
+
+	MFnIntArrayData fnPidData(foliageH.child(mFoliageAttachedPointId).data());
+	MIntArray pIdArray = fnPidData.array();
+
+	MFnDoubleArrayData fnWeightData(foliageH.child(mFoliageAttachedWeight).data());
+	MDoubleArray weightArray = fnWeightData.array();
+
+	MFnDoubleArrayData fnQData(foliageH.child(mFoliageQ).data());
+	MDoubleArray qArray = fnQData.array();
+
+	int attachedPointNum = pIdArray.length() / 3;
+	uint pId3 = 0, wId2 = 0, qId4=0;
+	for (int i = 0; i < attachedPointNum; ++i) {
+		skelTree::RFoliageData foliageData = skelTreeData.addFoliageData();
+		foliageData.pointsId = meshId;
+		foliageData.attachPoint.pointsId = attachedMeshId;
+		
+		foliageData.attachPoint.vid[0] = pIdArray[pId3++];
+		foliageData.attachPoint.vid[1] = pIdArray[pId3++];
+		foliageData.attachPoint.vid[2] = pIdArray[pId3++];
+
+		foliageData.attachPoint.w[0] = float(weightArray[wId2++]);
+		foliageData.attachPoint.w[1] = float(weightArray[wId2++]);
+
+		foliageData.q.v.x = float(qArray[qId4++]);
+		foliageData.q.v.y = float(qArray[qId4++]);
+		foliageData.q.v.z = float(qArray[qId4++]);
+		foliageData.q.r = float(qArray[qId4++]);
 	}
 }

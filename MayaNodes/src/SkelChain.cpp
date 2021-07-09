@@ -149,4 +149,14 @@ CRMatrix44 Chain::jointRestInvMatrix(CUint jointId) const
 	return restInvMatrixList[jointId + 1];
 }
 
+CFloat Chain::xLen(CUint boneId) const
+{
+	return jointList[boneId + 1]->xParam();
+}
+
+Uint Chain::boneNum() const
+{
+	return Uint(jointList.size()) - 1;
+}
+
 NS_END

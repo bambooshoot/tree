@@ -2,43 +2,38 @@
 
 #include <PopulateGeometryBase.h>
 
-class PopulateGeometryMesh : public PopulateGeometryBase
+class PopulateGeometryFoliages : public PopulateGeometryBase
 {
 public:
 	uint vertexSize() const
 	{
-		return  _pTreeData->deformedPointNum();
+		uint vtxSize = 0;
+		for (auto & foliageData : _pTreeData->foliageDataList) {
+			vtxSize += _pTreeData->pointsList[foliageData.pointsId].pointNum();
+		}
+		return vtxSize;
 	}
 	uint indexSize() const
 	{
-		uint vtxNum = 0;
-		for (auto& deformedData : _pTreeData->deformedDataList) {
-			vtxNum += _pPopGeoData->triangleVtx[deformedData.pointsId].length();
+		uint idxSize = 0;
+		for (auto& foliageData : _pTreeData->foliageDataList) {
+			idxSize += _pPopGeoData->triangleVtx[foliageData.pointsId].length();
 		}
-
-		return  vtxNum;
+		return idxSize;
 	}
 	void populateGeometryPosition(MGeometry& data, MVertexBufferDescriptor& vertexBufferDescriptor, float* buf) override
 	{
 		uint idx = 0;
-		for (auto& deformedData : _pTreeData->deformedDataList)
-			for (auto& p : _pTreeData->pointsList[deformedData.pointsId].finalPositions()) {
+		for (auto& foliageData : _pTreeData->foliageDataList)
+			for (auto& p : _pTreeData->pointsList[foliageData.pointsId].finalPositions()) {
 				buf[idx++] = p.x;
 				buf[idx++] = p.y;
 				buf[idx++] = p.z;
 			}
 	}
-
 	void populateGeometryColor(MGeometry& data, MVertexBufferDescriptor& vertexBufferDescriptor, float* buf) override
 	{
-		uint idx = 0;
-		for (auto& deformedData : _pTreeData->deformedDataList)
-			for (auto& w : deformedData.wList) {
-				buf[idx++] = w.w.w[0];
-				buf[idx++] = w.w.w[1];
-				buf[idx++] = w.w.w[2];
-				buf[idx++] = 1.0f;
-			}
+		
 	}
 	void populateGeometryNormal(MGeometry& data, MVertexBufferDescriptor& vertexBufferDescriptor, float* buf) override
 	{
@@ -49,9 +44,9 @@ public:
 			buf[idx + i] = 0;
 
 		skelTree::Vec n;
-		for (auto& deformedData : _pTreeData->deformedDataList) {
-			MIntArray& vtxArray = _pPopGeoData->triangleVtx[deformedData.pointsId];
-			skelTree::CRVecList pList = _pTreeData->pointsList[deformedData.pointsId].finalPositions();
+		for (auto& foliageData : _pTreeData->foliageDataList) {
+			MIntArray& vtxArray = _pPopGeoData->triangleVtx[foliageData.pointsId];
+			skelTree::CRVecList pList = _pTreeData->pointsList[foliageData.pointsId].finalPositions();
 			uint triVtxNum = vtxArray.length();
 			for (uint i3 = 0; i3 < triVtxNum; i3 += 3) {
 				const uint id0 = vtxArray[i3];
@@ -76,14 +71,14 @@ public:
 		}
 
 		idx = 0;
-		for (uint i = 0; i < vtxNum; ++i, idx+=3) {
+		for (uint i = 0; i < vtxNum; ++i, idx += 3) {
 			n.setValue(buf[idx], buf[idx + 1], buf[idx + 2]);
 			n.normalize();
-			buf[idx    ] = n.x;
+			buf[idx] = n.x;
 			buf[idx + 1] = n.y;
 			buf[idx + 2] = n.z;
 		}
-			
+
 	}
 
 protected:
@@ -91,12 +86,12 @@ protected:
 	{
 		uint idx = 0;
 		uint currentBeginId = 0;
-		for (auto& deformedData : _pTreeData->deformedDataList) {
-			MIntArray & vtxArray = _pPopGeoData->triangleVtx[deformedData.pointsId];
+		for (auto& foliageData : _pTreeData->foliageDataList) {
+			MIntArray& vtxArray = _pPopGeoData->triangleVtx[foliageData.pointsId];
 			for (uint i = 0; i < vtxArray.length(); ++i) {
 				indices[idx++] = vtxArray[i] + currentBeginId;
 			}
-			currentBeginId += _pTreeData->pointsList[deformedData.pointsId].pointNum();
+			currentBeginId += _pTreeData->pointsList[foliageData.pointsId].pointNum();
 		}
 	}
 };
