@@ -9,10 +9,10 @@
 #     the vertex id list of polygon nearest to p
 #     vertex weights with which the point on nearest polygon can be combined.
 #     
-
 import pymel.core as pm
 import pymel.core.datatypes as dt
 import maya.cmds as cmds
+import maya.OpenMaya as om
 
 def pointInTriangle(a,b,c,p):
     v0 = b - a
@@ -42,29 +42,37 @@ def meshNodeAndMatrix(mesh):
     worldMat = parentNode.worldMatrix.get()
     return meshNode, worldMat, invWorldMat
 
-def closestPolygonAndWeights(p, mesh):
+def createMeshIntersector(mesh):
+    meshNode, worldMat, invWorldMat = meshNodeAndMatrix(mesh)
+    itersector = om.MMeshIntersector()
+    # triIdArray = om.MIntArray()
+    # for i in triIdList:
+    #     triIdArray.append(i)
+
+    om.MMeshIntersector.create(itersector, meshNode.__apimobject__(), invWorldMat)
+    return itersector
+
+def closestPolygonAndWeights(p, mesh, meshIntersector):
     meshNode, worldMat, invWorldMat = meshNodeAndMatrix(mesh)
 
-    wp = p * invWorldMat
-    cp, polyId = meshNode.getClosestPoint(wp)
+    pointOnMesh = om.MPointOnMesh()
+    meshIntersector.getClosestPoint(p, pointOnMesh)
 
-    vIds = meshNode.getPolygonVertices(polyId)
-    cp = dt.Point(cp)
+    polyId = pointOnMesh.faceIndex()
+    triId = pointOnMesh.triangleIndex()
+    cp = pointOnMesh.getPoint()
 
-    triNum = len(vIds) - 2
-    inTri = None
-    u = 0
-    v = 0
-    triPList = None
-    for triId in range(triNum):
-        triVids = meshNode.getPolygonTriangleVertices(polyId, triId)
-        triPList = [dt.Point(meshNode.getPoint(i)) for i in triVids]
-        inTri,u,v = pointInTriangle(triPList[0],triPList[1],triPList[2],cp)
-        if inTri:
-            return triVids,u,v
+    u_util = om.MScriptUtil()
+    u_util.createFromDouble(0)
+    u_ptr = u_util.asFloatPtr()
 
-    # raise NameError("{} {} {}".format(triVids,u,v))
-    return triVids,u,v
+    v_util = om.MScriptUtil()
+    v_util.createFromDouble(0)
+    v_ptr = v_util.asFloatPtr()
+
+    pointOnMesh.getBarycentricCoords(u_ptr, v_ptr)
+    triVids = meshNode.getPolygonTriangleVertices(polyId, triId)
+    return triVids, u_util.getFloat(u_ptr), v_util.getFloat(v_ptr)
 
 def closestMatrix(u, v, mesh, vids):
     meshNode, worldMat, invWorldMat = meshNodeAndMatrix(mesh)

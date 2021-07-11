@@ -1,7 +1,6 @@
 import maya.cmds as cmds
 import pymel.core as pm
 import maya.api.OpenMaya as om
-import trimesh
 
 import speedTreeRawXml as strx
 import skelTreeCreator as stc
@@ -10,7 +9,7 @@ import importlib
 importlib.reload(strx)
 importlib.reload(stc)
 
-import json
+# import json
 
 def meshToTriMesh(meshShape):
     node=pm.PyNode(meshShape)
@@ -86,7 +85,7 @@ def createObjects(objects):
         fnMesh.assignUVs(triCounts, obj["vtxIdx"], "map1")
         meshDagNode = om.MFnDagNode(meshNode)
         meshDagNode.setName(obj["name"])
-        objNameList.append(pm.PyNode(obj["name"]).child(0).name())
+        objNameList.append(pm.PyNode(obj["name"]).getShape().name())
 
     return objNameList
 
@@ -113,7 +112,7 @@ def createMeshes(meshes):
         fnMesh.assignUVs(quadCounts, lod["quadIdx"], "map1")
         meshDagNode = om.MFnDagNode(meshNode)
         meshDagNode.setName(mesh["name"])
-        objNameList.append(pm.PyNode(mesh["name"]).child(0).name())
+        objNameList.append(pm.PyNode(mesh["name"]).getShape().name())
 
     return objNameList
 
@@ -123,15 +122,21 @@ def deformData(meshList, objList, rootJointList):
         mesh = meshList[i]
         obj = objList[i]
         subIdWithBoneDict = {}
-        for ii in range(len(obj["boneId"])):
-            idx = max(obj["boneId"][ii], 0)
-            if idx in subIdWithBoneDict:
-                subIdWithBoneDict[idx].append(ii)
+        ii = 0
+        for vtxId in obj["vtxIdx"]:
+            boneId = max(obj["boneId"][vtxId], 0)
+            pId = obj["pntIdx"][ii]
+            if boneId in subIdWithBoneDict:
+                subIdWithBoneDict[boneId].append(pId)
             else:
-                subIdWithBoneDict[idx]=[ii]
+                subIdWithBoneDict[boneId]=[pId]
 
-        for boneId, subId in subIdWithBoneDict.items():
+            ii += 1
+
+        for boneId in range(len(subIdWithBoneDict)):
+            subId = subIdWithBoneDict[boneId]
             if len(subId) > 0:
+                subId = list(set(subId))
                 if boneId == 0:
                     meshDataList.append([mesh, subId, rootJointList[boneId], None])
                 else:
@@ -162,7 +167,7 @@ def create(xmlFile):
         "foliage":foliageList
         }
 
-    # print(dataDict)
+    # print(dataDict["foliage"]["q"])
     # meshDataStateList = [ [meshData[0], len(meshData[1]), meshData[2], meshData[3] ] for meshData in meshDataList ]
     # data = json.dumps(meshDataStateList)
     # with open(r'D:/asunlab/github/tree/example/tree.json','w')as f:
@@ -170,4 +175,4 @@ def create(xmlFile):
 
     stc.skelTreeCreator(dataDict)
 
-create("D:/asunlab/github/tree/example/pine.xml")
+create("D:/asunlab/github/infTree/example/pine1.xml")

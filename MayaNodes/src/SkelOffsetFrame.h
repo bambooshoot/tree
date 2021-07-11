@@ -5,10 +5,10 @@
 
 NS_BEGIN
 
-CLASSDERIVED(RootFrame, Space,
+CLASSDERIVED(OffsetFrame, Space,
 public:
-	RootFrame(CRootFrameDataP pData, CSkelTreeDataP pTreeData);
-	~RootFrame() override = default;
+	OffsetFrame(COffsetFrameDataP pData, CSkelTreeDataP pTreeData);
+	~OffsetFrame() override = default;
 	Matrix44 matrix(CRQuat q) const override;
 	Matrix44 restMatrix() const override;
 	Float xParam() const override;
@@ -18,7 +18,7 @@ public:
 	static SpaceTypeId typeId;
 
 private:
-	CRootFrameDataP _data;
+	COffsetFrameDataP _data;
 	)
 
 NS_END

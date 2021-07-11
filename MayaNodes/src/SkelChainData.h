@@ -5,9 +5,9 @@
 NS_BEGIN
 
 STRUCT(ChainData,
-	AttachedPointData attachedPointData;
-	RootFrameData rootFrameData;
-	FrameDataList frameDataList;
+	Ushort			trunkFrameId;
+	OffsetFrameData	offsetFrameData;
+	FrameDataList	frameDataList;
 	)
 
 NS_END

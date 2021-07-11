@@ -25,10 +25,10 @@ MString	SkelTreeVisualization::drawRegistrantId("skelTreeVisualization");
 
 MObject SkelTreeVisualization::mInSkelTreeData;
 MObject SkelTreeVisualization::mTime;
-MObject SkelTreeVisualization::mNoiseValue;
-MObject SkelTreeVisualization::mNoiseFreqU;
-MObject SkelTreeVisualization::mNoiseFreqChain;
-MObject SkelTreeVisualization::mNoiseOffset;
+
+MObject SkelTreeVisualization::mNoiseTrunkVFO;
+MObject SkelTreeVisualization::mNoiseBranchVFO;
+MObject SkelTreeVisualization::mNoiseLeafVFO;
 MObject SkelTreeVisualization::mWindDirection;
 
 MObject SkelTreeVisualization::mDispChainAxisScale;
@@ -60,17 +60,17 @@ MStatus SkelTreeVisualization::initialize()
 	status = addAttribute(mTime);
 
 	MFnNumericAttribute nAttr;
-	mNoiseFreqU = nAttr.create("noiseFreqU", "nfu", MFnNumericData::kDouble, 1.0, &status);
-	status = addAttribute(mNoiseFreqU);
+	mNoiseTrunkVFO = nAttr.createPoint("noiseTrunkValueFreqOffset", "ntv", &status);
+	nAttr.setDefault(0.05, 1, 0, 0);
+	status = addAttribute(mNoiseTrunkVFO);
 
-	mNoiseFreqChain = nAttr.create("noiseFreqChain", "nfc", MFnNumericData::kDouble, 1.0, &status);
-	status = addAttribute(mNoiseFreqChain);
+	mNoiseBranchVFO = nAttr.createPoint("noiseBranchValueFreqOffset", "nbv", &status);
+	nAttr.setDefault(0.1, 5, 0, 0);
+	status = addAttribute(mNoiseBranchVFO);
 
-	mNoiseValue = nAttr.create("noiseValue","noi", MFnNumericData::kDouble, 0.1, &status);
-	status = addAttribute(mNoiseValue);
-
-	mNoiseOffset = nAttr.create("noiseOffset", "nof", MFnNumericData::kDouble, 0.5, &status);
-	status = addAttribute(mNoiseOffset);
+	mNoiseLeafVFO = nAttr.createPoint("noiseLeafValueFreqOffset","nlv", &status);
+	nAttr.setDefault(1, 20, 0, 0);
+	status = addAttribute(mNoiseLeafVFO);
 
 	mWindDirection = nAttr.createPoint("windDirection", "wdn", &status);
 	nAttr.setDefault(0, 0, 1, 0);
@@ -120,26 +120,29 @@ skelTree::RSkelTreeData SkelTreeVisualization::getSkelTreeData() const
 	return ((SkelTreeData*)skelTreeDataPlug.asMDataHandle().asPluginData())->skelTreeData;
 }
 
-skelTree::ChainOpData SkelTreeVisualization::chainOpData()
+skelTree::AniOpData SkelTreeVisualization::aniOpData()
 {
-	skelTree::ChainOpData opData;
+	skelTree::AniOpData opData;
 
 	MObject thisNode = thisMObject();
 
 	MPlug timePlug(thisNode, mTime);
 	opData.time = float(timePlug.asMTime().value());
 
-	MPlug noisePlug(thisNode, mNoiseValue);
-	opData.scale = float(noisePlug.asDouble());
+	MPlug noiseTrunkPlug(thisNode, mNoiseTrunkVFO);
+	opData.noiseTrunk[0] = float(noiseTrunkPlug.child(0).asDouble());
+	opData.noiseTrunk[1] = float(noiseTrunkPlug.child(1).asDouble());
+	opData.noiseTrunk[2] = float(noiseTrunkPlug.child(2).asDouble());
 
-	MPlug offsetPlug(thisNode, mNoiseOffset);
-	opData.offset = float(offsetPlug.asDouble());
+	MPlug noiseBranchPlug(thisNode, mNoiseBranchVFO);
+	opData.noiseBranch[0] = float(noiseBranchPlug.child(0).asDouble());
+	opData.noiseBranch[1] = float(noiseBranchPlug.child(1).asDouble());
+	opData.noiseBranch[2] = float(noiseBranchPlug.child(2).asDouble());
 
-	MPlug noiseFreqUPlug(thisNode, mNoiseFreqU);
-	opData.freqU = float(noiseFreqUPlug.asDouble());
-
-	MPlug noiseFreqChainPlug(thisNode, mNoiseFreqChain);
-	opData.freqChain = float(noiseFreqChainPlug.asDouble());
+	MPlug noiseFoliagePlug(thisNode, mNoiseLeafVFO);
+	opData.noiseFoliage[0] = float(noiseFoliagePlug.child(0).asDouble());
+	opData.noiseFoliage[1] = float(noiseFoliagePlug.child(1).asDouble());
+	opData.noiseFoliage[2] = float(noiseFoliagePlug.child(2).asDouble());
 
 	MPlug windDirPlug(thisNode, mWindDirection);
 	opData.windDirection.x = float(windDirPlug.child(0).asDouble());
@@ -186,10 +189,10 @@ void SkelTreeVisualization::deformedMeshVertexIndices(std::vector<MIntArray>& id
 }
 
 const MString SkelTreeVisualizationOverride::sDeformedPoints = "skelTreeVisDeformedPoints";
-const MString SkelTreeVisualizationOverride::sSpace = "skelTreeVisSpace";
-const MString SkelTreeVisualizationOverride::sJointName = "skelTreeJoint";
+const MString SkelTreeVisualizationOverride::sChainBoxes = "skelTreeVisChainBoxes";
+const MString SkelTreeVisualizationOverride::sChainLine = "skelTreeChainLine";
 const MString SkelTreeVisualizationOverride::sAttachedPointName = "skelTreeAttachedPoint";
-const MString SkelTreeVisualizationOverride::sMeshName = "skelTreeMesh";
+const MString SkelTreeVisualizationOverride::sDeformedMeshName = "skelTreeDeformedMesh";
 const MString SkelTreeVisualizationOverride::sFoliageName = "skelTreeFoliages";
 
 DispEnableMap SkelTreeVisualization::dispEnableData() const
@@ -199,22 +202,22 @@ DispEnableMap SkelTreeVisualization::dispEnableData() const
 	DispEnableMap visElementMap;
 
 	MPlug enChainAxisPlug(thisNode, mDispEnableChainBoxes);
-	visElementMap[VIS_ELEMENT_CHAIN_BOXES] = { &SkelTreeVisualizationOverride::sSpace, enChainAxisPlug.asBool() };
+	visElementMap[VIS_ELEMENT_CHAIN_BOXES] = { &SkelTreeVisualizationOverride::sChainBoxes, enChainAxisPlug.asBool() };
 
 	MPlug enChainLinePlug(thisNode, mDispEnableChainLine);
-	visElementMap[VIS_ELEMENT_CHAIN_LINE] = { &SkelTreeVisualizationOverride::sJointName, enChainLinePlug.asBool() };
+	visElementMap[VIS_ELEMENT_CHAIN_LINE] = { &SkelTreeVisualizationOverride::sChainLine, enChainLinePlug.asBool() };
 
 	MPlug enDeformedPointsPlug(thisNode, mDispEnableDeformedPoints);
 	visElementMap[VIS_ELEMENT_DEFORMED_POINTS] = { &SkelTreeVisualizationOverride::sDeformedPoints, enDeformedPointsPlug.asBool() };
 
 	MPlug enDeformedMeshesPlug(thisNode, mDispEnableDeformedMeshes);
-	visElementMap[VIS_ELEMENT_DEFORMED_TRIANGLES] = { &SkelTreeVisualizationOverride::sMeshName, enDeformedMeshesPlug.asBool() };
+	visElementMap[VIS_ELEMENT_DEFORMED_TRIANGLES] = { &SkelTreeVisualizationOverride::sDeformedMeshName, enDeformedMeshesPlug.asBool() };
 
 	MPlug enAttachedPointPlug(thisNode, mDispEnableAttachedPoint);
-	visElementMap[VIS_ELEMENT_ATTACHED_POINT] = { &SkelTreeVisualizationOverride::sMeshName, enAttachedPointPlug.asBool() };
+	visElementMap[VIS_ELEMENT_ATTACHED_POINT] = { &SkelTreeVisualizationOverride::sAttachedPointName, enAttachedPointPlug.asBool() };
 
 	MPlug enFoliagePlug(thisNode, mDispEnableFoliages);
-	visElementMap[VIS_ELEMENT_FOLIAGES] = { &SkelTreeVisualizationOverride::sMeshName, enFoliagePlug.asBool() };
+	visElementMap[VIS_ELEMENT_FOLIAGES] = { &SkelTreeVisualizationOverride::sFoliageName, enFoliagePlug.asBool() };
 
 	return visElementMap;
 }
@@ -238,12 +241,13 @@ bool SkelTreeVisualizationOverride::requiresGeometryUpdate() const
 
 void SkelTreeVisualizationOverride::updateDG()
 {
-	skelTree::ChainOpData opData = mVisNode->chainOpData();
+	skelTree::AniOpData opData = mVisNode->aniOpData();
 	popGeoData = mVisNode->popGeoData();
 	pTreeData = &mVisNode->getSkelTreeData();
 	visElementMap = mVisNode->dispEnableData();
 
 	skelTree.buildDeform(pTreeData, opData);
+	skelTree.buildFoliages(pTreeData, opData);
 
 	renderBufferManagerBuild(bufManager, pTreeData, &skelTree, &popGeoData, visElementMap);
 }

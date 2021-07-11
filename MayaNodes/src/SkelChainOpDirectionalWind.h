@@ -5,25 +5,76 @@
 
 NS_BEGIN
 
-class ChainOpDirectionalWind : public ChainOpBase
+class TrunkOpDirectionalWind : public AniOpBase
 {
 public:
-	Quat computeQ(CRChainInternalOpData internalOpData, CRChainOpData data) override
+	~TrunkOpDirectionalWind() override {};
+	Quat computeQ(AniOpState state, CAniOpData data) const override
 	{
 		Quat q;
-		Float rtRatio = internalOpData.u * data.freqU;
-		Float chainParam = internalOpData.chainParam * data.freqChain;
+		Float rtRatio = state.u * data.noiseTrunk[1];
 
 		Vec jointLocAxis(1, 0, 0);
 		Vec windDir = data.windDirection;
-		internalOpData.worldInvMatrix.multDirMatrix(windDir, windDir);
+		state.worldInvMatrix.multDirMatrix(windDir, windDir);
 
 		Vec axis = jointLocAxis.cross(windDir);
 		axis.normalize();
 
-		Float noiseValue = Noise::noise.value(data.time + rtRatio + chainParam) + data.offset;
+		Float noiseValue = Noise::noise.value(data.time * data.noiseTrunk[2]);
 
-		q.setAxisAngle(axis, noiseValue * data.scale * rtRatio);
+		q.setAxisAngle(axis, noiseValue * state.fTrunkValue * rtRatio);
+		return q;
+	}
+};
+
+class BranchOpDirectionalWind : public AniOpBase
+{
+public:
+	~BranchOpDirectionalWind() override {};
+	Quat computeQ(AniOpState state, CAniOpData data) const override
+	{
+		Quat q;
+
+		Vec axis;
+		axis.x = Noise::noise.value(state.p.x);
+		axis.y = Noise::noise.value(state.p.y);
+		axis.z = Noise::noise.value(state.p.z);
+
+		Random rand(state.uIdx);
+		Float randF = rand.nextf(0.0f, data.noiseBranch[2]);
+
+		CFloat noiseValueOffset = state.fIdx * data.noiseBranch[1];
+
+		Float noiseValue = Noise::noise.value(data.time * randF + noiseValueOffset);
+
+		q.setAxisAngle(axis, noiseValue * state.fBranchValue * state.u);
+		return q;
+	}
+};
+
+class FoliageOpDirectionalWind : public AniOpBase
+{
+public:
+	~FoliageOpDirectionalWind() override {};
+	Quat computeQ(AniOpState state, CAniOpData data) const override
+	{
+		Quat q;
+		
+		Vec axis;
+		axis.x = Noise::noise.value(state.p.x);
+		axis.y = Noise::noise.value(state.p.y);
+		axis.z = Noise::noise.value(state.p.z);
+
+		Random rand(state.uIdx);
+		Float randF = rand.nextf(0.0f, data.noiseFoliage[2]);
+
+		Float noiseValueOffset = state.fIdx * data.noiseFoliage[1];
+
+		Float noiseValue = Noise::noise.value(data.time * randF + noiseValueOffset);
+
+		axis.normalize();
+		q.setAxisAngle(axis, noiseValue * data.noiseFoliage[0]);
 		return q;
 	}
 };

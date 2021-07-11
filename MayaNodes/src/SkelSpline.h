@@ -6,14 +6,18 @@ NS_BEGIN
 
 #define SPLINE_WEIGHT_NUM 3
 
-STRUCT(SplineWeight,
-	Ushort id[SPLINE_WEIGHT_NUM];
-	Float w[SPLINE_WEIGHT_NUM];
-)
+template<Int WEIGHT_NUM>
+struct SplineWeight
+{
+	Ushort id[WEIGHT_NUM];
+	Float w[WEIGHT_NUM];
+};
 
+template<Int WEIGHT_NUM>
 class UParamTrain
 {
 public:
+	virtual ~UParamTrain() {}
 	void reset(CFloatList uList)
 	{
 		_uList = uList;
@@ -24,17 +28,17 @@ public:
 		return _uList[idx];
 	}
 
-	virtual void weights(RSplineWeight w, CFloat x, CUint n_idx) const = 0;
+	virtual void weights(SplineWeight<WEIGHT_NUM> & w, CFloat x, CUint n_idx) const = 0;
 
 	template<typename T>
 	T interpolate(CFloat u, const std::vector<T> & dataList) const
 	{
 		Uint n_idx = _segementId(u);
-		SplineWeight w;
+		SplineWeight<WEIGHT_NUM> w;
 		weights(w, u, n_idx);
 
 		T value = 0;
-		for (Uint i = 0; i < SPLINE_WEIGHT_NUM; ++i)
+		for (Uint i = 0; i < WEIGHT_NUM; ++i)
 			value += dataList[w.id[i]] * w.w[i];
 		
 		return value;
@@ -56,47 +60,53 @@ protected:
 	}
 };
 
-class UParamTrain3 : public UParamTrain
+template<Int WEIGHT_NUM>
+class UParamTrain3 : public UParamTrain<WEIGHT_NUM>
 {
 public:
+	~UParamTrain3() override {}
 	UParamTrain3(CFloatList uList)
 	{
 		reset(uList);
 	}
-	void weights(RSplineWeight w, CFloat x, CUint n_idx) const override
+	void weights(SplineWeight<WEIGHT_NUM> & w, CFloat x, CUint n_idx) const override
 	{
-		Float xi[SPLINE_WEIGHT_NUM];
+		Float xi[WEIGHT_NUM];
 		if (n_idx == 0) {
-			for (Uint k = 0; k < SPLINE_WEIGHT_NUM; ++k) {
+			for (Uint k = 0; k < WEIGHT_NUM; ++k) {
 				w.id[k] = n_idx + k;
 				xi[k] = _uList[w.id[k]];
 			}
 		}
 		else {
-			for (Uint k = 0; k < SPLINE_WEIGHT_NUM; ++k) {
+			for (Uint k = 0; k < WEIGHT_NUM; ++k) {
 				w.id[k] = n_idx + k - 1;
 				xi[k] = _uList[w.id[k]];
 			}
 		}
 
-		CUint idx[SPLINE_WEIGHT_NUM][2] = { {1,2},{2,0},{0,1} };
-		for (Uint k = 0; k < SPLINE_WEIGHT_NUM; ++k) {
+		for (Uint k = 0; k < WEIGHT_NUM; ++k) {
 			w.w[k] = 1.0f;
-			for (Uint i = 0; i < 2; ++i) {
-				w.w[k] *= (x - xi[idx[k][i]]) / (xi[k] - xi[idx[k][i]]);
+			for (Uint i = 0; i < WEIGHT_NUM; ++i) {
+				if (i == k)
+					continue;
+
+				w.w[k] *= (x - xi[i]) / (xi[k] - xi[i]);
 			}
 		}
 	}
 };
 
-class UParamTrain2 : public UParamTrain
+template<Int WEIGHT_NUM>
+class UParamTrain2 : public UParamTrain<WEIGHT_NUM>
 {
 public:
+	~UParamTrain2() override {}
 	UParamTrain2(CFloatList uList)
 	{
 		reset(uList);
 	}
-	void weights(RSplineWeight w, CFloat x, CUint n_idx) const override
+	void weights(SplineWeight<WEIGHT_NUM> & w, CFloat x, CUint n_idx) const override
 	{
 		w.id[0] = 0;
 		w.id[1] = 1;
@@ -108,14 +118,14 @@ public:
 	}
 };
 
-inline UParamTrain* UParamTrain::create(CFloatList uList)
+template<Int WEIGHT_NUM>
+UParamTrain<WEIGHT_NUM>* UParamTrain<WEIGHT_NUM>::create(CFloatList uList)
 {
 	if (uList.size() > 2)
-		return new UParamTrain3(uList);
+		return new UParamTrain3<WEIGHT_NUM>(uList);
 
-	return new UParamTrain2(uList);
+	return new UParamTrain2<WEIGHT_NUM>(uList);
 }
-
 
 class Spline1D
 {
@@ -132,7 +142,7 @@ public:
 
 private:
 	FloatList	_valueList;
-	UParamTrain3 _uTrain;
+	UParamTrain3<5> _uTrain;
 };
 
 class Spline3D
@@ -154,14 +164,14 @@ public:
 			uList.push_back(curU);
 		}
 
-		_pUTrain = UParamTrain::create(uList);
+		_pUTrain = UParamTrain<3>::create(uList);
 	}
-	~Spline3D()
+	virtual ~Spline3D()
 	{
-		delete _pUTrain;
+		DELETE_POINTER(_pUTrain);
 	}
 	
-	void weights(RSplineWeight w, CRVec p) const
+	void weights(SplineWeight<3> & w, CRVec p) const
 	{
 		Uint n_idx;
 		Float x = _nearestU(n_idx, p);
@@ -173,7 +183,7 @@ public:
 protected:
 	VecList		_pList;
 	FloatList   _locUList;
-	UParamTrain *_pUTrain;
+	UParamTrain<3> *_pUTrain;
 
 	virtual Float _nearestU(RUint n_idx, CRVec sp) const = 0;
 };
@@ -181,6 +191,7 @@ protected:
 class Spline3 : public Spline3D
 {
 public:
+	~Spline3() override {}
 	Spline3(CRVecList pList) : Spline3D(pList) {}
 
 protected:
@@ -225,6 +236,7 @@ protected:
 class Line2 : public Spline3D
 {
 public:
+	~Line2() override {}
 	Line2(CRVecList pList) : Spline3D(pList) {}
 
 protected:
@@ -247,6 +259,6 @@ inline Spline3D* Spline3D::create(CRVecList pList)
 		return new Spline3(pList);
 
 	return new Line2(pList);
-}
+};
 
 NS_END

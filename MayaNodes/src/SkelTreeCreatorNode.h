@@ -21,11 +21,7 @@ public:
 
 	// local node attributes
 	static MObject mChains;
-	static MObject mAttachedPoint;
-	static MObject mTargetMeshId;
-	static MObject mAttachedWeights;
-	static MObject mAttachedPointId;
-	static MObject mAttachedWeight;
+	static MObject mTrunkFrameId;
 
 	static MObject mRootFrame;
 	static MObject mOffset;
@@ -45,7 +41,9 @@ public:
 	static MObject mFoliageAttachedMeshId;
 	static MObject mFoliageAttachedPointId;
 	static MObject mFoliageAttachedWeight;
-	static MObject mFoliageQ;
+	static MObject mFoliageScale;
+	static MObject mFoliageRotAxis;
+	static MObject mFoliageRotRadian;
 
 	static MObject mInMeshes;
 	static MObject mInMesh;

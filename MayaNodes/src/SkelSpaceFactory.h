@@ -2,7 +2,7 @@
 
 #include <SkelSpace.h>
 #include <SkelAttachedPoint.h>
-#include <SkelRootFrame.h>
+#include <SkelOffsetFrame.h>
 #include <SkelFrame.h>
 #include <SkelChainData.h>
 
@@ -18,7 +18,7 @@ class SpaceFactory
 public:
 	SpaceFactory()
 	{
-		registerType(RootFrame::typeId, RootFrame::create);
+		registerType(OffsetFrame::typeId, OffsetFrame::create);
 		registerType(Frame::typeId, Frame::create);
 	}
 	SpaceP create(CSpaceTypeId typeId, CVoidP data, CSkelTreeDataP pTreeData)

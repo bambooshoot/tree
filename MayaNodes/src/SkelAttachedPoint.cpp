@@ -19,6 +19,13 @@ CRVecList AttachedPoint::_points() const
 	return (*_pPointsList)[_data->pointsId].finalPositions();
 }
 
+Vec AttachedPoint::point() const
+{
+	CRVecList pnts = _points();
+	Vec p3[3] = { pnts[_data->vid[0]], pnts[_data->vid[1]], pnts[_data->vid[2]] };
+	return p3[0] * _data->w[0] + p3[1] * _data->w[1] + p3[2] * (1 - _data->w[0] - _data->w[1]);
+}
+
 Matrix44 AttachedPoint::matrix() const
 {
 	if (_data == nullptr || _pPointsList == nullptr) {
@@ -31,7 +38,7 @@ Matrix44 AttachedPoint::matrix() const
 	Vec xAxis = p3[1] - p3[0];
 	Vec zAxis = p3[2] - p3[0];
 
-	Vec orgP = p3[0] + xAxis * _data->w[0] + zAxis * _data->w[1];
+	Vec orgP = p3[0] * _data->w[0] + p3[1] * _data->w[1] + p3[2] * (1 - _data->w[0] - _data->w[1]);
 
 	Vec yAxis = xAxis.cross(zAxis);
 	yAxis.normalize();

@@ -26,6 +26,7 @@ struct PopulateGeometryData
 class PopulateGeometryBase
 {
 public:
+	virtual ~PopulateGeometryBase() {};
 	virtual uint vertexSize() const = 0;
 	virtual uint indexSize() const = 0;
 	virtual void populateGeometryPosition(MGeometry& data, MVertexBufferDescriptor& vertexBufferDescriptor, float* buf)  = 0;

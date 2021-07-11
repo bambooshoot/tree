@@ -1,11 +1,19 @@
 #include <SkelTree.h>
 #include <SkelTreeData.h>
 #include <SkelDeformedMesh.h>
-#include <SkelChainOpDirectionalWind.h>
-#include <SkelFoliageOpDirectionalWind.h>
 
 NS_BEGIN
 
+SkelTree::~SkelTree()
+{
+	clear();
+}
+void SkelTree::clear()
+{
+	DELETE_POINTER(trunkOp);
+	DELETE_POINTER(branchOp);
+	DELETE_POINTER(foliageOp);
+}
 SkelTree::SkelTree(SkelTreeDataP treeData)
 {
 	reset(treeData);
@@ -14,6 +22,10 @@ SkelTree::SkelTree(SkelTreeDataP treeData)
 void SkelTree::reset(SkelTreeDataP treeData)
 {
 	pTreeData = treeData;
+
+	trunkOp = new TrunkOpDirectionalWind();
+	branchOp = new BranchOpDirectionalWind();
+	foliageOp = new FoliageOpDirectionalWind();
 }
 
 void SkelTree::buildChains()
@@ -23,10 +35,20 @@ void SkelTree::buildChains()
 		chainList.push_back(Chain());
 	}
 
-	auto iter = pTreeData->chainDataList.begin();
-	for (auto& chain : chainList) {
-		chain.build(*iter, pTreeData);
-		++iter;
+	// build trunk chain at first.
+	CUint parentChainId = pTreeData->trunkChainId;
+	chainList[parentChainId].build(pTreeData->chainDataList[parentChainId], pTreeData);
+
+	// then build branch chains with matrix of parent frame of trunk chain.
+	auto iter = chainList.begin();
+	CRChain parentChain = chainList[parentChainId];
+	for (Uint i=0;i<chainList.size();++i) {
+		if (i == parentChainId)
+			continue;
+
+		CRChainData chainData = pTreeData->chainDataList[i];
+		CRMatrix44 parentMat = parentChain.jointRestMatrix(chainData.trunkFrameId);
+		(iter+i)->build(chainData, pTreeData, &parentMat);
 	}
 }
 
@@ -48,16 +70,27 @@ void SkelTree::computWeights()
 	}
 }
 
-void SkelTree::deform(CRChainOpData data)
+void SkelTree::deform(CRAniOpData data)
 {
-	ChainOpBaseP opP = new ChainOpDirectionalWind();
 	for (auto& deformedMeshData : pTreeData->deformedDataList) {
-		(*opP)(chainList, deformedMeshData.chainId, data);
+		RChain chain = chainList[deformedMeshData.chainId];
+		
+		CUint trunkFrameId = pTreeData->chainDataList[deformedMeshData.chainId].trunkFrameId;
+		if (trunkFrameId != USHORT_MAX) {
+			RChain rootChain = chainList[pTreeData->trunkChainId];
+			CRMatrix44 mat = rootChain.jointMatrix(trunkFrameId);
+
+			QuatList qList = (*branchOp).chainOp(chain, deformedMeshData.chainId, data);
+			chain.updateMatrix(qList, &mat);
+		}
+		else {
+			QuatList qList = (*trunkOp).chainOp(chain, deformedMeshData.chainId, data);
+			chain.updateMatrix(qList);
+		}
 
 		DeformedMesh deformedMesh(deformedMeshData, pTreeData->pointsList, chainList);
 		deformedMesh.deform();
 	}
-	DELETE_POINTER(opP);
 }
 
 Uint SkelTree::chainNum() const
@@ -86,7 +119,7 @@ Uint SkelTree::jointNum() const
 
 Uint SkelTree::foliageNum() const
 {
-	return foliageList.size();
+	return Uint(foliageList.size());
 }
 
 CRChain SkelTree::getChain(CUint chainId) const
@@ -99,16 +132,13 @@ CRMatrix44 SkelTree::getFoliageMatrix(CUint foliageId) const
 	return foliageList[foliageId].matrix();
 }
 
-void SkelTree::updateFoliages(CRFoliageOpData opData)
+void SkelTree::updateFoliages(CRAniOpData opData)
 {
 	foliageList.resize(pTreeData->foliageDataList.size());
-	Quat q;
-	FoliageOpBaseP opP = new FoliageOpDirectionalWind();
+	
 	for (Uint i = 0; i < foliageList.size(); ++i) {
-		q = (*opP)(pTreeData->foliageDataList[i], opData);
-		foliageList[i].update(pTreeData->foliageDataList[i], q, pTreeData);
+		foliageList[i].update(i, pTreeData, opData, foliageOp);
 	}
-	DELETE_POINTER(opP);
 }
 
 void SkelTree::buildRest(SkelTreeDataP pTreeData)
@@ -118,14 +148,14 @@ void SkelTree::buildRest(SkelTreeDataP pTreeData)
 	computWeights();
 }
 
-void SkelTree::buildDeform(SkelTreeDataP pTreeData, CRChainOpData opData)
+void SkelTree::buildDeform(SkelTreeDataP pTreeData, CRAniOpData opData)
 {
 	reset(pTreeData);
 	buildChains();
 	deform(opData);
 }
 
-void SkelTree::buildFoliages(SkelTreeDataP pTreeData, CRFoliageOpData opData)
+void SkelTree::buildFoliages(SkelTreeDataP pTreeData, CRAniOpData opData)
 {
 	reset(pTreeData);
 	updateFoliages(opData);

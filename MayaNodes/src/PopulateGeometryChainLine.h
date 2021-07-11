@@ -4,6 +4,7 @@
 class PopulateGeometryChainLine : public PopulateGeometryBase
 {
 public:
+	~PopulateGeometryChainLine() override {}
 	uint vertexSize() const
 	{
 		return  _pTree->jointNum();

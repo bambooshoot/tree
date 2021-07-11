@@ -4,25 +4,30 @@
 
 NS_BEGIN
 
-STRUCT(ChainOpData,
+STRUCT(AniOpData,
 Vec windDirection;
 Float time;
-Float scale;
-Float offset;
-Float freqU;
-Float freqChain;
+Float noiseTrunk[3];
+Float noiseBranch[3];
+Float noiseFoliage[3];
 )
 
-STRUCT(ChainInternalOpData,
-Matrix44 worldInvMatrix;
-Float chainParam;
-Float u;
+STRUCT(AniOpState,
+Matrix44	worldInvMatrix;
+Float		u;
+Vec			p;
+Float		fIdx;
+Uint        uIdx;
+Float       fSpaceNum;
+Float       fBranchValue;
+Float       fTrunkValue;
 )
 
-CLASS(ChainOpBase,
+CLASS(AniOpBase,
 public:
-	virtual Quat computeQ(CRChainInternalOpData internalOpData, CRChainOpData data) = 0;
-	void operator ()(RChainList chainList, CUint chainId, CRChainOpData data);
+	virtual ~AniOpBase() {};
+	virtual Quat computeQ(AniOpState state, CAniOpData data) const = 0;
+	QuatList chainOp(RChain chain, CUint chainId, CRAniOpData data);
 	)
 
 NS_END

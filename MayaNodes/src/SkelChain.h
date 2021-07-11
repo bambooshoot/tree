@@ -2,16 +2,15 @@
 
 #include <SkelSpace.h>
 #include <SkelTreeData.h>
-#include <SkelAttachedPoint.h>
 
 NS_BEGIN
 
 CLASS(Chain,
 public:
 	~Chain();
-	void build( CRChainData chainData, CSkelTreeDataP pTreeData);
+	void build( CRChainData chainData, CSkelTreeDataP pTreeData, CMatrix44P pMat = nullptr);
 
-	void updateMatrix(CRQuatList qList);
+	void updateMatrix(CRQuatList qList, CMatrix44P pRootMat = nullptr);
 
 	CRMatrix44 matrix(CUint spaceId) const;
 	CRMatrix44 restMatrix(CUint spaceId) const;
@@ -30,7 +29,6 @@ public:
 	CFloat xLen(CUint boneId) const;
 
 private:
-	AttachedPoint   attachedPoint;
 	SpacePList		jointList;
 
 	// cached data
@@ -40,7 +38,7 @@ private:
 	FloatList		xParamList;
 
 	void _updateParam();
-	void _updateRestMatrix();
+	void _updateRestMatrix(CMatrix44P pRootMat = nullptr);
 	)
 
 NS_END

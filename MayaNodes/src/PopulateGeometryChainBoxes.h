@@ -6,6 +6,7 @@
 class PopulateGeometryChainBoxes : public PopulateGeometryBase
 {
 public:
+	~PopulateGeometryChainBoxes() override {}
 	uint vertexSize() const
 	{
 		return  _pTree->boneNum() * BOX_POINT_6SIDE_NUM;

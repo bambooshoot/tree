@@ -4,18 +4,20 @@
 #include <SkelTreeData.h>
 #include <SkelChainOpBase.h>
 #include <SkelFoliage.h>
-#include <SkelFoliageOpBase.h>
+#include <SkelChainOpBase.h>
+#include <SkelChainOpDirectionalWind.h>
 
 NS_BEGIN
 
 CLASS(SkelTree,
 public:
 	SkelTree() = default;
+	~SkelTree();
 	SkelTree(SkelTreeDataP treeData);
 	
 	void buildRest(SkelTreeDataP treeData);
-	void buildDeform(SkelTreeDataP treeData, CRChainOpData data);
-	void buildFoliages(SkelTreeDataP treeData, CRFoliageOpData data);
+	void buildDeform(SkelTreeDataP treeData, CRAniOpData data);
+	void buildFoliages(SkelTreeDataP treeData, CRAniOpData data);
 
 	void reset(SkelTreeDataP treeData);
 
@@ -35,12 +37,16 @@ private:
 	ChainList		chainList;
 	FoliageList     foliageList;
 
+	AniOpBaseP      trunkOp;
+	AniOpBaseP      branchOp;
+	AniOpBaseP      foliageOp;
+
 	void buildChains();
 	void computWeights();
 
-	void deform(CRChainOpData data);
-	void updateFoliages(CRFoliageOpData data);
-
+	void deform(CRAniOpData data);
+	void updateFoliages(CRAniOpData data);
+	void clear();
 	)
 
 NS_END
