@@ -7,29 +7,32 @@ class PopulateGeometryFoliages : public PopulateGeometryBase
 public:
 	uint vertexSize() const
 	{
-		uint vtxSize = 0;
-		for (auto & foliageData : _pTreeData->foliageDataList) {
-			vtxSize += _pTreeData->pointsList[foliageData.pointsId].pointNum();
-		}
-		return vtxSize;
+		uint pointsId = _pTreeData->foliageDataList[0].pointsId;
+		return _pTreeData->pointsList[pointsId].pointNum();
 	}
 	uint indexSize() const
 	{
-		uint idxSize = 0;
-		for (auto& foliageData : _pTreeData->foliageDataList) {
-			idxSize += _pPopGeoData->triangleVtx[foliageData.pointsId].length();
-		}
-		return idxSize;
+		uint pointsId = _pTreeData->foliageDataList[0].pointsId;
+		return _pPopGeoData->triangleVtx[pointsId].length();;
 	}
 	void populateGeometryPosition(MGeometry& data, MVertexBufferDescriptor& vertexBufferDescriptor, float* buf) override
 	{
 		uint idx = 0;
+<<<<<<< Updated upstream
 		for (auto& foliageData : _pTreeData->foliageDataList)
 			for (auto& p : _pTreeData->pointsList[foliageData.pointsId].finalPositions()) {
 				buf[idx++] = p.x;
 				buf[idx++] = p.y;
 				buf[idx++] = p.z;
 			}
+=======
+		uint pointsId = _pTreeData->foliageDataList[0].pointsId;
+		for (auto& p : _pTreeData->pointsList[pointsId].rest()) {
+			buf[idx++] = p.x;
+			buf[idx++] = p.y;
+			buf[idx++] = p.z;
+		}
+>>>>>>> Stashed changes
 	}
 	void populateGeometryColor(MGeometry& data, MVertexBufferDescriptor& vertexBufferDescriptor, float* buf) override
 	{
@@ -39,6 +42,7 @@ public:
 	{
 		size_t idx = 0;
 		uint vtxNum = vertexSize();
+<<<<<<< Updated upstream
 		uint vtxSize = vtxNum * 3;
 		for (uint i = 0; i < vtxSize; ++i)
 			buf[idx + i] = 0;
@@ -68,6 +72,12 @@ public:
 				buf[idx + id23] += n.x; buf[idx + id23 + 1] += n.y; buf[idx + id23 + 2] += n.z;
 			}
 			idx += pList.size() * 3;
+=======
+		for (uint i = 0; i < vtxNum; ++i) {
+			buf[idx++] = 0;
+			buf[idx++] = 0;
+			buf[idx++] = 1;
+>>>>>>> Stashed changes
 		}
 
 		idx = 0;
@@ -84,14 +94,10 @@ public:
 protected:
 	void _fillIndex(unsigned int* indices) override
 	{
-		uint idx = 0;
-		uint currentBeginId = 0;
-		for (auto& foliageData : _pTreeData->foliageDataList) {
-			MIntArray& vtxArray = _pPopGeoData->triangleVtx[foliageData.pointsId];
-			for (uint i = 0; i < vtxArray.length(); ++i) {
-				indices[idx++] = vtxArray[i] + currentBeginId;
-			}
-			currentBeginId += _pTreeData->pointsList[foliageData.pointsId].pointNum();
+		uint pointsId = _pTreeData->foliageDataList[0].pointsId;
+		MIntArray& vtxArray = _pPopGeoData->triangleVtx[pointsId];
+		for (uint i = 0; i < vtxArray.length(); ++i) {
+			indices[i] = vtxArray[i];
 		}
 	}
 };

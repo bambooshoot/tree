@@ -3,6 +3,9 @@
 #include <string>
 #include <map>
 #include <maya/MString.h>
+#include <maya/MMatrix.h>
+#include <maya/MMatrixArray.h>
+#include <maya/MUserData.h>
 #include <RenderItemBase.h>
 
 #include <PopulateGeometryAttachedPoint.h>
@@ -34,20 +37,35 @@ struct DispElementEnableData
 {
 	const MString* name;
 	bool enable;
+	uint instanceNum;
+	DispElementEnableData() = default;
+	DispElementEnableData(const MString * cName, bool cEnable) : name(cName), enable(cEnable), instanceNum(1) {};
+	static MString elementName(const MString renderItemName)
+	{
+		int idx = renderItemName.index('_');
+		if(idx > 0)
+			return renderItemName.substring(0, idx);
+
+		return renderItemName;
+	}
 };
 
 using DispEnableMap = std::map<uint, DispElementEnableData>;
+using DispEnablePair = std::pair<uint, DispElementEnableData>;
 
 class RenderBufferManager
 {
 public:
+	using PairType = std::pair<std::string, RenderBuffer>;
+	using MapType = std::map<std::string, RenderBuffer>;
 	~RenderBufferManager()
 	{
 		clear();
 	}
 	void createVertexBuffer(MGeometry& data, MVertexBufferDescriptor& vertexBufferDescriptor)
 	{
-		RenderBuffer* pBuf = get(vertexBufferDescriptor.name());
+		MString renderItemName = DispElementEnableData::elementName(vertexBufferDescriptor.name());
+		RenderBuffer* pBuf = get(renderItemName);
 		if (pBuf == nullptr)
 			return;
 
@@ -112,7 +130,7 @@ public:
 	}
 
 private:
-	std::map<std::string, RenderBuffer> bufMap;
+	MapType bufMap;
 };
 
 inline void renderBufferManagerBuild(

@@ -4,7 +4,7 @@
 class RenderItemCPVTriangles : public RenderItemBase
 {
 public:
-	MHWRender::MRenderItem* create(const MString& renderItemName) override
+	MHWRender::MRenderItem* create(const MString& renderItemName) const override
 	{
 		MHWRender::MRenderer* renderer = MHWRender::MRenderer::theRenderer();
 		const MHWRender::MShaderManager* shaderMgr = renderer->getShaderManager();

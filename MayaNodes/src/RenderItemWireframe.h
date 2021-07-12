@@ -5,7 +5,12 @@
 class RenderItemWireframe : public RenderItemBase
 {
 public:
+<<<<<<< Updated upstream
 	MHWRender::MRenderItem* create(const MString& renderItemName) override
+=======
+	~RenderItemWireframe() override {};
+	MHWRender::MRenderItem* create(const MString& renderItemName) const override
+>>>>>>> Stashed changes
 	{
 		MHWRender::MRenderer* renderer = MHWRender::MRenderer::theRenderer();
 		const MHWRender::MShaderManager* shaderMgr = renderer->getShaderManager();
@@ -36,7 +41,7 @@ public:
 	}
 
 private:
-	void _setLineWidth(MHWRender::MShaderInstance* shaderInstance, float lineWidth)
+	void _setLineWidth(MHWRender::MShaderInstance* shaderInstance, float lineWidth) const
 	{
 		if (!shaderInstance)
 			return;
@@ -46,7 +51,7 @@ private:
 		shaderInstance->setParameter(lineWidthParameterName, lineWidthArray);
 	}
 
-	void _setSolidColor(MHWRender::MShaderInstance* shaderInstance, const float* value)
+	void _setSolidColor(MHWRender::MShaderInstance* shaderInstance, const float* value) const
 	{
 		if (!shaderInstance)
 			return;

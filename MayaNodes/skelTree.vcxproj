@@ -47,7 +47,7 @@
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.mll</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\asunlab\github\tree\MayaNodes\Release\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\asunlab\github\tree\MayaNodes\bin\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">skelTree.dir\Release\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">skelTree</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.mll</TargetExt>
@@ -199,9 +199,12 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="src\PopulateGeometryBase.h" />
     <ClInclude Include="src\PopulateGeometryChains.h" />
     <ClInclude Include="src\PopulateGeometryDeformedPoints.h" />
+    <ClInclude Include="src\PopulateGeometryFoliages.h" />
     <ClInclude Include="src\RenderBuffer.h" />
     <ClInclude Include="src\RenderItemBase.h" />
     <ClInclude Include="src\RenderItemCPVPoint.h" />
+    <ClInclude Include="src\RenderItemCPVTriangles.h" />
+    <ClInclude Include="src\RenderItemTriangles.h" />
     <ClInclude Include="src\RenderItemWireframe.h" />
     <ClInclude Include="src\SkelAttachedPoint.h" />
     <ClInclude Include="src\SkelChain.h" />
@@ -210,6 +213,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="src\SkelChainOpNoise.h" />
     <ClInclude Include="src\SkelDeformedMesh.h" />
     <ClInclude Include="src\SkelDeformedMeshData.h" />
+    <ClInclude Include="src\SkelFoliageData.h" />
     <ClInclude Include="src\SkelFrame.h" />
     <ClInclude Include="src\SkelPoints.h" />
     <ClInclude Include="src\SkelRootFrame.h" />

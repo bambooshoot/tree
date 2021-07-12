@@ -5,7 +5,12 @@
 class RenderItemCPVPoint : public RenderItemBase
 {
 public:
+<<<<<<< Updated upstream
 	MHWRender::MRenderItem* create(const MString& renderItemName) override
+=======
+	~RenderItemCPVPoint() override {};
+	MHWRender::MRenderItem* create(const MString& renderItemName) const override
+>>>>>>> Stashed changes
 	{
 		MHWRender::MRenderer* renderer = MHWRender::MRenderer::theRenderer();
 		const MHWRender::MShaderManager* shaderMgr = renderer->getShaderManager();
@@ -34,7 +39,7 @@ public:
 	}
 
 private:
-	void _setSolidPointSize(MHWRender::MShaderInstance* shaderInstance, float pointSize)
+	void _setSolidPointSize(MHWRender::MShaderInstance* shaderInstance, float pointSize) const
 	{
 		if (!shaderInstance)
 			return;
@@ -44,7 +49,7 @@ private:
 		shaderInstance->setParameter(pointSizeParameterName, pointSizeArray);
 	}
 
-	void _setSolidColor(MHWRender::MShaderInstance* shaderInstance, const float* value)
+	void _setSolidColor(MHWRender::MShaderInstance* shaderInstance, const float* value) const
 	{
 		if (!shaderInstance)
 			return;
