@@ -11,5 +11,6 @@ using namespace MHWRender;
 class RenderItemBase
 {
 public:
+	virtual ~RenderItemBase() {};
 	virtual MHWRender::MRenderItem* create(const MString& renderItemName) = 0;
 };

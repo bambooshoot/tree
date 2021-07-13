@@ -7,18 +7,23 @@ NS_BEGIN
 
 STRUCT(AttachedPointData,
 	Ushort	pointsId;
-	Uint	vid[3];
-	Float	w[2];
-	)
+Uint	vid[3];
+Float	w[2];
+)
 
 STRUCT(RootFrameData,
+	Ushort  rootChainId;
+Ushort  rootSpaceId;
+)
+
+STRUCT(OffsetFrameData,
 	Vec		offset;
-	Quat	q;
-	)
+Quat	q;
+)
 
 STRUCT(FrameData,
 	Float xOffset;
-	Quat q;
-	)
+Quat q;
+)
 
 NS_END

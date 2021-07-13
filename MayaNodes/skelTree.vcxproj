@@ -56,7 +56,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\asunlab\maya2022_sdk\include;D:\asunlab\maya2022_sdk\include\Python37;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\asunlab\maya2022_sdk\include;D:\asunlab\maya2022_sdk\include\Python37;D:\asunlab\outsource\USD-20.11\install\include;src</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -85,8 +85,8 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>D:\asunlab\maya2022_sdk\lib\OpenMaya.lib;D:\asunlab\maya2022_sdk\lib\Foundation.lib;D:\asunlab\maya2022_sdk\lib\OpenMayaUI.lib;D:\asunlab\maya2022_sdk\lib\OpenMayaRender.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>D:\asunlab\maya2022_sdk\lib\OpenMaya.lib;D:\asunlab\maya2022_sdk\lib\Foundation.lib;D:\asunlab\maya2022_sdk\lib\OpenMayaUI.lib;D:\asunlab\maya2022_sdk\lib\OpenMayaRender.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;IexMath-2_2.lib;Iex-2_2.lib;Imath-2_2.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\asunlab\outsource\USD-20.11\install\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -100,7 +100,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\asunlab\maya2022_sdk\include;D:\asunlab\maya2022_sdk\include\Python37;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\asunlab\maya2022_sdk\include;D:\asunlab\maya2022_sdk\include\Python37;D:\asunlab\outsource\USD-20.11\install\include;src</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -130,8 +130,8 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>D:\asunlab\maya2022_sdk\lib\OpenMaya.lib;D:\asunlab\maya2022_sdk\lib\Foundation.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>D:\asunlab\maya2022_sdk\lib\OpenMaya.lib;D:\asunlab\maya2022_sdk\lib\Foundation.lib;D:\asunlab\maya2022_sdk\lib\OpenMayaUI.lib;D:\asunlab\maya2022_sdk\lib\OpenMayaRender.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;IexMath-2_2.lib;Iex-2_2.lib;Imath-2_2.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\asunlab\outsource\USD-20.11\install\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -143,49 +143,6 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <CustomBuild Include="D:\asunlab\github\tree\MayaNodes\CMakeLists.txt">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule D:/asunlab/github/tree/MayaNodes/CMakeLists.txt</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
-D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\bin\cmake.exe -SD:/asunlab/github/tree/MayaNodes -BD:/asunlab/github/tree/MayaNodes --check-stamp-file D:/asunlab/github/tree/MayaNodes/CMakeFiles/generate.stamp
-if %errorlevel% neq 0 goto :cmEnd
-:cmEnd
-endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
-:cmErrorLevel
-exit /b %1
-:cmDone
-if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\asunlab\github\tree\MayaNodes\CMakeFiles\3.16.0-rc1\CMakeCCompiler.cmake;D:\asunlab\github\tree\MayaNodes\CMakeFiles\3.16.0-rc1\CMakeCXXCompiler.cmake;D:\asunlab\github\tree\MayaNodes\CMakeFiles\3.16.0-rc1\CMakeRCCompiler.cmake;D:\asunlab\github\tree\MayaNodes\CMakeFiles\3.16.0-rc1\CMakeSystem.cmake;D:\asunlab\maya2022_sdk\cmake\devkit.cmake;D:\asunlab\maya2022_sdk\cmake\pluginEntry.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\CMakeCInformation.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\CMakeCXXInformation.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\CMakeCommonLanguageInclude.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\CMakeGenericSystem.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\CMakeInitializeConfigs.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\CMakeLanguageInformation.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\CMakeRCInformation.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\CMakeSystemSpecificInformation.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\CMakeSystemSpecificInitialize.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\Compiler\CMakeCommonCompilerMacros.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\Compiler\MSVC-C.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\Compiler\MSVC-CXX.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\Platform\Windows-MSVC-C.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\Platform\Windows-MSVC-CXX.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\Platform\Windows-MSVC.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\Platform\Windows.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\Platform\WindowsPaths.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\asunlab\github\tree\MayaNodes\CMakeFiles\generate.stamp</Outputs>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule D:/asunlab/github/tree/MayaNodes/CMakeLists.txt</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
-D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\bin\cmake.exe -SD:/asunlab/github/tree/MayaNodes -BD:/asunlab/github/tree/MayaNodes --check-stamp-file D:/asunlab/github/tree/MayaNodes/CMakeFiles/generate.stamp
-if %errorlevel% neq 0 goto :cmEnd
-:cmEnd
-endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
-:cmErrorLevel
-exit /b %1
-:cmDone
-if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\asunlab\github\tree\MayaNodes\CMakeFiles\3.16.0-rc1\CMakeCCompiler.cmake;D:\asunlab\github\tree\MayaNodes\CMakeFiles\3.16.0-rc1\CMakeCXXCompiler.cmake;D:\asunlab\github\tree\MayaNodes\CMakeFiles\3.16.0-rc1\CMakeRCCompiler.cmake;D:\asunlab\github\tree\MayaNodes\CMakeFiles\3.16.0-rc1\CMakeSystem.cmake;D:\asunlab\maya2022_sdk\cmake\devkit.cmake;D:\asunlab\maya2022_sdk\cmake\pluginEntry.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\CMakeCInformation.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\CMakeCXXInformation.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\CMakeCommonLanguageInclude.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\CMakeGenericSystem.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\CMakeInitializeConfigs.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\CMakeLanguageInformation.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\CMakeRCInformation.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\CMakeSystemSpecificInformation.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\CMakeSystemSpecificInitialize.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\Compiler\CMakeCommonCompilerMacros.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\Compiler\MSVC-C.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\Compiler\MSVC-CXX.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\Platform\Windows-MSVC-C.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\Platform\Windows-MSVC-CXX.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\Platform\Windows-MSVC.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\Platform\Windows.cmake;D:\asunlab\outsource\cmake-3.16.0-rc1-win64-x64\share\cmake-3.16\Modules\Platform\WindowsPaths.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\asunlab\github\tree\MayaNodes\CMakeFiles\generate.stamp</Outputs>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
-    </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="D:\asunlab\github\tree\MayaNodes\src\AttachedLocalSpace.cpp" />
-    <ClCompile Include="D:\asunlab\github\tree\MayaNodes\src\MayaNodes.cpp" />
-    <ClCompile Include="D:\asunlab\github\tree\MayaNodes\src\SkelAttachedPoint.cpp" />
-    <ClCompile Include="D:\asunlab\github\tree\MayaNodes\src\SkelChain.cpp" />
-    <ClCompile Include="D:\asunlab\github\tree\MayaNodes\src\SkelDeformedMesh.cpp" />
-    <ClCompile Include="D:\asunlab\github\tree\MayaNodes\src\SkelFrame.cpp" />
-    <ClCompile Include="D:\asunlab\github\tree\MayaNodes\src\SkelRootFrame.cpp" />
-    <ClCompile Include="D:\asunlab\github\tree\MayaNodes\src\SkelTree.cpp" />
-    <ClCompile Include="D:\asunlab\github\tree\MayaNodes\src\SkelTreeCreatorNode.cpp" />
-    <ClCompile Include="src\SkelTreeNodeData.cpp" />
-    <ClCompile Include="D:\asunlab\github\tree\MayaNodes\src\SkelTreeVisualization.cpp" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="D:\asunlab\github\tree\MayaNodes\ZERO_CHECK.vcxproj">
       <Project>{89A3D64F-F51E-3878-8ABB-1CA70AEB3E29}</Project>
@@ -223,6 +180,23 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="src\SkelTreeNodeData.h" />
     <ClInclude Include="src\SkelTreeData.h" />
     <ClInclude Include="src\SkelTreeVisualization.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\AttachedLocalSpace.cpp" />
+    <ClCompile Include="src\MayaNodes.cpp" />
+    <ClCompile Include="src\SkelAttachedPoint.cpp" />
+    <ClCompile Include="src\SkelChain.cpp" />
+    <ClCompile Include="src\SkelChainOpBase.cpp" />
+    <ClCompile Include="src\SkelDeformedMesh.cpp" />
+    <ClCompile Include="src\SkelFoliage.cpp" />
+    <ClCompile Include="src\SkelFrame.cpp" />
+    <ClCompile Include="src\SkelGeoBox.cpp" />
+    <ClCompile Include="src\SkelNoise.cpp" />
+    <ClCompile Include="src\SkelOffsetFrame.cpp" />
+    <ClCompile Include="src\SkelTree.cpp" />
+    <ClCompile Include="src\SkelTreeCreatorNode.cpp" />
+    <ClCompile Include="src\SkelTreeNodeData.cpp" />
+    <ClCompile Include="src\SkelTreeVisualization.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

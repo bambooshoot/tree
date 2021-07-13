@@ -5,6 +5,7 @@
 class RenderItemTriangles : public RenderItemBase
 {
 public:
+	~RenderItemTriangles() override {};
 	MHWRender::MRenderItem* create(const MString& renderItemName) override
 	{
 		MHWRender::MRenderer* renderer = MHWRender::MRenderer::theRenderer();

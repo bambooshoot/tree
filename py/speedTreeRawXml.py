@@ -1,4 +1,5 @@
 import sys
+import math
 import xml.dom.minidom as xmldom
 
 def xmlElementToType(node, tag, typeCast):
@@ -41,10 +42,12 @@ def readMeshes(doc):
 def readFoliages(doc):
     LeafReferences = doc.getElementsByTagName('LeafReferences')[0]
     pntList = [ xmlElementToType(LeafReferences, tag, float) for tag in ["X","Y","Z"] ]
-    qList = [ xmlElementToType(LeafReferences, tag, float) for tag in ["RotAxisX","RotAxisY","RotAxisZ","RotAngle"] ]
+    rotAxisList = [ xmlElementToType(LeafReferences, tag, float) for tag in ["RotAxisX","RotAxisY","RotAxisZ"] ]
+
     return {
         "pnt":list(zip(*pntList)),
-        "q":list(zip(*qList)),
+        "rotAxis":list(zip(*rotAxisList)),
+        "rotRadian":[math.radians(angle) for angle in xmlElementToType(LeafReferences, "RotAngle", float)],
         "scale":xmlElementToType(LeafReferences, "Scale", float),
         "meshId":xmlElementToType(LeafReferences, "MeshID", int),
         "boneId":xmlElementToType(LeafReferences, "BoneID", int)

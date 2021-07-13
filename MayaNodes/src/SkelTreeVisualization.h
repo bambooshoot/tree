@@ -29,7 +29,7 @@ public:
 	MBoundingBox    boundingBox() const override;
 
 	skelTree::RSkelTreeData getSkelTreeData() const;
-	skelTree::ChainOpData chainOpData();
+	skelTree::AniOpData aniOpData();
 	PopulateGeometryData popGeoData() const;
 	DispEnableMap dispEnableData() const;
 	void deformedMeshVertexIndices(std::vector<MIntArray>& idxArray) const;
@@ -40,10 +40,9 @@ public:
 
 	static MObject mInSkelTreeData;
 	static MObject mTime;
-	static MObject mNoiseValue;
-	static MObject mNoiseFreqU;
-	static MObject mNoiseFreqChain;
-	static MObject mNoiseOffset;
+	static MObject mNoiseTrunkVFO;
+	static MObject mNoiseBranchVFO;
+	static MObject mNoiseLeafVFO;
 	static MObject mWindDirection;
 
 	static MObject mDispChainAxisScale;
@@ -77,9 +76,9 @@ public:
 	void populateGeometry(const MGeometryRequirements& requirements, const MRenderItemList& renderItems, MGeometry& data) override;
 
 	static const MString sDeformedPoints;
-	static const MString sSpace;
-	static const MString sJointName;
-	static const MString sMeshName;
+	static const MString sChainBoxes;
+	static const MString sChainLine;
+	static const MString sDeformedMeshName;
 	static const MString sAttachedPointName;
 	static const MString sFoliageName;
 

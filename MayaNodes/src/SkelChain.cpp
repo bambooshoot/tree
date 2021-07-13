@@ -10,14 +10,10 @@ Chain::~Chain()
 	}
 }
 
-void Chain::build(CRChainData chainData, CSkelTreeDataP pTreeData)
+void Chain::build(CRChainData chainData, CSkelTreeDataP pTreeData, CMatrix44P pParentMatrix)
 {
-	if (chainData.attachedPointData.pointsId != USHORT_MAX) {
-		attachedPoint.reset(&chainData.attachedPointData, pTreeData);
-	}
-
 	SpaceFactory fac;
-	jointList.push_back(fac.create(RootFrame::typeId, &chainData.rootFrameData, pTreeData));
+	jointList.push_back(fac.create(OffsetFrame::typeId, &chainData.offsetFrameData, pTreeData));
 
 	for (auto& frameData : chainData.frameDataList)
 		jointList.push_back(fac.create(Frame::typeId, &frameData, pTreeData));
@@ -27,7 +23,7 @@ void Chain::build(CRChainData chainData, CSkelTreeDataP pTreeData)
 	restMatrixList.resize(cSpaceNum, zeroMat);
 	restInvMatrixList.resize(cSpaceNum, zeroMat);
 	matrixList.resize(cSpaceNum, zeroMat);
-	_updateRestMatrix();
+	_updateRestMatrix(pParentMatrix);
 	_updateParam();
 }
 
@@ -56,12 +52,15 @@ CRMatrix44 Chain::restInvMatrix(CUint spaceId) const
 	return restInvMatrixList[spaceId];
 }
 
-void Chain::updateMatrix(CRQuatList qList)
+void Chain::updateMatrix(CRQuatList qList, CMatrix44P pRootMat)
 {
 	Matrix44 mat;
 
 	auto iter = matrixList.begin();
-	*iter = attachedPoint.matrix();
+
+	if (pRootMat != nullptr)
+		*iter = *pRootMat;
+
 	mat = *iter;
 	++iter;
 
@@ -79,12 +78,14 @@ Float Chain::xParam(CUint spaceId) const
 	return xParamList[spaceId];
 }
 
-void Chain::_updateRestMatrix()
+void Chain::_updateRestMatrix(CMatrix44P pRootMat)
 {
 	Matrix44 mat;
 
 	auto iter = restMatrixList.begin();
-	*iter = attachedPoint.matrix();
+
+	if (pRootMat != nullptr)
+		*iter = *pRootMat;
 
 	auto invIter = restInvMatrixList.begin();
 	*invIter = iter->inverse();

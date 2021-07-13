@@ -1,12 +1,13 @@
 #pragma once
 
 #include <SkelTreeData.h>
+#include <SkelChainOpBase.h>
 
 NS_BEGIN
 
 CLASS(Foliage,
 public:
-	void update(CRFoliageData foliageData, CRQuat q, CSkelTreeDataP pTreeData);
+	void update(CUint foliageId, CSkelTreeDataP pTreeData, CRAniOpData opData, CAniOpBaseP pAniOp);
 	CRMatrix44 matrix() const;
 
 private:

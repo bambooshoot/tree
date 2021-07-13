@@ -40,12 +40,7 @@
 MTypeId SkelTreeCreator::id(0x20220002);
 
 MObject SkelTreeCreator::mChains;
-
-MObject SkelTreeCreator::mAttachedPoint;
-MObject SkelTreeCreator::mTargetMeshId;
-MObject SkelTreeCreator::mAttachedWeights;
-MObject SkelTreeCreator::mAttachedPointId;
-MObject SkelTreeCreator::mAttachedWeight;
+MObject SkelTreeCreator::mTrunkFrameId;
 
 MObject SkelTreeCreator::mRootFrame;
 MObject SkelTreeCreator::mOffset;
@@ -65,7 +60,9 @@ MObject SkelTreeCreator::mFoliageMeshId;
 MObject SkelTreeCreator::mFoliageAttachedMeshId;
 MObject SkelTreeCreator::mFoliageAttachedPointId;
 MObject SkelTreeCreator::mFoliageAttachedWeight;
-MObject SkelTreeCreator::mFoliageQ;
+MObject SkelTreeCreator::mFoliageScale;
+MObject SkelTreeCreator::mFoliageRotAxis;
+MObject SkelTreeCreator::mFoliageRotRadian;
 
 MObject SkelTreeCreator::mInMeshes;
 MObject SkelTreeCreator::mInMesh;
@@ -109,18 +106,6 @@ MStatus SkelTreeCreator::initialize()
 	status = addAttribute(mInMeshes);
 	// in meshes
 
-	// attached point
-	mAttachedPointId = numAttr.create("attachedPointId", "apd", MFnNumericData::k3Int, -1, &status);
-	mAttachedWeight = numAttr.create("attachedWeight", "awt", MFnNumericData::k2Double, 0.0, &status);
-
-	mTargetMeshId = numAttr.create("targetMeshId","tmd", MFnNumericData::kInt, -1, &status);
-
-	mAttachedPoint = compoundAttrib.create("attachedPoint", "ahp");
-	compoundAttrib.addChild(mTargetMeshId);
-	compoundAttrib.addChild(mAttachedPointId);
-	compoundAttrib.addChild(mAttachedWeight);
-	// attached point
-
 	// root frame
 	mOffset = numAttr.create("offset", "oft", MFnNumericData::k3Double, 0.0, &status);
 	mRootQ = numAttr.create("rootQuat", "rtq", MFnNumericData::k4Double, 0.0, &status);
@@ -141,11 +126,13 @@ MStatus SkelTreeCreator::initialize()
 	// frame
 
 	// chains
+	mTrunkFrameId = numAttr.create("trunkFrameId", "tfi", MFnNumericData::kInt, -1, &status);
 	mChains = compoundAttrib.create("chains", "chn");
-	compoundAttrib.addChild(mAttachedPoint);
+	compoundAttrib.addChild(mTrunkFrameId);
 	compoundAttrib.addChild(mRootFrame);
 	compoundAttrib.addChild(mFrames);
 	compoundAttrib.setArray(true);
+
 	status = addAttribute(mChains);
 	// chains
 
@@ -167,15 +154,18 @@ MStatus SkelTreeCreator::initialize()
 	mFoliageAttachedMeshId = numAttr.create("foliageAttachedMeshId", "fad", MFnNumericData::kInt, -1, &status);
 	mFoliageAttachedPointId = tAttr.create("foliageAttachedPointId", "fpd", MFnData::kIntArray, &status);
 	mFoliageAttachedWeight = tAttr.create("foliageAttachedWeight", "fwt", MFnData::kDoubleArray, &status);
-
-	mFoliageQ = tAttr.create("foliageQuat", "foq", MFnData::kDoubleArray, &status);
+	mFoliageScale = tAttr.create("foliageScale", "fsl", MFnData::kDoubleArray, &status);
+	mFoliageRotAxis = tAttr.create("foliageRotAxis", "frx", MFnData::kDoubleArray, &status);
+	mFoliageRotRadian = tAttr.create("foliageRotRadian", "frr", MFnData::kDoubleArray, &status);
 
 	mFoliages = compoundAttrib.create("foliages", "flg");
 	compoundAttrib.addChild(mFoliageMeshId);
 	compoundAttrib.addChild(mFoliageAttachedMeshId);
 	compoundAttrib.addChild(mFoliageAttachedPointId);
 	compoundAttrib.addChild(mFoliageAttachedWeight);
-	compoundAttrib.addChild(mFoliageQ);
+	compoundAttrib.addChild(mFoliageScale);
+	compoundAttrib.addChild(mFoliageRotAxis);
+	compoundAttrib.addChild(mFoliageRotRadian);
 
 	status = addAttribute(mFoliages);
 	// foliages
@@ -260,34 +250,24 @@ void SkelTreeCreator::inputChains(skelTree::SkelTreeData& skelTreeData, MDataBlo
 	for (uint chainId = 0; chainId < inArrayChainsH.elementCount(); ++chainId) {
 		inArrayChainsH.jumpToElement(chainId);
 		MDataHandle chainH = inArrayChainsH.inputValue();
-		MDataHandle attachedPointH = chainH.child(mAttachedPoint);
+		MDataHandle trunkFrameIdH = chainH.child(mTrunkFrameId);
 		MDataHandle rootFrameH = chainH.child(mRootFrame);
 		MArrayDataHandle framesH = chainH.child(mFrames);
 
 		skelTree::RChainData chainData = skelTreeData.addChainData();
 
-		// attachedPointData
-		chainData.attachedPointData.pointsId = attachedPointH.child(mTargetMeshId).asInt();
-		skelTree::RAttachedPointData apd = chainData.attachedPointData;
+		chainData.trunkFrameId = trunkFrameIdH.asInt();
 
-		int3& id3 = attachedPointH.child(mAttachedPointId).asInt3();
-		apd.vid[0] = id3[0];
-		apd.vid[1] = id3[1];
-		apd.vid[2] = id3[2];
-
-		double2& d2 = attachedPointH.child(mAttachedWeight).asDouble2();
-		apd.w[0] = float(d2[0]);
-		apd.w[1] = float(d2[1]);
-
-		// rootFrameData
+		// offsetFrameData
 		double3 &offset = rootFrameH.child(mOffset).asDouble3();
-		chainData.rootFrameData.offset.setValue(offset[0], offset[1], offset[2]);
+		chainData.offsetFrameData.offset.setValue(offset[0], offset[1], offset[2]);
 
 		double4 &rootQ = rootFrameH.child(mRootQ).asDouble4();
-		chainData.rootFrameData.q.r = float(rootQ[3]);
-		chainData.rootFrameData.q.v.x = float(rootQ[0]);
-		chainData.rootFrameData.q.v.y = float(rootQ[1]);
-		chainData.rootFrameData.q.v.z = float(rootQ[2]);
+		
+		chainData.offsetFrameData.q.v.x = float(rootQ[0]);
+		chainData.offsetFrameData.q.v.y = float(rootQ[1]);
+		chainData.offsetFrameData.q.v.z = float(rootQ[2]);
+		chainData.offsetFrameData.q.r = float(rootQ[3]);
 
 		// frameData
 		skelTree::FrameData frameData;
@@ -297,10 +277,11 @@ void SkelTreeCreator::inputChains(skelTree::SkelTreeData& skelTreeData, MDataBlo
 			frameData.xOffset = float(frameH.child(mXOffset).asDouble());
 
 			double4& q = frameH.child(mFrameQ).asDouble4();
-			frameData.q.r = float(q[3]);
+			
 			frameData.q.v.x = float(q[0]);
 			frameData.q.v.y = float(q[1]);
 			frameData.q.v.z = float(q[2]);
+			frameData.q.r = float(q[3]);
 
 			chainData.frameDataList.push_back(frameData);
 		}
@@ -341,12 +322,19 @@ void SkelTreeCreator::inputFoliages(skelTree::SkelTreeData& skelTreeData, MDataB
 	MFnDoubleArrayData fnWeightData(foliageH.child(mFoliageAttachedWeight).data());
 	MDoubleArray weightArray = fnWeightData.array();
 
-	MFnDoubleArrayData fnQData(foliageH.child(mFoliageQ).data());
-	MDoubleArray qArray = fnQData.array();
+	MFnDoubleArrayData fnRotAxisData(foliageH.child(mFoliageRotAxis).data());
+	MDoubleArray axisArray = fnRotAxisData.array();
 
-	int attachedPointNum = pIdArray.length() / 3;
-	uint pId3 = 0, wId2 = 0, qId4=0;
-	for (int i = 0; i < attachedPointNum; ++i) {
+	MFnDoubleArrayData fnRotRadianData(foliageH.child(mFoliageRotRadian).data());
+	MDoubleArray radianArray = fnRotRadianData.array();
+
+	MFnDoubleArrayData fnScaleData(foliageH.child(mFoliageScale).data());
+	MDoubleArray scaleArray = fnScaleData.array();
+
+	int foliageNum = scaleArray.length();
+	uint pId3 = 0, wId2 = 0, qId3=0;
+	skelTree::Vec v;
+	for (int i = 0; i < foliageNum; ++i) {
 		skelTree::RFoliageData foliageData = skelTreeData.addFoliageData();
 		foliageData.pointsId = meshId;
 		foliageData.attachPoint.pointsId = attachedMeshId;
@@ -358,9 +346,11 @@ void SkelTreeCreator::inputFoliages(skelTree::SkelTreeData& skelTreeData, MDataB
 		foliageData.attachPoint.w[0] = float(weightArray[wId2++]);
 		foliageData.attachPoint.w[1] = float(weightArray[wId2++]);
 
-		foliageData.q.v.x = float(qArray[qId4++]);
-		foliageData.q.v.y = float(qArray[qId4++]);
-		foliageData.q.v.z = float(qArray[qId4++]);
-		foliageData.q.r = float(qArray[qId4++]);
+		foliageData.scale = float(scaleArray[i]);
+
+		v.setValue(axisArray[qId3], axisArray[qId3+1], axisArray[qId3+2]);
+		foliageData.q.setAxisAngle(v, float(radianArray[i]));
+
+		qId3 += 3;
 	}
 }

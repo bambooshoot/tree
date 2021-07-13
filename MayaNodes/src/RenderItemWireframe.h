@@ -5,6 +5,7 @@
 class RenderItemWireframe : public RenderItemBase
 {
 public:
+	~RenderItemWireframe() override {};
 	MHWRender::MRenderItem* create(const MString& renderItemName) override
 	{
 		MHWRender::MRenderer* renderer = MHWRender::MRenderer::theRenderer();

@@ -13,12 +13,15 @@ STRUCT(SkelTreeData,
 ChainDataList chainDataList;
 DeformedMeshDataList deformedDataList;
 FoliageDataList foliageDataList;
+Ushort trunkChainId;
 Box boundBox;
 void reset()
 {
+	trunkChainId = 0;
 	pointsList.clear();
 	chainDataList.clear();
 	deformedDataList.clear();
+	foliageDataList.clear();
 };
 RPoints addPoints()
 {

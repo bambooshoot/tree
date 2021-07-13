@@ -25,10 +25,9 @@ void DeformedMesh::deform()
 	CRVecList restPoints = pPoints->rest();
 	RVecList  deformedPoints = pPoints->deformed();
 
-	auto rIter = restPoints.begin();
-	auto dIter = deformedPoints.begin();
-
 	for (auto& w : wList) {
+		auto dIter = deformedPoints.begin() + w.pId;
+		auto rIter = restPoints.begin() + w.pId;
 		*dIter = Vec(0.0f, 0.0f, 0.0f);
 		for (int i = 0; i < SPLINE_WEIGHT_NUM; ++i) {
 			CRMatrix44 restInvMat = chain.jointRestInvMatrix(w.w.id[i]);
@@ -36,8 +35,6 @@ void DeformedMesh::deform()
 
 			*dIter += ((*rIter * restInvMat) * mat) * w.w.w[i];
 		}
-		++dIter;
-		++rIter;
 	}
 }
 

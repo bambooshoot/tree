@@ -1,20 +1,20 @@
-#include <SkelRootFrame.h>
+#include <SkelOffsetFrame.h>
 
 NS_BEGIN
 
-SpaceTypeId RootFrame::typeId(0x02);
+SpaceTypeId OffsetFrame::typeId(0x02);
 
-SpaceP RootFrame::create(CVoidP pData, CSkelTreeDataP pTreeData)
+SpaceP OffsetFrame::create(CVoidP pData, CSkelTreeDataP pTreeData)
 {
-	return new RootFrame((RootFrameData*)pData, pTreeData);
+	return new OffsetFrame((OffsetFrameData*)pData, pTreeData);
 }
 
-RootFrame::RootFrame(CRootFrameDataP pData, CSkelTreeDataP pTreeData)
+OffsetFrame::OffsetFrame(COffsetFrameDataP pData, CSkelTreeDataP pTreeData)
 {
 	_data = pData;
 }
 
-Matrix44 RootFrame::restMatrix() const
+Matrix44 OffsetFrame::restMatrix() const
 {
 	Matrix44 mat;
 	mat = _data->q.toMatrix44();
@@ -24,7 +24,7 @@ Matrix44 RootFrame::restMatrix() const
 	return mat;
 }
 
-Matrix44 RootFrame::matrix(CRQuat q) const
+Matrix44 OffsetFrame::matrix(CRQuat q) const
 {
 	Matrix44 mat;
 	Quat q2 = _data->q * q;
@@ -36,12 +36,12 @@ Matrix44 RootFrame::matrix(CRQuat q) const
 	return mat;
 }
 
-Float RootFrame::xParam() const
+Float OffsetFrame::xParam() const
 {
 	return 0.0f;
 }
 
-CRQuat RootFrame::q() const
+CRQuat OffsetFrame::q() const
 {
 	return _data->q;
 }

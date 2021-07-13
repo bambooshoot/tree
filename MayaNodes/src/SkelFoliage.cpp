@@ -1,14 +1,32 @@
 #include <SkelFoliage.h>
 #include <SkelAttachedPoint.h>
+#include <SkelChainOpDirectionalWind.h>
 
 NS_BEGIN
 
-void Foliage::update(CRFoliageData foliageData, CRQuat q, CSkelTreeDataP pTreeData)
+void Foliage::update(CUint foliageId, CSkelTreeDataP pTreeData, CRAniOpData opData, CAniOpBaseP pAniOp)
 {
+	CRFoliageData foliageData = pTreeData->foliageDataList[foliageId];
+
 	AttachedPoint ap;
 	ap.reset(&foliageData.attachPoint, pTreeData);
-	Quat q1 = q * foliageData.q;
-	_matrix = ap.matrix() * q1.toMatrix44();
+	Vec p = ap.point();
+	Quat q1 = foliageData.q;
+
+	AniOpState state;
+	state.fIdx = Float(foliageId);
+	state.p = p;
+
+	Quat q = (*pAniOp).computeQ(state, opData);
+
+	q1 *= q;
+
+	_matrix = Matrix44();
+	_matrix.setScale(foliageData.scale);
+	_matrix *= q1.toMatrix44();
+	_matrix[3][0] = p.x;
+	_matrix[3][1] = p.y;
+	_matrix[3][2] = p.z;
 }
 
 CRMatrix44 Foliage::matrix() const

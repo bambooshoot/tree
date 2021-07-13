@@ -5,6 +5,7 @@
 class PopulateGeometryMesh : public PopulateGeometryBase
 {
 public:
+	~PopulateGeometryMesh() override {}
 	uint vertexSize() const
 	{
 		return  _pTreeData->deformedPointNum();

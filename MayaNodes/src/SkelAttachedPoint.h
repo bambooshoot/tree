@@ -9,6 +9,7 @@ public:
 	AttachedPoint();
 	void reset(CAttachedPointDataP pData, CSkelTreeDataP pTreeData);
 	Matrix44 matrix() const;
+	Vec point() const;
 
 private:
 	CAttachedPointDataP _data;

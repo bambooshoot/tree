@@ -18,3 +18,5 @@ MayaNodes/ALL_BUILD.vcxproj
 *.lib
 *.pdb
 *.exp
+py/__pycache__/attachedLocalSpace.cpython-37.pyc
+MayaNodes/skelTree.vcxproj
