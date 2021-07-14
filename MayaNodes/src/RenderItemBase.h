@@ -14,3 +14,5 @@ public:
 	virtual ~RenderItemBase() {};
 	virtual MHWRender::MRenderItem* create(const MString& renderItemName) = 0;
 };
+
+using RenderItemBasePtr = std::unique_ptr<RenderItemBase>;

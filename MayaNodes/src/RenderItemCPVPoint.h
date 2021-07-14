@@ -6,21 +6,21 @@ class RenderItemCPVPoint : public RenderItemBase
 {
 public:
 	~RenderItemCPVPoint() override {};
-	MHWRender::MRenderItem* create(const MString& renderItemName) override
+	MRenderItem* create(const MString& renderItemName) override
 	{
-		MHWRender::MRenderer* renderer = MHWRender::MRenderer::theRenderer();
-		const MHWRender::MShaderManager* shaderMgr = renderer->getShaderManager();
+		MRenderer* renderer = MRenderer::theRenderer();
+		const MShaderManager* shaderMgr = renderer->getShaderManager();
 
-		MHWRender::MRenderItem* vertexItem = MHWRender::MRenderItem::Create(
+		MRenderItem* vertexItem = MRenderItem::Create(
 			renderItemName,
-			MHWRender::MRenderItem::DecorationItem,
-			MHWRender::MGeometry::kPoints);
+			MRenderItem::DecorationItem,
+			MGeometry::kPoints);
 
-		vertexItem->setDrawMode(MHWRender::MGeometry::kAll);
-		vertexItem->depthPriority(MHWRender::MRenderItem::sDormantPointDepthPriority);
+		vertexItem->setDrawMode(MGeometry::kAll);
+		vertexItem->depthPriority(MRenderItem::sDormantPointDepthPriority);
 
-		MHWRender::MShaderInstance* shader = shaderMgr->getStockShader(
-			MHWRender::MShaderManager::k3dCPVFatPointShader);
+		MShaderInstance* shader = shaderMgr->getStockShader(
+			MShaderManager::k3dCPVFatPointShader);
 
 		static const float pointSize = 4.0f;
 		_setSolidPointSize(shader, pointSize);
@@ -35,7 +35,7 @@ public:
 	}
 
 private:
-	void _setSolidPointSize(MHWRender::MShaderInstance* shaderInstance, float pointSize)
+	void _setSolidPointSize(MShaderInstance* shaderInstance, float pointSize)
 	{
 		if (!shaderInstance)
 			return;
@@ -45,7 +45,7 @@ private:
 		shaderInstance->setParameter(pointSizeParameterName, pointSizeArray);
 	}
 
-	void _setSolidColor(MHWRender::MShaderInstance* shaderInstance, const float* value)
+	void _setSolidColor(MShaderInstance* shaderInstance, const float* value)
 	{
 		if (!shaderInstance)
 			return;

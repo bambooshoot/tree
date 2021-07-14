@@ -20,7 +20,7 @@
 #include <SkelTreeCreatorNode.h>
 
 MTypeId SkelTreeVisualization::id(0x20220003);
-MString	SkelTreeVisualization::drawDbClassification("drawdb/geometry/skelTreeVisualization");
+MString	SkelTreeVisualization::drawDbClassification("drawdb/subscene/skelTreeVisualization");
 MString	SkelTreeVisualization::drawRegistrantId("skelTreeVisualization");
 
 MObject SkelTreeVisualization::mInSkelTreeData;
@@ -222,8 +222,44 @@ DispEnableMap SkelTreeVisualization::dispEnableData() const
 	return visElementMap;
 }
 
+void renderBufferManagerBuild(RenderBufferManager & manager)
+{
+	RenderItemBase* pRenderItem;
+	DrawableBufferBase* pDrawBuf;
+
+	//// draw chain boxes
+	//pRenderItem = new RenderItemCPVTriangles();
+	//pDrawBuf = new DrawableBufferChainBoxes();
+	//manager.registerBuffer(SkelTreeVisualizationOverride::sChainBoxes, pRenderItem, pDrawBuf);
+
+	//// draw deformed points
+	//pRenderItem = new RenderItemCPVPoint();
+	//pDrawBuf = new DrawableBufferDeformedPoints();
+	//manager.registerBuffer(SkelTreeVisualizationOverride::sDeformedPoints, pRenderItem, pDrawBuf);
+
+	// draw chain lines
+	pRenderItem = new RenderItemCPVPoint();
+	pDrawBuf = new DrawableBufferChainLine();
+	manager.registerBuffer(SkelTreeVisualizationOverride::sChainLine, pRenderItem, pDrawBuf);
+
+	//// draw deformed triangles
+	//pRenderItem = new RenderItemTriangles();
+	//pDrawBuf = new DrawableBufferMesh();
+	//manager.registerBuffer(SkelTreeVisualizationOverride::sDeformedMeshName, pRenderItem, pDrawBuf);
+
+	//// draw attached point
+	//pRenderItem = new RenderItemCPVPoint();
+	//pDrawBuf = new DrawableBufferAttachedPoint();
+	//manager.registerBuffer(SkelTreeVisualizationOverride::sAttachedPointName, pRenderItem, pDrawBuf);
+
+	//// draw foliages
+	//pRenderItem = new RenderItemTriangles();
+	//pDrawBuf = new DrawableBufferFoliages();
+	//manager.registerBuffer(SkelTreeVisualizationOverride::sFoliageName, pRenderItem, pDrawBuf);
+}
+
 SkelTreeVisualizationOverride::SkelTreeVisualizationOverride(const MObject& obj)
-	: MPxGeometryOverride(obj)
+	: MPxSubSceneOverride(obj)
 	, mVisNode(nullptr)
 {
 	MStatus returnStatus;
@@ -234,13 +270,39 @@ SkelTreeVisualizationOverride::SkelTreeVisualizationOverride(const MObject& obj)
 	mVisNode = dynamic_cast<SkelTreeVisualization*>(userNode);
 }
 
-bool SkelTreeVisualizationOverride::requiresGeometryUpdate() const
+bool SkelTreeVisualizationOverride::hasUIDrawables() const
 {
+	return false;
+}
+
+bool SkelTreeVisualizationOverride::requiresUpdate(
+	const MHWRender::MSubSceneContainer& container,
+	const MHWRender::MFrameContext& frameContext) const
+{
+	// Nothing in the container, definitely need to update
+	if (container.count() == 0)
+	{
+		return true;
+	}
+
+	// Update always. This could be optimized to only update when the
+	// actual shape node detects a change.
 	return true;
 }
 
-void SkelTreeVisualizationOverride::updateDG()
+void SkelTreeVisualizationOverride::update(
+	MHWRender::MSubSceneContainer& container,
+	const MHWRender::MFrameContext& frameContext)
 {
+	updateGeometry();
+	//cacheBuffers();
+	buildRenderItems(container);
+	//populateInstances();
+}
+
+void SkelTreeVisualizationOverride::updateGeometry()
+{
+	// prepare geometries
 	skelTree::AniOpData opData = mVisNode->aniOpData();
 	popGeoData = mVisNode->popGeoData();
 	pTreeData = &mVisNode->getSkelTreeData();
@@ -249,59 +311,72 @@ void SkelTreeVisualizationOverride::updateDG()
 	skelTree.buildDeform(pTreeData, opData);
 	skelTree.buildFoliages(pTreeData, opData);
 
-	renderBufferManagerBuild(bufManager, pTreeData, &skelTree, &popGeoData, visElementMap);
+	DrawableBufferParam param;
+	param.pTree = &skelTree;
+	param.pTreeData = pTreeData;
+	param.pPopGeoData = &popGeoData;
+
+	renderBufferManagerBuild(bufManager);
+	bufManager.setParam(param);
 }
 
-void SkelTreeVisualizationOverride::updateRenderItems(const MDagPath& path, MRenderItemList& list)
+void SkelTreeVisualizationOverride::buildRenderItems(MHWRender::MSubSceneContainer& container)
 {
-	MHWRender::MRenderItem* vertexItem = NULL;
-
+	// build render items
 	for (auto renderItemData : visElementMap) {
 		const MString& renderItemName = *renderItemData.second.name;
-		int index = list.indexOf(renderItemName);
-		if (index < 0)
-		{
-			RenderBuffer* pBuf = bufManager.get(renderItemName);
-			if (pBuf) {
-				vertexItem = pBuf->pRenderItem->create(renderItemName);
-				list.append(vertexItem);
+		MRenderItem* pItem = container.find(renderItemName);
+		if (renderItemData.second.enable) {
+			if (!pItem)
+			{
+				DrawItem* pBuf = bufManager.get(renderItemName);
+				if (pBuf) {
+					pItem = pBuf->pRenderItem->create(renderItemName);
+
+					MVertexBufferArray vtxBufArray;
+					MIndexBuffer* pIdxBuf = nullptr;
+
+					pBuf->pDrawBuf->build(vtxBufArray, pIdxBuf);
+					MBoundingBox bbox;
+					bbox.expand(MPoint(pTreeData->boundBox.min.x, pTreeData->boundBox.min.y, pTreeData->boundBox.min.z));
+					bbox.expand(MPoint(pTreeData->boundBox.max.x, pTreeData->boundBox.max.y, pTreeData->boundBox.max.z));
+
+					MStatus status = setGeometryForRenderItem(*pItem, vtxBufArray, *pIdxBuf, nullptr);
+
+					int i = 0;
+					if( status == MStatus::kSuccess)
+						i = 0;
+					if (status == MStatus::kNotFound)
+						i = 0;
+					if (status == MStatus::kInvalidParameter)
+						i = 0;
+					if (status == MStatus::kFailure)
+						i = 0;
+
+					for (uint i = 0; i < vtxBufArray.count(); ++i) {
+						MString name = vtxBufArray.getName(i);
+						int ii = 0;
+					}
+
+
+					//if (pBuf->pDrawBuf->hasInstance()) {
+					//	MMatrixArray matArray;
+					//	pBuf->pDrawBuf->instanceMatrices(matArray);
+					//	setInstanceTransformArray(*pItem, matArray);
+					//}
+
+					container.add(pItem);
+				}
 			}
-		}
-		else if (renderItemData.second.enable == false){
-			list.removeAt(index);
-		}
-	}
-}
-
-void SkelTreeVisualizationOverride::populateGeometry(
-	const MGeometryRequirements& requirements, const MRenderItemList& renderItems, MGeometry& data)
-{
-	const MVertexBufferDescriptorList& vertexBufferDescriptorList = requirements.vertexRequirements();
-	const int numberOfVertexRequirments = vertexBufferDescriptorList.length();
-
-	// vertex buffer
-	MVertexBufferDescriptor vertexBufferDescriptor;
-	for (int requirmentNumber = 0; requirmentNumber < numberOfVertexRequirments; ++requirmentNumber)
-	{
-		if (!vertexBufferDescriptorList.getDescriptor(requirmentNumber, vertexBufferDescriptor))
-			continue;
-
-		bufManager.createVertexBuffer(data, vertexBufferDescriptor);
-	}
-
-	// index buffer
-	for (int i = 0; i < renderItems.length(); ++i)
-	{
-		const MRenderItem* item = renderItems.itemAt(i);
-
-		if (!item)
-			continue;
-
-		const MString& renderItemName = item->name();
-		RenderBuffer* pBuf = bufManager.get(renderItemName);
-
-		if (pBuf) {
-			pBuf->pPopulate->populateGeometryIndex(data, item, renderItemName);
+		} else {
+			if (pItem) {
+				container.remove(renderItemName);
+				DrawItem* pBuf = bufManager.get(renderItemName);
+				if (pBuf) {
+					if (pBuf->pDrawBuf->hasInstance())
+						removeAllInstances(*pItem);
+				}
+			}
 		}
 	}
 }

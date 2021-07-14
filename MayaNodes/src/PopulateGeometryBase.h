@@ -61,7 +61,7 @@ public:
 protected:
 	skelTree::SkelTreeDataP _pTreeData;
 	skelTree::SkelTreeP		_pTree;
-	PopulateGeometryData* _pPopGeoData;
+	PopulateGeometryData*   _pPopGeoData;
 
 	virtual void _fillIndex(unsigned int* indices) = 0;
 };

@@ -153,12 +153,18 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\AttachedLocalSpace.h" />
-    <ClInclude Include="src\PopulateGeometryBase.h" />
-    <ClInclude Include="src\PopulateGeometryChains.h" />
-    <ClInclude Include="src\PopulateGeometryDeformedPoints.h" />
+    <ClInclude Include="src\DrawableBufferAttachedPoint.h" />
+    <ClInclude Include="src\DrawableBufferBase.h" />
+    <ClInclude Include="src\DrawableBufferChainBoxes.h" />
+    <ClInclude Include="src\DrawableBufferChainLine.h" />
+    <ClInclude Include="src\DrawableBufferDeformedPoints.h" />
+    <ClInclude Include="src\DrawableBufferFoliages.h" />
+    <ClInclude Include="src\DrawableBufferMesh.h" />
     <ClInclude Include="src\RenderBuffer.h" />
     <ClInclude Include="src\RenderItemBase.h" />
     <ClInclude Include="src\RenderItemCPVPoint.h" />
+    <ClInclude Include="src\RenderItemCPVTriangles.h" />
+    <ClInclude Include="src\RenderItemTriangles.h" />
     <ClInclude Include="src\RenderItemWireframe.h" />
     <ClInclude Include="src\SkelAttachedPoint.h" />
     <ClInclude Include="src\SkelChain.h" />
@@ -182,6 +188,7 @@
     <ClInclude Include="src\SkelTreeVisualization.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DrawableBufferBase.cpp" />
     <ClCompile Include="src\AttachedLocalSpace.cpp" />
     <ClCompile Include="src\MayaNodes.cpp" />
     <ClCompile Include="src\SkelAttachedPoint.cpp" />

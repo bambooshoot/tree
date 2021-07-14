@@ -6,21 +6,21 @@ class RenderItemWireframe : public RenderItemBase
 {
 public:
 	~RenderItemWireframe() override {};
-	MHWRender::MRenderItem* create(const MString& renderItemName) override
+	MRenderItem* create(const MString& renderItemName) override
 	{
-		MHWRender::MRenderer* renderer = MHWRender::MRenderer::theRenderer();
-		const MHWRender::MShaderManager* shaderMgr = renderer->getShaderManager();
+		MRenderer* renderer = MRenderer::theRenderer();
+		const MShaderManager* shaderMgr = renderer->getShaderManager();
 
-		MHWRender::MRenderItem* vertexItem = MHWRender::MRenderItem::Create(
+		MRenderItem* vertexItem = MRenderItem::Create(
 			renderItemName,
-			MHWRender::MRenderItem::DecorationItem,
-			MHWRender::MGeometry::kLines);
+			MRenderItem::DecorationItem,
+			MGeometry::kLines);
 
-		vertexItem->setDrawMode(MHWRender::MGeometry::kAll);
-		vertexItem->depthPriority(MHWRender::MRenderItem::sDormantPointDepthPriority);
+		vertexItem->setDrawMode(MGeometry::kAll);
+		vertexItem->depthPriority(MRenderItem::sDormantPointDepthPriority);
 
-		MHWRender::MShaderInstance* shader = shaderMgr->getStockShader(
-			MHWRender::MShaderManager::k3dCPVThickLineShader);
+		MShaderInstance* shader = shaderMgr->getStockShader(
+			MShaderManager::k3dThickLineShader);
 
 		// Set lines a bit thicker to stand out
 		static const float lineSize = 3.0f;
@@ -37,7 +37,7 @@ public:
 	}
 
 private:
-	void _setLineWidth(MHWRender::MShaderInstance* shaderInstance, float lineWidth)
+	void _setLineWidth(MShaderInstance* shaderInstance, float lineWidth)
 	{
 		if (!shaderInstance)
 			return;
@@ -47,7 +47,7 @@ private:
 		shaderInstance->setParameter(lineWidthParameterName, lineWidthArray);
 	}
 
-	void _setSolidColor(MHWRender::MShaderInstance* shaderInstance, const float* value)
+	void _setSolidColor(MShaderInstance* shaderInstance, const float* value)
 	{
 		if (!shaderInstance)
 			return;

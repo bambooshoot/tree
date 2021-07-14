@@ -96,6 +96,16 @@ inline Matrix33 Matrix4To3(CRMatrix44 mat44)
 		mat44[2][0], mat44[2][1], mat44[2][2] );
 }
 
+template<typename T,typename D, Int DIM>
+void MatrixTranslate(T & srcMat, D & tarMat)
+{
+	for (uint i = 0; i < DIM; ++i) {
+		for (uint j = 0; j < DIM; ++j) {
+			tarMat[i][j] = srcMat[i][j];
+		}
+	}
+}
+
 inline Quat Matrix44ToQuat(CRMatrix44 mat)
 {
 	return extractQuat(mat);

@@ -64,7 +64,7 @@ MStatus initializePlugin(MObject obj)
         return status;
     }
 
-    status = MDrawRegistry::registerGeometryOverrideCreator(
+    status = MDrawRegistry::registerSubSceneOverrideCreator(
         SkelTreeVisualization::drawDbClassification,
         SkelTreeVisualization::drawRegistrantId,
         SkelTreeVisualizationOverride::Creator);
@@ -97,7 +97,7 @@ MStatus uninitializePlugin(MObject obj)
         return status;
     }
 
-    MDrawRegistry::deregisterGeometryOverrideCreator(
+    MDrawRegistry::deregisterSubSceneOverrideCreator(
         SkelTreeVisualization::drawDbClassification,
         SkelTreeVisualization::drawRegistrantId);
 

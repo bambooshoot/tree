@@ -2,7 +2,7 @@
 
 #include <maya/MPxLocatorNode.h>
 #include <maya/MDrawRegistry.h>
-#include <maya/MPxGeometryOverride.h>
+#include <maya/MPxSubSceneOverride.h>
 #include <maya/MShaderManager.h>
 #include <maya/MHWGeometry.h>
 #include <maya/MHWGeometryUtilities.h>
@@ -57,23 +57,23 @@ public:
 using namespace MHWRender;
 
 
-class SkelTreeVisualizationOverride : public MPxGeometryOverride
+class SkelTreeVisualizationOverride : public MPxSubSceneOverride
 {
 public:
-	static MPxGeometryOverride* Creator(const MObject& obj) { return new SkelTreeVisualizationOverride(obj); }
+	static MPxSubSceneOverride* Creator(const MObject& obj) { return new SkelTreeVisualizationOverride(obj); }
 	~SkelTreeVisualizationOverride() override {};
 
 	// Support configuration functions :
-	DrawAPI supportedDrawAPIs() const override { return (DrawAPI::kOpenGL | DrawAPI::kDirectX11 | DrawAPI::kOpenGLCoreProfile); }
-	void updateDG() override;
-	void cleanUp() override {};
+	DrawAPI supportedDrawAPIs() const override { return  MHWRender::kAllDevices; }
+	bool hasUIDrawables() const override;
 
-	// Render item functions, only involves in foreground rendering, should not affect VP2 Caching at all
-	void updateRenderItems(const MDagPath& path, MRenderItemList& list) override;
+	bool requiresUpdate(
+		const MHWRender::MSubSceneContainer& container,
+		const MHWRender::MFrameContext& frameContext) const override;
 
-	// Geometry update functions, major entry for support VP2 Custom Caching
-	bool requiresGeometryUpdate() const override;
-	void populateGeometry(const MGeometryRequirements& requirements, const MRenderItemList& renderItems, MGeometry& data) override;
+	void update(
+		MHWRender::MSubSceneContainer& container,
+		const MHWRender::MFrameContext& frameContext) override;
 
 	static const MString sDeformedPoints;
 	static const MString sChainBoxes;
@@ -84,6 +84,11 @@ public:
 
 private:
 	SkelTreeVisualizationOverride(const MObject& obj);
+
+	void updateGeometry();
+	//void cacheBuffers();
+	void buildRenderItems(MHWRender::MSubSceneContainer& container);
+	//void populateInstances();
 
 	SkelTreeVisualization*		mVisNode;
 	skelTree::SkelTreeDataP		pTreeData;
