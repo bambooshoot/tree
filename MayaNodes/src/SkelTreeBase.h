@@ -111,4 +111,12 @@ inline Quat Matrix44ToQuat(CRMatrix44 mat)
 	return extractQuat(mat);
 }
 
+template<typename MATS,typename MATT, Int DIM>
+inline void Matrix2Matrix(MATS& srcMat, MATT& tarMat)
+{
+	for (uint i = 0; i < DIM; ++i)
+		for (uint j = 0; j < DIM; ++j)
+			tarMat[i][j] = srcMat[i][j];
+};
+
 NS_END

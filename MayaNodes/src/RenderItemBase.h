@@ -11,8 +11,10 @@ using namespace MHWRender;
 class RenderItemBase
 {
 public:
-	virtual ~RenderItemBase() {};
+<<<<<<< Updated upstream
 	virtual MHWRender::MRenderItem* create(const MString& renderItemName) = 0;
+=======
+	virtual ~RenderItemBase() {};
+	virtual MHWRender::MRenderItem* create(const MString& renderItemName) const = 0;
+>>>>>>> Stashed changes
 };
-
-using RenderItemBasePtr = std::unique_ptr<RenderItemBase>;

@@ -66,6 +66,14 @@ Uint deformedPointNum() const
 		pNum += pointsList[deformedData.pointsId].pointNum();
 	return pNum;
 };
+Uint foliageNum() const
+{
+	return Uint(foliageDataList.size());
+}
+bool empty() const
+{
+	return pointsList.empty();
+}
 )
 
 NS_END
