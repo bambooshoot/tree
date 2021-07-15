@@ -5,6 +5,7 @@
 #include <map>
 #include <limits>
 #include <assert.h>
+#include <memory.h>
 
 #include <OpenEXR/ImathVec.h>
 #include <OpenEXR/ImathQuat.h>
@@ -25,6 +26,9 @@ using R##T = T&; \
 using CR##T = const T&; \
 using T##P = T*; \
 using C##T##P = const T*; \
+using U##T##Ptr = std::unique_ptr<T>;
+
+#define MAKE_UNIQUE std::make_unique
 
 #define DECL_TYPE(T) \
 DECL_VAR_TYPE(T) \

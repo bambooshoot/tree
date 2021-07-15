@@ -20,3 +20,4 @@ MayaNodes/ALL_BUILD.vcxproj
 *.exp
 py/__pycache__/attachedLocalSpace.cpython-37.pyc
 MayaNodes/skelTree.vcxproj
+*.mll

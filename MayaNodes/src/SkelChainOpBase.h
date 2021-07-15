@@ -26,7 +26,7 @@ Float       fTrunkValue;
 CLASS(AniOpBase,
 public:
 	virtual ~AniOpBase() {};
-	virtual Quat computeQ(AniOpState state, CAniOpData data) const = 0;
+	virtual Quat computeQ(CRAniOpState state, CRAniOpData data) const = 0;
 	QuatList chainOp(RChain chain, CUint chainId, CRAniOpData data);
 	)
 

@@ -20,29 +20,29 @@ protected:
 	{
 		return true;
 	}
-	uint vertexNum() const override
+	uint vertexNum(DrawableBufferParam& param) const override
 	{
-		return  _param.pTreeData->deformedPointNum();
+		return  param.pTreeData->deformedPointNum();
 	}
-	uint indexNum() const override
+	uint indexNum(DrawableBufferParam& param) const override
 	{
-		return  _param.pTreeData->deformedPointNum();
+		return  param.pTreeData->deformedPointNum();
 	}
-	void fillPositions(float* buf) override
+	void fillPositions(float* buf, DrawableBufferParam& param) override
 	{
 		uint idx = 0;
-		for (auto& deformedData : _param.pTreeData->deformedDataList)
-			for (auto& p : _param.pTreeData->pointsList[deformedData.pointsId].finalPositions()) {
+		for (auto& deformedData : param.pTreeData->deformedDataList)
+			for (auto& p : param.pTreeData->pointsList[deformedData.pointsId].finalPositions()) {
 				buf[idx++] = p.x;
 				buf[idx++] = p.y;
 				buf[idx++] = p.z;
 			}
 	}
 
-	void fillColors(float* buf) override
+	void fillColors(float* buf, DrawableBufferParam& param) override
 	{
 		uint idx = 0;
-		for (auto& deformedData : _param.pTreeData->deformedDataList)
+		for (auto& deformedData : param.pTreeData->deformedDataList)
 			for (auto& w : deformedData.wList) {
 				buf[idx++] = w.w.w[0];
 				buf[idx++] = w.w.w[1];
@@ -50,9 +50,9 @@ protected:
 				buf[idx++] = 1.0f;
 			}
 	}
-	void fillIndices(unsigned int* indices) override
+	void fillIndices(unsigned int* indices, DrawableBufferParam& param) override
 	{
-		uint numIndex = indexNum();
+		uint numIndex = indexNum(param);
 		for (uint i = 0; i < numIndex; ++i)
 			indices[i] = i;
 	}

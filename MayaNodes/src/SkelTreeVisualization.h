@@ -86,9 +86,11 @@ private:
 	SkelTreeVisualizationOverride(const MObject& obj);
 
 	void updateGeometry();
-	//void cacheBuffers();
+	void buildGeometryStruct();
 	void buildRenderItems(MHWRender::MSubSceneContainer& container);
-	//void populateInstances();
+
+	bool						_geoUpdateFlag;
+	float						_currentTime;
 
 	SkelTreeVisualization*		mVisNode;
 	skelTree::SkelTreeDataP		pTreeData;
@@ -96,6 +98,7 @@ private:
 
 	PopulateGeometryData		popGeoData;
 	DispEnableMap				visElementMap;
-	RenderBufferManager			bufManager;
+	std::vector<MIntArray>		triangleVtx;
 
+	RenderBufferManager			bufManager;
 };

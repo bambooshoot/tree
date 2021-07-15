@@ -47,7 +47,7 @@
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.mll</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\asunlab\github\tree\MayaNodes\Release\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\asunlab\github\tree\MayaNodes\bin\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">skelTree.dir\Release\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">skelTree</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.mll</TargetExt>
@@ -170,6 +170,7 @@
     <ClInclude Include="src\SkelChain.h" />
     <ClInclude Include="src\SkelChainData.h" />
     <ClInclude Include="src\SkelChainOpBase.h" />
+    <ClInclude Include="src\SkelChainOpDirectionalWind.h" />
     <ClInclude Include="src\SkelChainOpNoise.h" />
     <ClInclude Include="src\SkelDeformedMesh.h" />
     <ClInclude Include="src\SkelDeformedMeshData.h" />

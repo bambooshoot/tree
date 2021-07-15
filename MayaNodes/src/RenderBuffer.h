@@ -37,12 +37,14 @@ struct DrawItem
 	DrawItem() : pRenderItem(nullptr), pDrawBuf(nullptr) {};
 	~DrawItem()
 	{
+		clear();
+	}
+	void clear()
+	{
 		DELETE_POINTER(pRenderItem);
 		DELETE_POINTER(pDrawBuf);
 	}
 };
-
-using DrawItemPtr = std::shared_ptr<DrawItem>;
 
 using DispEnableMap = std::map<uint, DispElementEnableData>;
 
@@ -55,10 +57,13 @@ public:
 	}
 	void registerBuffer(const MString renderItemName, RenderItemBase* pRenderItem, DrawableBufferBase* pDrawBuf)
 	{
-		DrawItem ditm;
 		const std::string key(renderItemName.asChar());
-		bufMap.insert( std::make_pair(key, ditm) );
+		if (bufMap.find(key) == bufMap.end()) {
+			bufMap.insert(std::make_pair(key, DrawItem()));
+		}
+		
 		DrawItem& rd = bufMap[key];
+		rd.clear();
 		rd.pDrawBuf = pDrawBuf;
 		rd.pRenderItem = pRenderItem;
 	}
@@ -72,17 +77,7 @@ public:
 	}
 	void clear()
 	{
-		//for (auto& iter : bufMap)
-		//	iter.second.clear();
-
 		bufMap.clear();
-	}
-	void setParam(DrawableBufferParam& param)
-	{
-		for (auto& buf : bufMap) {
-			param.name = buf.first;
-			buf.second.pDrawBuf->setParam(param);
-		}
 	}
 
 private:

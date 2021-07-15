@@ -10,13 +10,13 @@ public:
 	{
 		return true;
 	}
-	void instanceMatrices(MMatrixArray& matArray) const override
+	void instanceMatrices(MMatrixArray& matArray, DrawableBufferParam& param) const override
 	{
 		matArray.clear();
 
 		MMatrix mat;
-		for (uint i = 0; i < _param.pTree->foliageNum(); ++i) {
-			skelTree::CRMatrix44 mat44 = _param.pTree->getFoliageMatrix(i);
+		for (uint i = 0; i < param.pTree->foliageNum(); ++i) {
+			skelTree::CRMatrix44 mat44 = param.pTree->getFoliageMatrix(i);
 			skelTree::MatrixTranslate<skelTree::CMatrix44, MMatrix, 4>(mat44, mat);
 			matArray.append(mat);
 		}
@@ -31,30 +31,30 @@ protected:
 	{
 		return false;
 	}
-	uint vertexNum() const override
+	uint vertexNum(DrawableBufferParam& param) const override
 	{
-		uint pointsId = _param.pTreeData->foliageDataList[0].pointsId;
-		return _param.pTreeData->pointsList[pointsId].pointNum();
+		uint pointsId = param.pTreeData->foliageDataList[0].pointsId;
+		return param.pTreeData->pointsList[pointsId].pointNum();
 	}
-	uint indexNum() const override
+	uint indexNum(DrawableBufferParam& param) const override
 	{
-		uint pointsId = _param.pTreeData->foliageDataList[0].pointsId;
-		return _param.pPopGeoData->triangleVtx[pointsId].length();
+		uint pointsId = param.pTreeData->foliageDataList[0].pointsId;
+		return (*param.pTriangleVtx)[pointsId].length();
 	}
-	void fillPositions(float* buf) override
+	void fillPositions(float* buf, DrawableBufferParam& param) override
 	{
-		uint pointsId = _param.pTreeData->foliageDataList[0].pointsId;
+		uint pointsId = param.pTreeData->foliageDataList[0].pointsId;
 		uint idx = 0;
-		for (auto& p : _param.pTreeData->pointsList[pointsId].rest()) {
+		for (auto& p : param.pTreeData->pointsList[pointsId].rest()) {
 			buf[idx++] = p.x;
 			buf[idx++] = p.y;
 			buf[idx++] = p.z;
 		}
 	}
-	void fillNormals(float* buf) override
+	void fillNormals(float* buf, DrawableBufferParam& param) override
 	{
 		static const skelTree::Vec n0(0, 0, 1.0f);
-		uint pntNum = vertexNum();
+		uint pntNum = vertexNum(param);
 		uint idx = 0;
 		for (uint i = 0; i < pntNum; ++i) {
 			buf[idx++] = n0.x;
@@ -63,10 +63,10 @@ protected:
 		}
 	}
 
-	void fillIndices(unsigned int* indices) override
+	void fillIndices(unsigned int* indices, DrawableBufferParam& param) override
 	{
-		uint pointsId = _param.pTreeData->foliageDataList[0].pointsId;
-		MIntArray& vtxArray = _param.pPopGeoData->triangleVtx[pointsId];
+		uint pointsId = param.pTreeData->foliageDataList[0].pointsId;
+		MIntArray& vtxArray = (*param.pTriangleVtx)[pointsId];
 		for (uint i = 0; i < vtxArray.length(); ++i) {
 			indices[i] = vtxArray[i];
 		}

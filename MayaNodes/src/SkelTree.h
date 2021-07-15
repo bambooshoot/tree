@@ -16,8 +16,8 @@ public:
 	SkelTree(SkelTreeDataP treeData);
 	
 	void buildRest(SkelTreeDataP treeData);
-	void buildDeform(SkelTreeDataP treeData, CRAniOpData data);
-	void buildFoliages(SkelTreeDataP treeData, CRAniOpData data);
+	void buildStruct(SkelTreeDataP treeData);
+	void deformAndFoliages(SkelTreeDataP treeData, CRAniOpData data);
 
 	void reset(SkelTreeDataP treeData);
 
@@ -37,9 +37,9 @@ private:
 	ChainList		chainList;
 	FoliageList     foliageList;
 
-	AniOpBaseP      trunkOp;
-	AniOpBaseP      branchOp;
-	AniOpBaseP      foliageOp;
+	static UAniOpBasePtr      trunkOp;
+	static UAniOpBasePtr      branchOp;
+	static UAniOpBasePtr      foliageOp;
 
 	void buildChains();
 	void computWeights();

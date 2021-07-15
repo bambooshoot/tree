@@ -11,7 +11,6 @@
 struct PopulateGeometryData
 {
 	float					chainAxisScale;
-	std::vector<MIntArray>	triangleVtx;
 };
 
 struct DrawableBufferParam
@@ -19,6 +18,7 @@ struct DrawableBufferParam
 	std::string					name;
 	skelTree::SkelTreeDataP		pTreeData;
 	skelTree::SkelTreeP			pTree;
+	std::vector<MIntArray>*		pTriangleVtx;
 	PopulateGeometryData*		pPopGeoData;
 };
 
@@ -31,72 +31,74 @@ public:
 	{
 		_clear();
 	};
-	void setParam(DrawableBufferParam& param)
+	void build(MVertexBufferArray & refBufArray, MIndexBuffer*& idxBuf, DrawableBufferParam& param)
 	{
-		_param = param;
-	}
-	void build(MVertexBufferArray & refBufArray, MIndexBuffer*& idxBuf)
-	{
-		_createVertexBuffer(MGeometry::kPosition, 3, &DrawableBufferBase::fillPositions, refBufArray);
+		_createVertexBuffer(MGeometry::kPosition, 3, &DrawableBufferBase::fillPositions, refBufArray, param, 0);
 		
 		if(hasNormal())
-			_createVertexBuffer(MGeometry::kNormal, 3, &DrawableBufferBase::fillNormals, refBufArray);
+			_createVertexBuffer(MGeometry::kNormal, 3, &DrawableBufferBase::fillNormals, refBufArray, param, 1);
 		
 		if(hasColor())
-			_createVertexBuffer(MGeometry::kColor, 4, &DrawableBufferBase::fillColors, refBufArray);
+			_createVertexBuffer(MGeometry::kColor, 4, &DrawableBufferBase::fillColors, refBufArray, param, 2);
 
-		_createIndexBuffer(idxBuf);
+		_createIndexBuffer(idxBuf, param);
 	}
 	virtual bool hasNormal() const = 0;
 	virtual bool hasColor() const = 0;
 	virtual bool hasInstance() const = 0;
-	virtual void instanceMatrices(MMatrixArray& matArray) const {};
+	virtual void instanceMatrices(MMatrixArray& matArray, DrawableBufferParam& param) const {};
 
 protected:
+	using VtxBufPtr = std::unique_ptr<MVertexBuffer>;
 	using IdxBufPtr = std::unique_ptr<MIndexBuffer>;
-	typedef void (DrawableBufferBase::* FillVtxDataFunc)(float * data);
+	typedef void (DrawableBufferBase::* FillVtxDataFunc)(float * data, DrawableBufferParam& param);
 
-	DrawableBufferParam			_param;
-
-	virtual uint indexNum() const = 0;
-	virtual uint vertexNum() const = 0;
-	virtual void fillPositions(float* data) = 0;
-	virtual void fillColors(float* data) {};
-	virtual void fillNormals(float* data) {};
-	virtual void fillIndices(uint* data) = 0;
+	virtual uint indexNum(DrawableBufferParam& param) const = 0;
+	virtual uint vertexNum(DrawableBufferParam& param) const = 0;
+	virtual void fillPositions(float* data, DrawableBufferParam& param) = 0;
+	virtual void fillColors(float* data, DrawableBufferParam& param) {};
+	virtual void fillNormals(float* data, DrawableBufferParam& param) {};
+	virtual void fillIndices(uint* data, DrawableBufferParam& param) = 0;
 
 	static std::map<MGeometry::Semantic, MString> sSematicName;
+
+	VtxBufPtr vtxBuf[3];
 
 	void _createVertexBuffer(
 		MGeometry::Semantic sematic,
 		uint fltSize,
 		FillVtxDataFunc pFunc,
-		MVertexBufferArray& refBufArray
+		MVertexBufferArray& refBufArray,
+		DrawableBufferParam& param,
+		uint bufIdx
 		) {
 		
-		const MVertexBufferDescriptor vbDesc(MString(_param.name.c_str()),
-			sematic, MGeometry::kFloat, fltSize);
+		const MVertexBufferDescriptor vbDesc("", sematic, MGeometry::kFloat, fltSize);
 
-		uint elementNum = vertexNum();
+		uint elementNum = vertexNum(param);
 
-		MVertexBuffer* fBuffer = new MVertexBuffer(vbDesc);
-		float * data = (float*)fBuffer->acquire(elementNum, true);
+		vtxBuf[bufIdx] = MAKE_UNIQUE<MVertexBuffer>(vbDesc);
+		float * data = (float*)vtxBuf[bufIdx]->acquire(elementNum, true);
 		
-		(this->*pFunc)(data);
+		(this->*pFunc)(data, param);
 
-		fBuffer->commit(data);
+		vtxBuf[bufIdx]->commit(data);
 
-		refBufArray.addBuffer(DrawableBufferBase::sSematicName[sematic], fBuffer);
+		refBufArray.addBuffer(DrawableBufferBase::sSematicName[sematic], vtxBuf[bufIdx].get());
+
+		data = nullptr;
 	}
 
-	void _createIndexBuffer(MIndexBuffer*& idxBuf) {
+	void _createIndexBuffer(MIndexBuffer*& idxBuf, DrawableBufferParam& param) {
 		idxBuf = new MIndexBuffer(MGeometry::kUnsignedInt32);
-		uint idxNum = indexNum();
+		uint idxNum = indexNum(param);
 		uint* data = (uint*)idxBuf->acquire(idxNum, true);
 
-		fillIndices(data);
+		fillIndices(data, param);
 
 		idxBuf->commit(data);
+
+		data = nullptr;
 	}
 
 	void _clear() {

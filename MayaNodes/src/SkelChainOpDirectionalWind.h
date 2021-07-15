@@ -9,7 +9,7 @@ class TrunkOpDirectionalWind : public AniOpBase
 {
 public:
 	~TrunkOpDirectionalWind() override {};
-	Quat computeQ(AniOpState state, CAniOpData data) const override
+	Quat computeQ(CRAniOpState state, CRAniOpData data) const override
 	{
 		Quat q;
 		Float rtRatio = state.u * data.noiseTrunk[1];
@@ -32,7 +32,7 @@ class BranchOpDirectionalWind : public AniOpBase
 {
 public:
 	~BranchOpDirectionalWind() override {};
-	Quat computeQ(AniOpState state, CAniOpData data) const override
+	Quat computeQ(CRAniOpState state, CRAniOpData data) const override
 	{
 		Quat q;
 
@@ -57,7 +57,7 @@ class FoliageOpDirectionalWind : public AniOpBase
 {
 public:
 	~FoliageOpDirectionalWind() override {};
-	Quat computeQ(AniOpState state, CAniOpData data) const override
+	Quat computeQ(CRAniOpState state, CRAniOpData data) const override
 	{
 		Quat q;
 		

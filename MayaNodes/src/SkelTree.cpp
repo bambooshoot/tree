@@ -4,15 +4,16 @@
 
 NS_BEGIN
 
+UAniOpBasePtr SkelTree::trunkOp = MAKE_UNIQUE<TrunkOpDirectionalWind>();
+UAniOpBasePtr SkelTree::branchOp = MAKE_UNIQUE<BranchOpDirectionalWind>();
+UAniOpBasePtr SkelTree::foliageOp = MAKE_UNIQUE<FoliageOpDirectionalWind>();
+
 SkelTree::~SkelTree()
 {
 	clear();
 }
 void SkelTree::clear()
 {
-	DELETE_POINTER(trunkOp);
-	DELETE_POINTER(branchOp);
-	DELETE_POINTER(foliageOp);
 }
 SkelTree::SkelTree(SkelTreeDataP treeData)
 {
@@ -22,10 +23,6 @@ SkelTree::SkelTree(SkelTreeDataP treeData)
 void SkelTree::reset(SkelTreeDataP treeData)
 {
 	pTreeData = treeData;
-
-	trunkOp = new TrunkOpDirectionalWind();
-	branchOp = new BranchOpDirectionalWind();
-	foliageOp = new FoliageOpDirectionalWind();
 }
 
 void SkelTree::buildChains()
@@ -80,11 +77,11 @@ void SkelTree::deform(CRAniOpData data)
 			RChain rootChain = chainList[pTreeData->trunkChainId];
 			CRMatrix44 mat = rootChain.jointMatrix(trunkFrameId);
 
-			QuatList qList = (*branchOp).chainOp(chain, deformedMeshData.chainId, data);
+			QuatList qList = SkelTree::branchOp->chainOp(chain, deformedMeshData.chainId, data);
 			chain.updateMatrix(qList, &mat);
 		}
 		else {
-			QuatList qList = (*trunkOp).chainOp(chain, deformedMeshData.chainId, data);
+			QuatList qList = SkelTree::trunkOp->chainOp(chain, deformedMeshData.chainId, data);
 			chain.updateMatrix(qList);
 		}
 
@@ -137,7 +134,7 @@ void SkelTree::updateFoliages(CRAniOpData opData)
 	foliageList.resize(pTreeData->foliageDataList.size());
 	
 	for (Uint i = 0; i < foliageList.size(); ++i) {
-		foliageList[i].update(i, pTreeData, opData, foliageOp);
+		foliageList[i].update(i, pTreeData, opData, SkelTree::foliageOp.get());
 	}
 }
 
@@ -148,16 +145,15 @@ void SkelTree::buildRest(SkelTreeDataP pTreeData)
 	computWeights();
 }
 
-void SkelTree::buildDeform(SkelTreeDataP pTreeData, CRAniOpData opData)
+void SkelTree::buildStruct(SkelTreeDataP pTreeData)
 {
 	reset(pTreeData);
 	buildChains();
-	deform(opData);
 }
 
-void SkelTree::buildFoliages(SkelTreeDataP pTreeData, CRAniOpData opData)
+void SkelTree::deformAndFoliages(SkelTreeDataP pTreeData, CRAniOpData opData)
 {
-	reset(pTreeData);
+	deform(opData);
 	updateFoliages(opData);
 }
 
