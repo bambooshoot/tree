@@ -28,6 +28,7 @@ struct DispElementEnableData
 {
 	const MString* name;
 	bool enable;
+	bool update;
 };
 
 struct DrawItem
@@ -51,10 +52,30 @@ using DispEnableMap = std::map<uint, DispElementEnableData>;
 class RenderBufferManager
 {
 public:
+	RenderBufferManager()
+	{
+		_build();
+	}
 	~RenderBufferManager()
 	{
-		clear();
+		bufMap.clear();
 	}
+	DrawItem* get(const MString renderItemName)
+	{
+		const std::string key(renderItemName.asChar());
+		if (bufMap.find(key) != bufMap.end())
+			return &bufMap[key];
+
+		return nullptr;
+	}
+
+	static RenderBufferManager & getInstance()
+	{
+		static RenderBufferManager bufManager;
+		return bufManager;
+	}
+
+private:
 	void registerBuffer(const MString renderItemName, RenderItemBase* pRenderItem, DrawableBufferBase* pDrawBuf)
 	{
 		const std::string key(renderItemName.asChar());
@@ -67,18 +88,8 @@ public:
 		rd.pDrawBuf = pDrawBuf;
 		rd.pRenderItem = pRenderItem;
 	}
-	DrawItem* get(const MString renderItemName)
-	{
-		const std::string key(renderItemName.asChar());
-		if (bufMap.find(key) != bufMap.end())
-			return &bufMap[key];
-
-		return nullptr;
-	}
-	void clear()
-	{
-		bufMap.clear();
-	}
+	
+	void _build();
 
 private:
 	std::map<std::string, DrawItem> bufMap;

@@ -20,7 +20,7 @@ public:
 		vertexItem->depthPriority(MRenderItem::sDormantPointDepthPriority);
 
 		MShaderInstance* shader = shaderMgr->getStockShader(
-			MShaderManager::k3dThickLineShader);
+			MShaderManager::k3dCPVThickLineShader);
 
 		// Set lines a bit thicker to stand out
 		static const float lineSize = 3.0f;

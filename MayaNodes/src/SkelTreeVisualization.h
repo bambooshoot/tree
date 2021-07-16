@@ -99,6 +99,4 @@ private:
 	PopulateGeometryData		popGeoData;
 	DispEnableMap				visElementMap;
 	std::vector<MIntArray>		triangleVtx;
-
-	RenderBufferManager			bufManager;
 };

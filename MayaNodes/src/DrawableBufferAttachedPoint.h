@@ -2,6 +2,8 @@
 
 #include <DrawableBufferBase.h>
 
+#include <maya/MMatrixArray.h>
+
 class DrawableBufferAttachedPoint : public DrawableBufferBase
 {
 public:

@@ -199,61 +199,27 @@ DispEnableMap SkelTreeVisualization::dispEnableData() const
 
 	DispEnableMap visElementMap;
 
+	bool updateFlag = false;
+
 	MPlug enChainAxisPlug(thisNode, mDispEnableChainBoxes);
-	visElementMap[VIS_ELEMENT_CHAIN_BOXES] = { &SkelTreeVisualizationOverride::sChainBoxes, enChainAxisPlug.asBool() };
+	visElementMap[VIS_ELEMENT_CHAIN_BOXES] = { &SkelTreeVisualizationOverride::sChainBoxes, enChainAxisPlug.asBool(), updateFlag };
 
 	MPlug enChainLinePlug(thisNode, mDispEnableChainLine);
-	visElementMap[VIS_ELEMENT_CHAIN_LINE] = { &SkelTreeVisualizationOverride::sChainLine, enChainLinePlug.asBool() };
+	visElementMap[VIS_ELEMENT_CHAIN_LINE] = { &SkelTreeVisualizationOverride::sChainLine, enChainLinePlug.asBool(), updateFlag };
 
 	MPlug enDeformedPointsPlug(thisNode, mDispEnableDeformedPoints);
-	visElementMap[VIS_ELEMENT_DEFORMED_POINTS] = { &SkelTreeVisualizationOverride::sDeformedPoints, enDeformedPointsPlug.asBool() };
+	visElementMap[VIS_ELEMENT_DEFORMED_POINTS] = { &SkelTreeVisualizationOverride::sDeformedPoints, enDeformedPointsPlug.asBool(), updateFlag };
 
 	MPlug enDeformedMeshesPlug(thisNode, mDispEnableDeformedMeshes);
-	visElementMap[VIS_ELEMENT_DEFORMED_TRIANGLES] = { &SkelTreeVisualizationOverride::sDeformedMeshName, enDeformedMeshesPlug.asBool() };
+	visElementMap[VIS_ELEMENT_DEFORMED_TRIANGLES] = { &SkelTreeVisualizationOverride::sDeformedMeshName, enDeformedMeshesPlug.asBool(), updateFlag };
 
 	MPlug enAttachedPointPlug(thisNode, mDispEnableAttachedPoint);
-	visElementMap[VIS_ELEMENT_ATTACHED_POINT] = { &SkelTreeVisualizationOverride::sAttachedPointName, enAttachedPointPlug.asBool() };
+	visElementMap[VIS_ELEMENT_ATTACHED_POINT] = { &SkelTreeVisualizationOverride::sAttachedPointName, enAttachedPointPlug.asBool(), updateFlag };
 
 	MPlug enFoliagePlug(thisNode, mDispEnableFoliages);
-	visElementMap[VIS_ELEMENT_FOLIAGES] = { &SkelTreeVisualizationOverride::sFoliageName, enFoliagePlug.asBool() };
+	visElementMap[VIS_ELEMENT_FOLIAGES] = { &SkelTreeVisualizationOverride::sFoliageName, enFoliagePlug.asBool(), updateFlag };
 
 	return visElementMap;
-}
-
-void renderBufferManagerBuild(RenderBufferManager& manager)
-{
-	RenderItemBase* pRenderItem = nullptr;
-	DrawableBufferBase* pDrawBuf = nullptr;
-
-	// draw chain boxes
-	pRenderItem = new RenderItemCPVTriangles();
-	pDrawBuf = new DrawableBufferChainBoxes();
-	manager.registerBuffer(SkelTreeVisualizationOverride::sChainBoxes, pRenderItem, pDrawBuf);
-
-	// draw deformed points
-	pRenderItem = new RenderItemCPVPoint();
-	pDrawBuf = new DrawableBufferDeformedPoints();
-	manager.registerBuffer(SkelTreeVisualizationOverride::sDeformedPoints, pRenderItem, pDrawBuf);
-
-	// draw chain lines
-	pRenderItem = new RenderItemWireframe();
-	pDrawBuf = new DrawableBufferChainLine();
-	manager.registerBuffer(SkelTreeVisualizationOverride::sChainLine, pRenderItem, pDrawBuf);
-
-	// draw deformed triangles
-	pRenderItem = new RenderItemTriangles();
-	pDrawBuf = new DrawableBufferMesh();
-	manager.registerBuffer(SkelTreeVisualizationOverride::sDeformedMeshName, pRenderItem, pDrawBuf);
-
-	// draw attached point
-	pRenderItem = new RenderItemWireframe();
-	pDrawBuf = new DrawableBufferAttachedPoint();
-	manager.registerBuffer(SkelTreeVisualizationOverride::sAttachedPointName, pRenderItem, pDrawBuf);
-
-	// draw foliages
-	pRenderItem = new RenderItemTriangles();
-	pDrawBuf = new DrawableBufferFoliages();
-	manager.registerBuffer(SkelTreeVisualizationOverride::sFoliageName, pRenderItem, pDrawBuf);
 }
 
 SkelTreeVisualizationOverride::SkelTreeVisualizationOverride(const MObject& obj)
@@ -308,24 +274,26 @@ void SkelTreeVisualizationOverride::buildGeometryStruct()
 	pTreeData = &mVisNode->getSkelTreeData();
 	skelTree.buildStruct(pTreeData);
 	mVisNode->deformedMeshVertexIndices(triangleVtx);
-	renderBufferManagerBuild(bufManager);
 }
 
 void SkelTreeVisualizationOverride::updateGeometry()
 {
 	// prepare geometries
 	skelTree::AniOpData opData = mVisNode->aniOpData();
+	popGeoData = mVisNode->popGeoData();
+	visElementMap = mVisNode->dispEnableData();
+
 	if (_currentTime != opData.time) {
 		skelTree.deformAndFoliages(pTreeData, opData);
+		for (auto& vis : visElementMap) {
+			vis.second.update = true;
+		}
 		_currentTime = opData.time;
 	}
 }
 
 void SkelTreeVisualizationOverride::buildRenderItems(MHWRender::MSubSceneContainer& container)
 {
-	popGeoData = mVisNode->popGeoData();
-	visElementMap = mVisNode->dispEnableData();
-
 	DrawableBufferParam param;
 	param.pTree = &skelTree;
 	param.pTreeData = pTreeData;
@@ -336,6 +304,8 @@ void SkelTreeVisualizationOverride::buildRenderItems(MHWRender::MSubSceneContain
 	bbox.expand(MPoint(pTreeData->boundBox.min.x, pTreeData->boundBox.min.y, pTreeData->boundBox.min.z));
 	bbox.expand(MPoint(pTreeData->boundBox.max.x, pTreeData->boundBox.max.y, pTreeData->boundBox.max.z));
 
+	RenderBufferManager& bufManager = RenderBufferManager::getInstance();
+
 	// build render items
 	for (auto renderItemData : visElementMap) {
 		const MString& renderItemName = *renderItemData.second.name;
@@ -345,26 +315,30 @@ void SkelTreeVisualizationOverride::buildRenderItems(MHWRender::MSubSceneContain
 			continue;
 
 		if (renderItemData.second.enable) {
-			if (!pItem)
-			{
-				pItem = pBuf->pRenderItem->create(renderItemName);
-				container.add(pItem);
-			}
+			if (!pItem || renderItemData.second.update) {
+				if (!pItem)
+				{
+					pItem = pBuf->pRenderItem->create(renderItemName);
+					container.add(pItem);
+				}
 
-			MVertexBufferArray vtxBufArray;
-			MIndexBuffer* pIdxBuf = nullptr;
+				MVertexBufferArray vtxBufArray;
+				MIndexBuffer* pIdxBuf = nullptr;
 
-			pBuf->pDrawBuf->build(vtxBufArray, pIdxBuf, param);
+				pBuf->pDrawBuf->build(vtxBufArray, pIdxBuf, param);
 
-			MStatus status = setGeometryForRenderItem(*pItem, vtxBufArray, *pIdxBuf, &bbox);
+				MStatus status = setGeometryForRenderItem(*pItem, vtxBufArray, *pIdxBuf, &bbox);
 
-			vtxBufArray.clear();
-			DELETE_POINTER(pIdxBuf);
+				vtxBufArray.clear();
+				DELETE_POINTER(pIdxBuf);
 
-			if (pBuf->pDrawBuf->hasInstance()) {
-				MMatrixArray matArray;
-				pBuf->pDrawBuf->instanceMatrices(matArray, param);
-				setInstanceTransformArray(*pItem, matArray);
+				if (pBuf->pDrawBuf->hasInstance()) {
+					MMatrixArray matArray;
+					pBuf->pDrawBuf->instanceMatrices(matArray, param);
+					setInstanceTransformArray(*pItem, matArray);
+				}
+
+				renderItemData.second.update = false;
 			}
 		} else {
 			if (pItem) {

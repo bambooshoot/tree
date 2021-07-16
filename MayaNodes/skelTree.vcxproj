@@ -183,7 +183,9 @@
     <ClInclude Include="src\SkelSpline.h" />
     <ClInclude Include="src\SkelTree.h" />
     <ClInclude Include="src\SkelTreeBase.h" />
+    <ClInclude Include="src\SkelTreeByte.h" />
     <ClInclude Include="src\SkelTreeCreatorNode.h" />
+    <ClInclude Include="src\SkelTreeFile.h" />
     <ClInclude Include="src\SkelTreeNodeData.h" />
     <ClInclude Include="src\SkelTreeData.h" />
     <ClInclude Include="src\SkelTreeVisualization.h" />
@@ -192,6 +194,7 @@
     <ClCompile Include="DrawableBufferBase.cpp" />
     <ClCompile Include="src\AttachedLocalSpace.cpp" />
     <ClCompile Include="src\MayaNodes.cpp" />
+    <ClCompile Include="src\RenderBuffer.cpp" />
     <ClCompile Include="src\SkelAttachedPoint.cpp" />
     <ClCompile Include="src\SkelChain.cpp" />
     <ClCompile Include="src\SkelChainOpBase.cpp" />

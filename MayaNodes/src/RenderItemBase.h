@@ -5,6 +5,7 @@
 #include <maya/MHWGeometry.h>
 #include <maya/MHWGeometryUtilities.h>
 #include <maya/MShaderManager.h>
+#include <maya/MSelectionMask.h>
 
 using namespace MHWRender;
 

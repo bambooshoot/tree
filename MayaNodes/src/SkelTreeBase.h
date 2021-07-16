@@ -58,6 +58,7 @@ DECL_ALIAS(int, Int)
 DECL_ALIAS(unsigned int, Uint)
 DECL_ALIAS(unsigned short, Ushort)
 DECL_ALIAS(float, Float)
+DECL_ALIAS(char, Char)
 
 //using FLOAT2  = std::array<float, 2>;
 //using FLOAT3  = std::array<float, 3>;
