@@ -5,16 +5,20 @@
 class RenderItemTriangles : public RenderItemBase
 {
 public:
+<<<<<<< Updated upstream
+	MHWRender::MRenderItem* create(const MString& renderItemName) override
+=======
 	~RenderItemTriangles() override {};
-	MRenderItem* create(const MString& renderItemName) override
+	MHWRender::MRenderItem* create(const MString& renderItemName) const override
+>>>>>>> Stashed changes
 	{
-		MRenderer* renderer = MRenderer::theRenderer();
-		const MShaderManager* shaderMgr = renderer->getShaderManager();
+		MHWRender::MRenderer* renderer = MHWRender::MRenderer::theRenderer();
+		const MHWRender::MShaderManager* shaderMgr = renderer->getShaderManager();
 
-		MRenderItem* vertexItem = MRenderItem::Create(
+		MHWRender::MRenderItem* vertexItem = MHWRender::MRenderItem::Create(
 			renderItemName,
-			MRenderItem::MaterialSceneItem,
-			MGeometry::kTriangles);
+			MHWRender::MRenderItem::MaterialSceneItem,
+			MHWRender::MGeometry::kTriangles);
 
 		vertexItem->setDrawMode(MGeometry::kAll);
 		vertexItem->setExcludedFromPostEffects(false);
@@ -22,8 +26,8 @@ public:
 		vertexItem->receivesShadows(true);
 		vertexItem->setSelectionMask(MSelectionMask::kSelectMeshes);
 
-		MShaderInstance* shader = shaderMgr->getStockShader(
-			MShaderManager::k3dBlinnShader);
+		MHWRender::MShaderInstance* shader = shaderMgr->getStockShader(
+			MHWRender::MShaderManager::k3dBlinnShader);
 
 		// Set affected color
 		static const float theColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -36,7 +40,7 @@ public:
 	}
 
 private:
-	void _setSolidColor(MShaderInstance* shaderInstance, const float* value)
+	void _setSolidColor(MHWRender::MShaderInstance* shaderInstance, const float* value) const
 	{
 		if (!shaderInstance)
 			return;

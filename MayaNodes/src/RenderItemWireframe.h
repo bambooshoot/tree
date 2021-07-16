@@ -5,22 +5,26 @@
 class RenderItemWireframe : public RenderItemBase
 {
 public:
+<<<<<<< Updated upstream
+	MHWRender::MRenderItem* create(const MString& renderItemName) override
+=======
 	~RenderItemWireframe() override {};
-	MRenderItem* create(const MString& renderItemName) override
+	MHWRender::MRenderItem* create(const MString& renderItemName) const override
+>>>>>>> Stashed changes
 	{
-		MRenderer* renderer = MRenderer::theRenderer();
-		const MShaderManager* shaderMgr = renderer->getShaderManager();
+		MHWRender::MRenderer* renderer = MHWRender::MRenderer::theRenderer();
+		const MHWRender::MShaderManager* shaderMgr = renderer->getShaderManager();
 
-		MRenderItem* vertexItem = MRenderItem::Create(
+		MHWRender::MRenderItem* vertexItem = MHWRender::MRenderItem::Create(
 			renderItemName,
-			MRenderItem::DecorationItem,
-			MGeometry::kLines);
+			MHWRender::MRenderItem::DecorationItem,
+			MHWRender::MGeometry::kLines);
 
-		vertexItem->setDrawMode(MGeometry::kAll);
-		vertexItem->depthPriority(MRenderItem::sDormantPointDepthPriority);
+		vertexItem->setDrawMode(MHWRender::MGeometry::kAll);
+		vertexItem->depthPriority(MHWRender::MRenderItem::sDormantPointDepthPriority);
 
-		MShaderInstance* shader = shaderMgr->getStockShader(
-			MShaderManager::k3dCPVThickLineShader);
+		MHWRender::MShaderInstance* shader = shaderMgr->getStockShader(
+			MHWRender::MShaderManager::k3dCPVThickLineShader);
 
 		// Set lines a bit thicker to stand out
 		static const float lineSize = 3.0f;
@@ -37,7 +41,7 @@ public:
 	}
 
 private:
-	void _setLineWidth(MShaderInstance* shaderInstance, float lineWidth)
+	void _setLineWidth(MHWRender::MShaderInstance* shaderInstance, float lineWidth) const
 	{
 		if (!shaderInstance)
 			return;
@@ -47,7 +51,7 @@ private:
 		shaderInstance->setParameter(lineWidthParameterName, lineWidthArray);
 	}
 
-	void _setSolidColor(MShaderInstance* shaderInstance, const float* value)
+	void _setSolidColor(MHWRender::MShaderInstance* shaderInstance, const float* value) const
 	{
 		if (!shaderInstance)
 			return;
