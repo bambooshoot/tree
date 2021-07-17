@@ -4,20 +4,20 @@
 class RenderItemCPVTriangles : public RenderItemBase
 {
 public:
-	MHWRender::MRenderItem* create(const MString& renderItemName) const override
+	MRenderItem* create(const MString& renderItemName) override
 	{
-		MHWRender::MRenderer* renderer = MHWRender::MRenderer::theRenderer();
-		const MHWRender::MShaderManager* shaderMgr = renderer->getShaderManager();
+		MRenderer* renderer = MRenderer::theRenderer();
+		const MShaderManager* shaderMgr = renderer->getShaderManager();
 
-		MHWRender::MRenderItem* vertexItem = MHWRender::MRenderItem::Create(
+		MRenderItem* vertexItem = MRenderItem::Create(
 			renderItemName,
-			MHWRender::MRenderItem::DecorationItem,
-			MHWRender::MGeometry::kTriangles);
+			MRenderItem::DecorationItem,
+			MGeometry::kTriangles);
 
 		vertexItem->setDrawMode(MGeometry::kAll);
 
-		MHWRender::MShaderInstance* shader = shaderMgr->getStockShader(
-			MHWRender::MShaderManager::k3dCPVSolidShader);
+		MShaderInstance* shader = shaderMgr->getStockShader(
+			MShaderManager::k3dCPVSolidShader);
 
 		vertexItem->setShader(shader, &renderItemName);
 		shaderMgr->releaseShader(shader);
