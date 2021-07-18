@@ -153,9 +153,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\AttachedLocalSpace.h" />
-    <ClInclude Include="src\PopulateGeometryBase.h" />
-    <ClInclude Include="src\PopulateGeometryChains.h" />
-    <ClInclude Include="src\PopulateGeometryDeformedPoints.h" />
+    <ClInclude Include="src\DrawableBufferAttachedPoint.h" />
+    <ClInclude Include="src\DrawableBufferBase.h" />
+    <ClInclude Include="src\DrawableBufferChainBoxes.h" />
+    <ClInclude Include="src\DrawableBufferChainLine.h" />
+    <ClInclude Include="src\DrawableBufferDeformedPoints.h" />
+    <ClInclude Include="src\DrawableBufferFoliages.h" />
+    <ClInclude Include="src\DrawableBufferMesh.h" />
     <ClInclude Include="src\RenderBuffer.h" />
     <ClInclude Include="src\RenderItemBase.h" />
     <ClInclude Include="src\RenderItemCPVPoint.h" />
@@ -176,7 +180,10 @@
     <ClInclude Include="src\SkelSpline.h" />
     <ClInclude Include="src\SkelTree.h" />
     <ClInclude Include="src\SkelTreeBase.h" />
+    <ClInclude Include="src\SkelTreeByte.h" />
     <ClInclude Include="src\SkelTreeCreatorNode.h" />
+    <ClInclude Include="src\SkelTreeExportCmd.h" />
+    <ClInclude Include="src\SkelTreeFile.h" />
     <ClInclude Include="src\SkelTreeNodeData.h" />
     <ClInclude Include="src\SkelTreeData.h" />
     <ClInclude Include="src\SkelTreeVisualization.h" />
@@ -197,6 +204,7 @@
     <ClCompile Include="src\SkelOffsetFrame.cpp" />
     <ClCompile Include="src\SkelTree.cpp" />
     <ClCompile Include="src\SkelTreeCreatorNode.cpp" />
+    <ClCompile Include="src\SkelTreeExportCmd.cpp" />
     <ClCompile Include="src\SkelTreeNodeData.cpp" />
     <ClCompile Include="src\SkelTreeVisualization.cpp" />
   </ItemGroup>

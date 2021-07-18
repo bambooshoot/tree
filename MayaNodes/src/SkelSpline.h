@@ -67,7 +67,7 @@ public:
 	~UParamTrain3() override {}
 	UParamTrain3(CFloatList uList)
 	{
-		reset(uList);
+		this->reset(uList);
 	}
 	void weights(SplineWeight<WEIGHT_NUM> & w, CFloat x, CUint n_idx) const override
 	{
@@ -75,13 +75,13 @@ public:
 		if (n_idx == 0) {
 			for (Uint k = 0; k < WEIGHT_NUM; ++k) {
 				w.id[k] = n_idx + k;
-				xi[k] = _uList[w.id[k]];
+				xi[k] = this->_uList[w.id[k]];
 			}
 		}
 		else {
 			for (Uint k = 0; k < WEIGHT_NUM; ++k) {
 				w.id[k] = n_idx + k - 1;
-				xi[k] = _uList[w.id[k]];
+				xi[k] = this->_uList[w.id[k]];
 			}
 		}
 
@@ -104,7 +104,7 @@ public:
 	~UParamTrain2() override {}
 	UParamTrain2(CFloatList uList)
 	{
-		reset(uList);
+		this->reset(uList);
 	}
 	void weights(SplineWeight<WEIGHT_NUM> & w, CFloat x, CUint n_idx) const override
 	{
@@ -112,7 +112,7 @@ public:
 		w.id[1] = 1;
 		w.id[2] = 1;
 
-		w.w[1] = (x - _uList[0]) / (_uList[1] - _uList[0]);
+		w.w[1] = (x - this->_uList[0]) / (this->_uList[1] - this->_uList[0]);
 		w.w[0] = 1.0f - w.w[1];
 		w.w[2] = 0;
 	}

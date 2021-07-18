@@ -24,3 +24,10 @@ py/__pycache__/attachedLocalSpace.cpython-37.pyc
 MayaNodes/skelTree.vcxproj
 *.pyc
 >>>>>>> Stashed changes
+*.tlog
+*.recipe
+*.log
+*.obj
+*.idb
+*.ilk
+*.dll

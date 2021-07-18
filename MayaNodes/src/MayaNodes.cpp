@@ -8,6 +8,7 @@
 #include <SkelTreeCreatorNode.h>
 #include <SkelTreeVisualization.h>
 #include <SkelTreeNodeData.h>
+#include <SkelTreeExportCmd.h>
 
 #include <maya/MFnPlugin.h>
 
@@ -28,6 +29,12 @@ MStatus initializePlugin(MObject obj)
     status = plugin.registerData("skelTreeData", SkelTreeData::id,
         &SkelTreeData::creator,
         MPxData::kData);
+
+    status = plugin.registerCommand("skelTreeExport", SkelTreeExportCmd::creator);
+    if (!status) {
+        status.perror("registerCommand");
+        return status;
+    }
 
     status = plugin.registerNode(
         "attachedLocalSpace",
@@ -78,6 +85,12 @@ MStatus uninitializePlugin(MObject obj)
     MFnPlugin plugin(obj);
 
     status = plugin.deregisterData(SkelTreeData::id);
+
+    status = plugin.deregisterCommand("skelTreeExport");
+    if (!status) {
+        status.perror("deregisterCommand");
+        return status;
+    }
 
     status = plugin.deregisterNode(AttachedLocalSpace::id);
     if (!status) {

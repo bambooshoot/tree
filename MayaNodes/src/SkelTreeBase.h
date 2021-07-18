@@ -59,6 +59,7 @@ DECL_ALIAS(unsigned int, Uint)
 DECL_ALIAS(unsigned short, Ushort)
 DECL_ALIAS(float, Float)
 DECL_ALIAS(char, Char)
+DECL_ALIAS(unsigned char, Uchar)
 
 //using FLOAT2  = std::array<float, 2>;
 //using FLOAT3  = std::array<float, 3>;
@@ -93,6 +94,13 @@ if (P) { \
 } \
 }
 
+#define DELETE_ARRAY_POINTER(P) { \
+if (P) { \
+	delete [] P; \
+	P = nullptr; \
+} \
+}
+
 inline Matrix33 Matrix4To3(CRMatrix44 mat44)
 {
 	return Matrix33(
@@ -104,8 +112,8 @@ inline Matrix33 Matrix4To3(CRMatrix44 mat44)
 template<typename T,typename D, Int DIM>
 void MatrixTranslate(T & srcMat, D & tarMat)
 {
-	for (uint i = 0; i < DIM; ++i) {
-		for (uint j = 0; j < DIM; ++j) {
+	for (Uint i = 0; i < DIM; ++i) {
+		for (Uint j = 0; j < DIM; ++j) {
 			tarMat[i][j] = srcMat[i][j];
 		}
 	}
