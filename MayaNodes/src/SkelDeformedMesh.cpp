@@ -1,5 +1,6 @@
 #include <SkelDeformedMesh.h>
 #include <SkelSpline.h>
+#include <iostream>
 
 NS_BEGIN
 
@@ -22,6 +23,9 @@ void DeformedMesh::deform()
 {
 	CRChain chain = *pChain;
 	CRDeformedMeshWeightList wList = pDeformedMeshData->wList;
+
+	pPoints->addDeformed();
+
 	CRVecList restPoints = pPoints->rest();
 	RVecList  deformedPoints = pPoints->deformed();
 

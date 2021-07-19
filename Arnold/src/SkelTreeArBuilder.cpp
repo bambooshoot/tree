@@ -48,9 +48,9 @@ void SkelTreeArBuilder::setTrunkMeshPoints(SkelTreeDataP pTreeData, AtNode* atTr
 	AtArray* point_array = AiArrayAllocate((Uint)posList.size(), 1, AI_TYPE_VECTOR);
 	AtVector* pList = (AtVector*)AiArrayMapKey(point_array, 0);
 	for (Uint i = 0; i < posList.size();++i) {
-		pList[i].x = pList[i].x;
-		pList[i].y = pList[i].y;
-		pList[i].z = pList[i].z;
+		pList[i].x = posList[i].x;
+		pList[i].y = posList[i].y;
+		pList[i].z = posList[i].z;
 	}
 	AiArrayUnmap(point_array);
 	AiNodeSetArray(atTrunkMeshNode, "vlist", point_array);

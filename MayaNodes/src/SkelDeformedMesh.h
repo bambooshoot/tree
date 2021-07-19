@@ -25,9 +25,9 @@ private:
 	PointsP				pPoints;
 	CChainP				pChain;
 
-	Uint _nearestSpace(CRVec p) const;
-	void _setWeight(RDeformedMeshWeight w, CRVec p, CUint id);
-	void _locPAndXLen(RVec locP, CRVec p, CUint id) const;
+	//Uint _nearestSpace(CRVec p) const;
+	//void _setWeight(RDeformedMeshWeight w, CRVec p, CUint id);
+	//void _locPAndXLen(RVec locP, CRVec p, CUint id) const;
 };
 
 NS_END

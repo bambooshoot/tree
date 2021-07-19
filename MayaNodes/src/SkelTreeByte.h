@@ -9,34 +9,36 @@ template<typename T, typename BYTECONV>
 Uint listByteSize(std::vector<T>& dataList)
 {
 	Uint dataSize = (Uint)dataList.size();
-	dataSize *= BYTECONV::byteSize(dataList[0]);
+	Uint offset = sizeof(Uint);
 
-	return dataSize + sizeof(Uint);
+	for (Uint i = 0; i < dataSize; ++i)
+		offset += BYTECONV::byteSize(dataList[i]);
+
+	return offset;
 };
 
 #define LIST_BYTE_SIZE(T, DATALIST) listByteSize<T, T##Byte>(DATALIST);
 
 template<typename T>
-Uint byteFill(T& obj, Uchar* data)
+Uint byteFill(T& obj, Char* data)
 {
-	const Uint dataSize = sizeof(T);
-	memcpy_s(data, dataSize, &obj, dataSize);
-	return dataSize;
+	*(T*)data = obj;
+	T chkValue = *(T*)data;
+	return sizeof(T);
 }
 
 template<>
-Uint byteFill(Vec& v, Uchar* data)
+Uint byteFill(Vec& v, Char* data)
 {
 	const Uint dataSize = sizeof(Float) * 3;
-	Float* fData = (Float*)data;
-	*fData = v.x;
-	*(fData + 1) = v.y;
-	*(fData + 2) = v.z;
+	byteFill<Float>(v.x, data);
+	byteFill<Float>(v.y, data + sizeof(Float));
+	byteFill<Float>(v.z, data + sizeof(Float) * 2);
 	return dataSize;
 }
 
 template<>
-Uint byteFill(Quat& q, Uchar* data)
+Uint byteFill(Quat& q, Char* data)
 {
 	Uint offset = byteFill<Float>(q.r, data);
 	offset += byteFill<Vec>(q.v, data + offset);
@@ -44,7 +46,7 @@ Uint byteFill(Quat& q, Uchar* data)
 }
 
 template<>
-Uint byteFill(Box& box, Uchar* data)
+Uint byteFill(Box& box, Char* data)
 {
 	Uint offset = byteFill<Vec>(box.min, data);
 	offset += byteFill<Vec>(box.max, data + offset);
@@ -52,26 +54,23 @@ Uint byteFill(Box& box, Uchar* data)
 }
 
 template<typename T, Int DIM>
-Uint byteArrayFill(T* obj, Uchar* data)
+Uint byteArrayFill(T* obj, Char* data)
 {
 	Uint offset = 0;
-	for (Uint i = 0; i < DIM; ++i, offset += sizeof(T))
-		byteFill<T>(obj[i], data + offset);
+	for (Uint i = 0; i < DIM; ++i)
+		offset += byteFill<T>(obj[i], data + offset);
 
 	return offset;
 }
 
 template<typename T, typename BYTECONV>
-Uint listByteFill(std::vector<T> & dataList, Uchar* data)
+Uint listByteFill(std::vector<T> & dataList, Char* data)
 {
-	Uint offset = 0;
 	Uint dataSize = (Uint)dataList.size();
-	offset += byteFill<Uint>(dataSize, data);
+	Uint offset = byteFill<Uint>(dataSize, data);
 
-	CUint stepSize = BYTECONV::byteSize(dataList[0]);
-	for (auto& dataElt : dataList) {
-		BYTECONV::toByte(dataElt, data + offset);
-		offset += stepSize;
+	for (Uint i = 0; i < dataSize; ++i) {
+		offset += BYTECONV::toByte(dataList[i], data + offset);
 	}
 
 	return offset;
@@ -80,33 +79,61 @@ Uint listByteFill(std::vector<T> & dataList, Uchar* data)
 #define LIST_BYTE_FILL(T, DATALIST, PDATA) listByteFill<T, T##Byte>(DATALIST, PDATA);
 
 template<typename T>
-Uint objFill(T& obj, Uchar* data)
+Uint objFill(T& obj, Char* data)
 {
-	memcpy_s(&obj, sizeof(T), data, sizeof(T));
+	obj = *(T*)data;
 	return sizeof(T);
 }
 
+template<>
+Uint objFill(Vec& v, Char* data)
+{
+	const Uint dataSize = sizeof(Float) * 3;
+	objFill<Float>(v.x, data);
+	objFill<Float>(v.y, data + sizeof(Float));
+	objFill<Float>(v.z, data + sizeof(Float) * 2);
+	return dataSize;
+}
+
+template<>
+Uint objFill(Quat& q, Char* data)
+{
+	Uint offset = objFill<Float>(q.r, data);
+	offset += objFill<Vec>(q.v, data + offset);
+	return offset;
+}
+
+template<>
+Uint objFill(Box& box, Char* data)
+{
+	Uint offset = objFill<Vec>(box.min, data);
+	offset += objFill<Vec>(box.max, data + offset);
+	return offset;
+}
+
 template<typename T, Int DIM>
-Uint objArrayFill(T* obj, Uchar* data)
+Uint objArrayFill(T* obj, Char* data)
 {
 	Uint offset = 0;
-	for (Uint i = 0; i < DIM; ++i, offset+=sizeof(T))
-		objFill<T>(obj[i], data + offset);
+	for (Uint i = 0; i < DIM; ++i)
+		offset += objFill<T>(obj[i], data + offset);
 
 	return offset;
 }
 
 template<typename T, typename BYTECONV>
-Uint listObjFill(std::vector<T>& dataList, Uchar* data)
+Uint listObjFill(std::vector<T>& dataList, Char* data)
 {
 	Uint dataSize;
 	Uint offset = objFill<Uint>(dataSize, data);
-	dataList.resize(dataSize);
+	
+	dataList.clear();
+	dataList.reserve(dataSize);
 
-	Uint stepSize = BYTECONV::toObj(dataList[0], data + offset);
-	offset += stepSize;
-	for (Uint i = 1; i < dataList.size(); ++i, offset += stepSize) {
-		BYTECONV::toObj(dataList[0], data + offset);
+	T eltValue;
+	for (Uint i = 0; i < dataSize; ++i) {
+		offset += BYTECONV::toObj(eltValue, data + offset);
+		dataList.emplace_back(eltValue);
 	}
 
 	return offset;
@@ -119,13 +146,13 @@ struct FrameDataByte {
 	{
 		return sizeof(Float) * 4 + sizeof(Float);
 	}
-	static Uint toByte(FrameData& frameData, Uchar* data)
+	static Uint toByte(FrameData& frameData, Char* data)
 	{
 		Uint offset = byteFill<Float>(frameData.xOffset, data);
 		offset += byteFill<Quat>(frameData.q, data + offset);
 		return offset;
 	}
-	static Uint toObj(FrameData& frameData, Uchar* data)
+	static Uint toObj(FrameData& frameData, Char* data)
 	{
 		Uint offset = objFill<Float>(frameData.xOffset, data);
 		offset += objFill<Quat>(frameData.q, data + offset);
@@ -138,13 +165,13 @@ struct OffsetFrameDataByte {
 	{
 		return sizeof(Float) * 4 + sizeof(Float) * 3;
 	}
-	static Uint toByte(OffsetFrameData& offsetFrameData, Uchar* data)
+	static Uint toByte(OffsetFrameData& offsetFrameData, Char* data)
 	{
 		Uint offset = byteFill<Vec>(offsetFrameData.offset, data);
 		offset += byteFill<Quat>(offsetFrameData.q, data + offset);
 		return offset;
 	}
-	static Uint toObj(OffsetFrameData& offsetFrameData, Uchar* data)
+	static Uint toObj(OffsetFrameData& offsetFrameData, Char* data)
 	{
 		Uint offset = objFill<Vec>(offsetFrameData.offset, data);
 		offset += objFill<Quat>(offsetFrameData.q, data + offset);
@@ -160,7 +187,7 @@ struct ChainDataByte {
 		dataSize += LIST_BYTE_SIZE(FrameData, chainData.frameDataList)
 		return dataSize;
 	}
-	static Uint toByte(ChainData& chainData, Uchar* data)
+	static Uint toByte(ChainData& chainData, Char* data)
 	{
 		Uint offset = byteFill<Ushort>(chainData.trunkFrameId, data);
 
@@ -168,7 +195,7 @@ struct ChainDataByte {
 		offset += LIST_BYTE_FILL(FrameData, chainData.frameDataList, data + offset)
 		return offset;
 	}
-	static Uint toObj(ChainData& chainData, Uchar* data)
+	static Uint toObj(ChainData& chainData, Char* data)
 	{
 		Uint offset = objFill<Ushort>(chainData.trunkFrameId, data);
 
@@ -183,7 +210,7 @@ struct DeformedMeshWeightByte {
 	{
 		return sizeof(Uint) + (sizeof(Ushort) + sizeof(Float)) * 3;
 	}
-	static Uint toByte(DeformedMeshWeight& deformedMeshWeight, Uchar* data)
+	static Uint toByte(DeformedMeshWeight& deformedMeshWeight, Char* data)
 	{
 		Uint offset = byteFill<Uint>(deformedMeshWeight.pId, data);
 
@@ -191,7 +218,7 @@ struct DeformedMeshWeightByte {
 		offset += byteArrayFill<Float, 3>(deformedMeshWeight.w.w, data + offset);
 		return offset;
 	}
-	static Uint toObj(DeformedMeshWeight& deformedMeshWeight, Uchar* data)
+	static Uint toObj(DeformedMeshWeight& deformedMeshWeight, Char* data)
 	{
 		Uint offset = objFill<Uint>(deformedMeshWeight.pId, data);
 
@@ -208,7 +235,7 @@ struct DeformedMeshDataByte {
 		dataSize += LIST_BYTE_SIZE(DeformedMeshWeight, deformedMeshData.wList)
 		return dataSize;
 	}
-	static Uint toByte(DeformedMeshData& deformedMeshData, Uchar* data)
+	static Uint toByte(DeformedMeshData& deformedMeshData, Char* data)
 	{
 		Uint dataSize = byteFill<Ushort>(deformedMeshData.chainId, data);
 		dataSize += byteFill<Ushort>(deformedMeshData.pointsId, data + dataSize);
@@ -216,7 +243,7 @@ struct DeformedMeshDataByte {
 		dataSize += LIST_BYTE_FILL(DeformedMeshWeight, deformedMeshData.wList, data + dataSize)
 		return dataSize;
 	}
-	static Uint toObj(DeformedMeshData& deformedMeshData, Uchar* data)
+	static Uint toObj(DeformedMeshData& deformedMeshData, Char* data)
 	{
 		Uint dataSize = objFill<Ushort>(deformedMeshData.chainId, data);
 		dataSize += objFill<Ushort>(deformedMeshData.pointsId, data + dataSize);
@@ -234,7 +261,7 @@ struct FoliageDataByte {
 			+ sizeof(Float)
 			+ sizeof(Float) * 4;
 	}
-	static Uint toByte(FoliageData& foliageData, Uchar* data)
+	static Uint toByte(FoliageData& foliageData, Char* data)
 	{
 		Uint dataSize = byteFill<Ushort>(foliageData.pointsId, data);
 		dataSize += byteFill<Ushort>(foliageData.attachPoint.pointsId, data + dataSize);
@@ -246,7 +273,7 @@ struct FoliageDataByte {
 		dataSize += byteFill<Quat>(foliageData.q, data + dataSize);
 		return dataSize;
 	}
-	static Uint toObj(FoliageData& foliageData, Uchar* data)
+	static Uint toObj(FoliageData& foliageData, Char* data)
 	{
 		Uint dataSize = objFill<Ushort>(foliageData.pointsId, data);
 		dataSize += objFill<Ushort>(foliageData.attachPoint.pointsId, data + dataSize);
@@ -264,8 +291,7 @@ struct SkelTreeDataByte
 {
 	static Uint byteSize(SkelTreeData& treeData)
 	{
-		Uint dataSize = 0;
-		dataSize += LIST_BYTE_SIZE(ChainData, treeData.chainDataList)
+		Uint dataSize = LIST_BYTE_SIZE(ChainData, treeData.chainDataList)
 		dataSize += LIST_BYTE_SIZE(DeformedMeshData, treeData.deformedDataList)
 		dataSize += LIST_BYTE_SIZE(FoliageData, treeData.foliageDataList)
 
@@ -273,7 +299,7 @@ struct SkelTreeDataByte
 		dataSize += sizeof(Float) * 3 * 2;//Box boundBox
 		return dataSize;
 	}
-	static Uint toByte(SkelTreeData& treeData, Uchar* data)
+	static Uint toByte(SkelTreeData& treeData, Char* data)
 	{
 		Uint dataSize = LIST_BYTE_FILL(ChainData, treeData.chainDataList, data)
 		dataSize += LIST_BYTE_FILL(DeformedMeshData, treeData.deformedDataList, data + dataSize)
@@ -283,7 +309,7 @@ struct SkelTreeDataByte
 		dataSize += byteFill<Box>(treeData.boundBox, data + dataSize);
 		return dataSize;
 	}
-	static Uint toObj(SkelTreeData & treeData, Uchar* data)
+	static Uint toObj(SkelTreeData & treeData, Char* data)
 	{
 		Uint dataSize = LIST_OBJ_FILL(ChainData, treeData.chainDataList, data)
 		dataSize += LIST_OBJ_FILL(DeformedMeshData, treeData.deformedDataList, data + dataSize)
@@ -301,7 +327,7 @@ struct AniOpDataByte
 	{
 		return sizeof(Float) * 3 + sizeof(Float) * 9;
 	}
-	static Uint toByte(AniOpData& opData, Uchar* data)
+	static Uint toByte(AniOpData& opData, Char* data)
 	{
 		Uint dataSize = byteFill<Vec>(opData.windDirection, data);
 		dataSize += byteArrayFill<Float,3>(opData.noiseTrunk, data + dataSize);
@@ -309,7 +335,7 @@ struct AniOpDataByte
 		dataSize += byteArrayFill<Float,3>(opData.noiseFoliage, data + dataSize);
 		return dataSize;
 	}
-	static Uint toObj(AniOpData& opData, Uchar* data)
+	static Uint toObj(AniOpData& opData, Char* data)
 	{
 		Uint dataSize = objFill<Vec>(opData.windDirection, data);
 		dataSize += objArrayFill<Float, 3>(opData.noiseTrunk, data + dataSize);
@@ -325,13 +351,13 @@ struct SkelTreeFileByte
 	{
 		return SkelTreeDataByte::byteSize(treeData) + AniOpDataByte::byteSize(opData);
 	}
-	static Uint toByte(SkelTreeData& treeData, AniOpData& opData, Uchar* data)
+	static Uint toByte(SkelTreeData& treeData, AniOpData& opData, Char* data)
 	{
 		Uint dataSize = SkelTreeDataByte::toByte(treeData, data);
 		dataSize += AniOpDataByte::toByte(opData, data + dataSize);
 		return dataSize;
 	}
-	static Uint toObj(SkelTreeData& treeData, AniOpData& opData, Uchar* data)
+	static Uint toObj(SkelTreeData& treeData, AniOpData& opData, Char* data)
 	{
 		Uint dataSize = SkelTreeDataByte::toObj(treeData, data);
 		dataSize += AniOpDataByte::toObj(opData, data + dataSize);
