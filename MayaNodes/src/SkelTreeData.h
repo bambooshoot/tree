@@ -66,6 +66,10 @@ Uint deformedPointNum() const
 		pNum += pointsList[deformedData.pointsId].pointNum();
 	return pNum;
 };
+bool isValid() const
+{
+	return pointNum() > 0;
+};
 )
 
 NS_END

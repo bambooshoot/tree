@@ -7,7 +7,7 @@ NS_BEGIN
 
 STRUCT(DeformedMeshWeight,
 	Uint pId;
-SplineWeight<3> w;)
+SplineWeight<DEFORMED_WEIGHT_NUM> w;)
 
 STRUCT(DeformedMeshData,
 	Ushort chainId;

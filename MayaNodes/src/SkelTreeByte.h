@@ -208,22 +208,22 @@ struct ChainDataByte {
 struct DeformedMeshWeightByte {
 	static Uint byteSize(DeformedMeshWeight& deformedMeshWeight)
 	{
-		return sizeof(Uint) + (sizeof(Ushort) + sizeof(Float)) * 3;
+		return sizeof(Uint) + (sizeof(Ushort) + sizeof(Float)) * DEFORMED_WEIGHT_NUM;
 	}
 	static Uint toByte(DeformedMeshWeight& deformedMeshWeight, Char* data)
 	{
 		Uint offset = byteFill<Uint>(deformedMeshWeight.pId, data);
 
-		offset += byteArrayFill<Ushort, 3>(deformedMeshWeight.w.id, data + offset);
-		offset += byteArrayFill<Float, 3>(deformedMeshWeight.w.w, data + offset);
+		offset += byteArrayFill<Ushort, DEFORMED_WEIGHT_NUM>(deformedMeshWeight.w.id, data + offset);
+		offset += byteArrayFill<Float, DEFORMED_WEIGHT_NUM>(deformedMeshWeight.w.w, data + offset);
 		return offset;
 	}
 	static Uint toObj(DeformedMeshWeight& deformedMeshWeight, Char* data)
 	{
 		Uint offset = objFill<Uint>(deformedMeshWeight.pId, data);
 
-		offset += objArrayFill<Ushort, 3>(deformedMeshWeight.w.id, data + offset);
-		offset += objArrayFill<Float, 3>(deformedMeshWeight.w.w, data + offset);
+		offset += objArrayFill<Ushort, DEFORMED_WEIGHT_NUM>(deformedMeshWeight.w.id, data + offset);
+		offset += objArrayFill<Float, DEFORMED_WEIGHT_NUM>(deformedMeshWeight.w.w, data + offset);
 		return offset;
 	}
 };

@@ -1,6 +1,7 @@
 import maya.cmds as cmds
 import pymel.core as pm
 import pymel.core.datatypes as dt
+from tqdm import tqdm, trange
 
 import attachedLocalSpace as als
 
@@ -18,13 +19,13 @@ def connectMeshToDeform(treeNode,chainId,meshId,subIds):
     curDeformMesh.deformedMeshId.set(meshId)
     curDeformMesh.deformedPointIds.set(subIds)
 
-def connectRootFrame(rootJoint, treeNode, idx, attachedMatrix):
+def connectRootFrame(rootJoint, treeNode, idx, rootMatrix):
     rootFrameAttr = treeNode.chains[idx].rootFrame
     rootP = dt.Point(rootJoint.getTranslation("world"))
-    locP = rootP * attachedMatrix
+    locP = rootP * rootMatrix
     rootFrameAttr.offset.set([locP.x, locP.y, locP.z])
     q = rootJoint.getRotation(quaternion=True) * rootJoint.getOrientation()
-    q *= dt.Quaternion(attachedMatrix)
+    q *= dt.Quaternion(rootMatrix)
     rootFrameAttr.rootQuat.set([q.x, q.y, q.z, q.w])
 
 def connectFrame(joint, treeNode, idx, idx2):
@@ -38,63 +39,104 @@ def connectJointHierarchyToTree(joint, treeNode, chainId, idx2):
     for subJoint in joint.getChildren():
         connectJointHierarchyToTree(subJoint, treeNode, chainId, idx2+1)
 
-def inputChain(treeNode, rootJoint, chainId, attachedMatrix):
+def inputChain(treeNode, rootJoint, chainId, rootMatrix):
     # input joints
     rootJointNode = pm.PyNode(rootJoint)
-    attachedMatrix = attachedMatrix.inverse()
-    connectRootFrame(rootJointNode, treeNode, chainId, attachedMatrix)
+    rootMatrix = rootMatrix.inverse()
+    connectRootFrame(rootJointNode, treeNode, chainId, rootMatrix)
 
     for subJoint in rootJointNode.getChildren():
         connectJointHierarchyToTree(subJoint, treeNode, chainId, 0)
 
+def parentChainFrame(parentJoint, rootP):
+    jointNodes = pm.ls(parentJoint,dag=True,type="joint")
+    nearestDist = 1000000
+    curDist = 0
+    nearestId = 0
+    idx = 0
+    nearestJointNode = None
+    for joint in jointNodes:
+        p = pm.joint(joint,q=True,p=True)
+        curDist = (p - rootP).length()
+        if nearestDist > curDist:
+            nearestDist = curDist
+            nearestId = idx
+            nearestJointNode = joint
 
-def setTreeInputForDeformedMesh(treeNode, meshId, subIds, rootJoint, chainId, rootMesh=None, rootMeshId=None):
-    attachedMatrix = dt.Matrix()
-    attachedMatrix.setToIdentity()
-    # print(treeNode, meshId, subIds, rootJoint, chainId)
+        idx += 1
+
+    return nearestJointNode, nearestId
+
+def setTreeInputForDeformedMesh(treeNode, meshId, subPIds, rootJoint, chainId, parentJoint=None):
+    rootMatrix = dt.Matrix()
+    rootMatrix.setToIdentity()
     # input rootMeshes
-    if rootMesh:
+    if parentJoint:
         rootP = cmds.xform(rootJoint, q=True, ws=True, t=True)
         rootP = dt.Point(rootP)
-        vIds, u, v = als.closestPolygonAndWeights(rootP, rootMesh)
-        attachedPointAttr = treeNode.chains[chainId].attachedPoint
-        attachedPointAttr.targetMeshId.set(rootMeshId)
-        attachedPointAttr.attachedPointId.set(vIds[0],vIds[1],vIds[2])
-        attachedPointAttr.attachedWeight.set(u,v)
-        attachedMatrix = als.closestMatrix(u, v, rootMesh, vIds)
+        parentFrameJoint, rootChainFrameId = parentChainFrame(parentJoint, rootP)
+        treeNode.chains[chainId].trunkFrameId.set(rootChainFrameId)
+        rootMatrix = pm.xform(parentFrameJoint, q=True, ws=True, m=True)
+        rootMatrix = dt.Matrix(rootMatrix)
 
     # input chain
-    inputChain(treeNode, rootJoint, chainId, attachedMatrix)
+    inputChain(treeNode, rootJoint, chainId, rootMatrix)
 
-    connectMeshToDeform(treeNode, chainId, meshId, subIds)
+    connectMeshToDeform(treeNode, chainId, meshId, subPIds)
 
 def inputFoliages(treeNode, foliageData, rootMesh, meshId, rootMeshId):
-    vIdList=[]
-    uvList = []
-    qList = []
-    print("foliage begin")
-    for i in range(len(foliageData["pnt"])):
-        print(i)
+    foliageNum = len(foliageData["pnt"])
+    vIdList = [0] * foliageNum * 3
+    uvList = [0] * foliageNum * 2
+    axisList = [0] * foliageNum * 3
+    radianList = [0] * foliageNum
+    scaleList = [1] * foliageNum
+
+    itersector = als.createMeshIntersector(rootMesh)
+
+    print("Foliage process is beginning")
+
+    # pbar = tqdm(range(foliageNum))
+    for i in range(foliageNum):
+        # pbar.set_description('Processing {}'.format(i))
+
+        if i % 10000 == 1:
+            print("Processing {:.2f}%".format(i/foliageNum*100))
+
         rootP = foliageData["pnt"][i]
         rootP = dt.Point(rootP)
-        vIds, u, v = als.closestPolygonAndWeights(rootP, rootMesh)
+        vIds, u, v = als.closestPolygonAndWeights(rootP, rootMesh, itersector)
 
-        vIdList.append(vIds[0])
-        vIdList.append(vIds[1])
-        vIdList.append(vIds[2])
+        vId3 = i*3
+        vIdList[vId3  ]=vIds[0]
+        vIdList[vId3+1]=vIds[1]
+        vIdList[vId3+2]=vIds[2]
 
-        uvList.append(u)
-        uvList.append(v)
+        uvId2 = i*2
+        uvList[uvId2  ]=u
+        uvList[uvId2+1]=v
 
-        qList += foliageData["q"][i]
+        qId3 = i*3
+        axis = foliageData["rotAxis"][i]
+
+        axisList[qId3  ] = axis[0]
+        axisList[qId3+1] = axis[1]
+        axisList[qId3+2] = axis[2]
+
+        radianList[i] = foliageData["rotRadian"][i]
+
+        scaleList[i] = foliageData["scale"][i]
+
+    print("Foliage process is done")
 
     attachedPointAttr = treeNode.foliages
     attachedPointAttr.foliageMeshId.set(meshId)
     attachedPointAttr.foliageAttachedMeshId.set(rootMeshId)
     attachedPointAttr.foliageAttachedPointId.set(vIdList)
     attachedPointAttr.foliageAttachedWeight.set(uvList)
-    attachedPointAttr.foliageQuat.set(qList)
-    print("foliage end")
+    attachedPointAttr.foliageScale.set(scaleList)
+    attachedPointAttr.foliageRotAxis.set(axisList)
+    attachedPointAttr.foliageRotRadian.set(radianList)
 
 def skelTreeCreator(meshDataDict):
     if not cmds.pluginInfo("skelTree",q=True,l=True):
@@ -103,6 +145,9 @@ def skelTreeCreator(meshDataDict):
     treeNode = pm.PyNode(cmds.createNode('skelTreeCreator'))
     visNode = pm.PyNode(cmds.createNode('skelTreeVisualization'))
 
+    visNode.noiseTrunkValueFreqOffset.set([0.2,.1,0.05])
+    visNode.noiseBranchValueFreqOffset.set([0.2,.2,1])
+    visNode.noiseLeafValueFreqOffset.set([1,.2,1])
     visNode.windDirection.set([1,0,0])
     visNode.dispChainScale.set(0.1)
 
@@ -128,17 +173,18 @@ def skelTreeCreator(meshDataDict):
     # input deformed meshes and chains
     for meshData in deformDataList:
         if meshData[3]:
-            setTreeInputForDeformedMesh(treeNode, meshList.index(meshData[0]), meshData[1], meshData[2], meshDataDict["chain"].index(meshData[2]), 
-                meshData[3], meshList.index(meshData[3]))
+            rootMeshId = meshList.index(meshData[3])
+            setTreeInputForDeformedMesh(treeNode, meshList.index(meshData[0]), meshData[1], meshData[2], meshDataDict["chain"].index(meshData[2]), meshDataDict["chain"][0])
         else:
             setTreeInputForDeformedMesh(treeNode, meshList.index(meshData[0]), meshData[1], meshData[2], meshDataDict["chain"].index(meshData[2]))
 
     treeNode.outSkelTreeData.connect(visNode.inSkelTreeData)
 
     # input foliages
-    rootMesh = meshList[0]
-    print("rootMesh {}".format(rootMesh))
-    inputFoliages(treeNode, meshDataDict["foliage"], rootMesh, 1, 0)
+    rootMeshId = 0
+    foliageMeshId = 1
+    rootMesh = meshList[rootMeshId]
+    inputFoliages(treeNode, meshDataDict["foliage"], rootMesh, foliageMeshId, rootMeshId)
 
 # skelTreeCreator({
 #     "mesh":["pPlaneShape1", "pCylinderShape1", "pCylinderShape2","pCylinderShape3"],

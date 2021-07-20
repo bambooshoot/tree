@@ -104,7 +104,7 @@ MBoundingBox SkelTreeVisualization::boundingBox() const
 {
 	MBoundingBox bbox;
 
-	skelTree::CRSkelTreeData treeData = getSkelTreeData();
+	skelTree::RSkelTreeData treeData = getSkelTreeData();
 	skelTree::CRBox stBox = treeData.boundBox;
 
 	bbox.expand(MPoint(stBox.min.x, stBox.min.y, stBox.min.z));
@@ -117,7 +117,9 @@ skelTree::RSkelTreeData SkelTreeVisualization::getSkelTreeData() const
 {
 	MObject thisNode = thisMObject();
 	MPlug skelTreeDataPlug(thisNode, mInSkelTreeData);
-	return ((SkelTreeData*)skelTreeDataPlug.asMDataHandle().asPluginData())->skelTreeData;
+	MPxData* pData = skelTreeDataPlug.asMDataHandle().asPluginData();
+	assert(pData!=nullptr);
+	return ((SkelTreeData*)pData)->skelTreeData;
 }
 
 skelTree::AniOpData SkelTreeVisualization::aniOpData()
@@ -260,18 +262,20 @@ void SkelTreeVisualizationOverride::update(
 	MHWRender::MSubSceneContainer& container,
 	const MHWRender::MFrameContext& frameContext)
 {
-	if (_geoUpdateFlag) {
-		buildGeometryStruct();
-		_geoUpdateFlag = false;
+	pTreeData = &mVisNode->getSkelTreeData();
+	if (pTreeData->isValid()) {
+		if (_geoUpdateFlag) {
+			buildGeometryStruct();
+			//_geoUpdateFlag = false;
+		}
+
+		updateGeometry();
+		buildRenderItems(container);
 	}
-	
-	updateGeometry();
-	buildRenderItems(container);
 }
 
 void SkelTreeVisualizationOverride::buildGeometryStruct()
 {
-	pTreeData = &mVisNode->getSkelTreeData();
 	skelTree.buildStruct(pTreeData);
 	mVisNode->deformedMeshVertexIndices(triangleVtx);
 }
@@ -288,6 +292,7 @@ void SkelTreeVisualizationOverride::updateGeometry()
 		for (auto& vis : visElementMap) {
 			vis.second.update = true;
 		}
+
 		_currentTime = opData.time;
 	}
 }

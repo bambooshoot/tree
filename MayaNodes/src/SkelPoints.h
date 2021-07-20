@@ -4,7 +4,7 @@
 
 NS_BEGIN
 
-enum AttrType {Rest, Deformed};
+enum AttrType {Rest=0, Deformed=1};
 
 STRUCT(	Points,
 		VecListList attrList;
