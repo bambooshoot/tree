@@ -4,6 +4,7 @@
 #include <array>
 #include <map>
 #include <limits>
+#include <algorithm>
 #include <assert.h>
 #include <memory.h>
 
@@ -44,14 +45,14 @@ DECL_VAR_TYPE(M)
 using T = D; \
 DECL_TYPE(T)
 
-#define CLASSDEF(T, N, C, P) \
-T N P { \
+#define CLASSDEF(T, N, C, ...) \
+T N __VA_ARGS__ { \
 C \
 };\
 DECL_TYPE(N)
 
-#define STRUCT(N, C) CLASSDEF(struct, N, C, )
-#define CLASS(N, C) CLASSDEF(class, N, C, )
+#define STRUCT(N, C) CLASSDEF(struct, N, C )
+#define CLASS(N, C) CLASSDEF(class, N, C )
 #define CLASSDERIVED(N, P, C) CLASSDEF(class, N, C, :public P)
 
 DECL_ALIAS(int, Int)

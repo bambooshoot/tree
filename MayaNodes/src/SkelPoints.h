@@ -4,10 +4,9 @@
 
 NS_BEGIN
 
-#define ATTRTYPE enum AttrType { Rest = 0, Deformed = 1 };
+enum AttrType {Rest, Deformed};
 
 STRUCT(	Points,
-		ATTRTYPE
 		VecListList attrList;
 		Points() { attrList.push_back(VecList()); };
 		RVecList rest() { return attrList[AttrType::Rest]; };
@@ -17,7 +16,5 @@ STRUCT(	Points,
 		Uint pointNum() const { return Uint(attrList[AttrType::Rest].size()); };
 		void clear() { for (auto& attr : attrList) attr.clear(); };
 		)
-
-#undef ATTRTYPE
 
 NS_END

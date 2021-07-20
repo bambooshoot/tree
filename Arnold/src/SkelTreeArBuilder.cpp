@@ -83,6 +83,7 @@ float SkelTreeArBuilder::getFrame()
 
 void SkelTreeArBuilder::build(const SkelTreeOpData* skelTreeOpData)
 {
+	AiMsgInfo("tree op begin\n");
 	AtNode* trunkMeshNode = nodeLookUpByName(skelTreeOpData->trunkMesh);
 	AtNode* foliageMeshNode = nodeLookUpByName(skelTreeOpData->foliageMesh);
 
@@ -98,17 +99,28 @@ void SkelTreeArBuilder::build(const SkelTreeOpData* skelTreeOpData)
 
 	SkelTreeData treeData;
 	AniOpData opData;
+
+	AiMsgInfo("read tree file.\n");
 	skelTree::File::read(treeData, opData, skelTreeOpData->skelTreeFile);
 
+	AiMsgInfo("fill trunk mesh\n");
 	fillTreeMesh(&treeData, trunkMeshNode);
+
+	AiMsgInfo("fill leaf mesh\n");
 	fillTreeMesh(&treeData, foliageMeshNode);
 
 	opData.time = getFrame();
 
+	AiMsgInfo("build tree\n");
 	SkelTree tree;
 	tree.buildStruct(&treeData);
 	tree.deformAndFoliages(&treeData, opData);
 
+	AiMsgInfo("set deformed mesh points for trunk\n");
 	setTrunkMeshPoints(&treeData, trunkMeshNode);
+
+	AiMsgInfo("populate leaf instances\n");
 	genFolidages(tree, foliageMeshNode);
+
+	AiMsgInfo("tree op end\n");
 }
