@@ -131,9 +131,12 @@ CRMatrix44 SkelTree::getFoliageMatrix(CUint foliageId) const
 
 void SkelTree::updateFoliages(CRAniOpData opData)
 {
-	foliageList.resize(pTreeData->foliageDataList.size());
-	
-	for (Uint i = 0; i < foliageList.size(); ++i) {
+	CInt foliageNum = (CInt)pTreeData->foliageDataList.size();
+
+	foliageList.resize(foliageNum);
+
+#pragma omp parallel for  
+	for (Int i = 0; i < foliageNum; ++i) {
 		foliageList[i].update(i, pTreeData, opData, SkelTree::foliageOp.get());
 	}
 }
@@ -151,11 +154,13 @@ void SkelTree::buildStruct(SkelTreeDataP pTreeData)
 	buildChains();
 }
 
-void SkelTree::deformAndFoliages(SkelTreeDataP pTreeData, CRAniOpData opData)
+void SkelTree::deformAndFoliages(SkelTreeDataP pTreeData, CRAniOpData opData, bool bUpdateFoliage)
 {
 	reset(pTreeData);
 	deform(opData);
-	updateFoliages(opData);
+
+	if(bUpdateFoliage)
+		updateFoliages(opData);
 }
 
 NS_END

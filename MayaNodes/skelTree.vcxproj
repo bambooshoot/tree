@@ -56,7 +56,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\asunlab\maya2022_sdk\include;D:\asunlab\maya2022_sdk\include\Python37;D:\asunlab\outsource\USD-20.11\install\include;src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\asunlab\maya2022_sdk\include;D:\asunlab\maya2022_sdk\include\Python37;D:\asunlab\outsource\vcpkg\installed\x64-windows\include;src</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -85,8 +85,8 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>D:\asunlab\maya2022_sdk\lib\OpenMaya.lib;D:\asunlab\maya2022_sdk\lib\Foundation.lib;D:\asunlab\maya2022_sdk\lib\OpenMayaUI.lib;D:\asunlab\maya2022_sdk\lib\OpenMayaRender.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;IexMath-2_2.lib;Iex-2_2.lib;Imath-2_2.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>D:\asunlab\outsource\USD-20.11\install\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>D:\asunlab\maya2022_sdk\lib\OpenMaya.lib;D:\asunlab\maya2022_sdk\lib\Foundation.lib;D:\asunlab\maya2022_sdk\lib\OpenMayaUI.lib;D:\asunlab\maya2022_sdk\lib\OpenMayaRender.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;IexMath-2_5.lib;Iex-2_5.lib;Imath-2_5.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\asunlab\outsource\vcpkg\installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -100,7 +100,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\asunlab\maya2022_sdk\include;D:\asunlab\maya2022_sdk\include\Python37;D:\asunlab\outsource\USD-20.11\install\include;src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\asunlab\maya2022_sdk\include;D:\asunlab\maya2022_sdk\include\Python37;D:\asunlab\outsource\vcpkg\installed\x64-windows\include;src</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -116,6 +116,8 @@
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;NT_PLUGIN;PARTIO_WIN32;CMAKE_INTDIR="Release";skelTree_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;NT_PLUGIN;PARTIO_WIN32;CMAKE_INTDIR=\"Release\";skelTree_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -130,13 +132,12 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>D:\asunlab\maya2022_sdk\lib\OpenMaya.lib;D:\asunlab\maya2022_sdk\lib\Foundation.lib;D:\asunlab\maya2022_sdk\lib\OpenMayaUI.lib;D:\asunlab\maya2022_sdk\lib\OpenMayaRender.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;IexMath-2_2.lib;Iex-2_2.lib;Imath-2_2.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>D:\asunlab\outsource\USD-20.11\install\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>D:\asunlab\maya2022_sdk\lib\OpenMaya.lib;D:\asunlab\maya2022_sdk\lib\Foundation.lib;D:\asunlab\maya2022_sdk\lib\OpenMayaUI.lib;D:\asunlab\maya2022_sdk\lib\OpenMayaRender.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;IexMath-2_5.lib;Iex-2_5.lib;Imath-2_5.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\asunlab\outsource\vcpkg\installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ImportLibrary>D:/asunlab/github/tree/MayaNodes/Release/skelTree.lib</ImportLibrary>
-      <ProgramDataBaseFile>D:/asunlab/github/tree/MayaNodes/Release/skelTree.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
     </Link>
     <ProjectReference>

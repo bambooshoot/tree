@@ -115,7 +115,7 @@ void SkelTreeArBuilder::build(const SkelTreeOpData* skelTreeOpData)
 	AiMsgInfo("build tree\n");
 	SkelTree tree;
 	tree.buildStruct(&treeData);
-	tree.deformAndFoliages(&treeData, opData);
+	tree.deformAndFoliages(&treeData, opData, true);
 
 	AiMsgInfo("set deformed mesh points for trunk\n");
 	setTrunkMeshPoints(&treeData, trunkMeshNode);

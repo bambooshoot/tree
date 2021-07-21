@@ -17,7 +17,7 @@ public:
 	
 	void buildRest(SkelTreeDataP treeData);
 	void buildStruct(SkelTreeDataP treeData);
-	void deformAndFoliages(SkelTreeDataP treeData, CRAniOpData data);
+	void deformAndFoliages(SkelTreeDataP treeData, CRAniOpData data, bool bUpdateFoliage);
 
 	void reset(SkelTreeDataP treeData);
 

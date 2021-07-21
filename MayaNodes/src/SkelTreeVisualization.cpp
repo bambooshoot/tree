@@ -271,9 +271,9 @@ bool SkelTreeVisualizationOverride::requiresUpdate(
 		return true;
 	}
 
-	// Update always. This could be optimized to only update when the
-	// actual shape node detects a change.
-	return true;
+	skelTree::CRSkelTreeData treeData = mVisNode->getSkelTreeData();
+
+	return treeData.isValid();
 }
 
 void SkelTreeVisualizationOverride::update(
@@ -281,15 +281,15 @@ void SkelTreeVisualizationOverride::update(
 	const MHWRender::MFrameContext& frameContext)
 {
 	pTreeData = &mVisNode->getSkelTreeData();
-	if (pTreeData->isValid()) {
-		if (_geoUpdateFlag) {
-			buildGeometryStruct();
-			_geoUpdateFlag = false;
-		}
 
-		updateGeometry();
-		buildRenderItems(container);
+	if (_geoUpdateFlag) {
+		buildGeometryStruct();
+		_geoUpdateFlag = false;
 	}
+
+	updateGeometry();
+	buildRenderItems(container);
+
 }
 
 void SkelTreeVisualizationOverride::buildGeometryStruct()
@@ -306,7 +306,7 @@ void SkelTreeVisualizationOverride::updateGeometry()
 	visElementMap = mVisNode->dispEnableData();
 
 	if (_currentTime != opData.time) {
-		skelTree.deformAndFoliages(pTreeData, opData);
+		skelTree.deformAndFoliages(pTreeData, opData, visElementMap[VIS_ELEMENT_FOLIAGES].enable);
 		for (auto& vis : visElementMap) {
 			vis.second.update = true;
 		}
