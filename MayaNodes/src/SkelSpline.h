@@ -149,7 +149,9 @@ public:
 	{
 		_pList = pList;
 		for (auto iter = _pList.begin(); iter != _pList.end() - 1; ++iter) {
-			_locUList.push_back((*(iter+1) - *iter).length());
+			_ntList.push_back(*(iter + 1) - *iter);
+			_locUList.push_back(_ntList.back().length());
+			_ntList.back().normalize();
 		}
 
 		Float curU = 0.0f;
@@ -178,7 +180,7 @@ public:
 	static Spline3D* create(CRVecList pList);
 
 protected:
-	VecList		_pList;
+	VecList		_pList, _ntList;
 	FloatList   _locUList;
 	UParamTrain<WEIGHT_NUM> *_pUTrain;
 
@@ -196,10 +198,6 @@ public:
 	SplineK(CRVecList pList) : Spline3D2P(pList) {}
 
 protected:
-	Vec _lineSegment(CUint idx) const
-	{
-		return (_pList[idx + 1u] - _pList[idx]).normalize();
-	}
 	Float _nearestU(RUint n_idx, CRVec sp) const override
 	{
 		Float nearestDist2 = FLOATMAX, dist2;
@@ -213,7 +211,7 @@ protected:
 			++idx;
 		}
 
-		Vec lineV = _lineSegment(nearestIdx);
+		Vec lineV = _ntList[nearestIdx];
 		Float locU = lineV.dot(sp - _pList[nearestIdx]);
 		if (locU < 0) {
 			CInt lastIdx = nearestIdx - 1;
@@ -223,7 +221,7 @@ protected:
 			}
 
 			nearestIdx = lastIdx;
-			lineV = _lineSegment(nearestIdx);
+			lineV = _ntList[nearestIdx];
 			locU = lineV.dot(sp - _pList[nearestIdx]);
 			assert(locU > 0.0f);
 		}
@@ -244,12 +242,11 @@ protected:
 	Float _nearestU(RUint n_idx, CRVec sp) const override
 	{
 		n_idx = 0;
-		CVec lineV = _pList[1] - _pList[0];
+		CVec lineV = _ntList[0];
 		Vec pV = sp - _pList[0];
 		Float pf = pV.dot(lineV);
-		CFloat l=lineV.length();
 		
-		pf = std::max(0.0f, std::min(pf, l));
+		pf = std::max(0.0f, std::min(pf, _locUList[0]));
 		return pf;
 	};
 };

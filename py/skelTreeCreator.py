@@ -180,11 +180,12 @@ def skelTreeCreator(meshDataDict):
 
     treeNode.outSkelTreeData.connect(visNode.inSkelTreeData)
 
-    # input foliages
-    rootMeshId = 0
-    foliageMeshId = 1
-    rootMesh = meshList[rootMeshId]
-    inputFoliages(treeNode, meshDataDict["foliage"], rootMesh, foliageMeshId, rootMeshId)
+    if meshDataDict["foliage"]:
+        # input foliages
+        rootMeshId = 0
+        foliageMeshId = 1
+        rootMesh = meshList[rootMeshId]
+        inputFoliages(treeNode, meshDataDict["foliage"], rootMesh, foliageMeshId, rootMeshId)
 
 # skelTreeCreator({
 #     "mesh":["pPlaneShape1", "pCylinderShape1", "pCylinderShape2","pCylinderShape3"],

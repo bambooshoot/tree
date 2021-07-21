@@ -266,7 +266,7 @@ void SkelTreeVisualizationOverride::update(
 	if (pTreeData->isValid()) {
 		if (_geoUpdateFlag) {
 			buildGeometryStruct();
-			//_geoUpdateFlag = false;
+			_geoUpdateFlag = false;
 		}
 
 		updateGeometry();

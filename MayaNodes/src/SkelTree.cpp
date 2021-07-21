@@ -153,6 +153,7 @@ void SkelTree::buildStruct(SkelTreeDataP pTreeData)
 
 void SkelTree::deformAndFoliages(SkelTreeDataP pTreeData, CRAniOpData opData)
 {
+	reset(pTreeData);
 	deform(opData);
 	updateFoliages(opData);
 }

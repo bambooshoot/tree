@@ -18,12 +18,9 @@ MayaNodes/ALL_BUILD.vcxproj
 *.lib
 *.pdb
 *.exp
-<<<<<<< Updated upstream
-=======
-py/__pycache__/attachedLocalSpace.cpython-37.pyc
+py/__pycache__
 MayaNodes/skelTree.vcxproj
 *.pyc
->>>>>>> Stashed changes
 *.tlog
 *.recipe
 *.log
@@ -31,3 +28,4 @@ MayaNodes/skelTree.vcxproj
 *.idb
 *.ilk
 *.dll
+*.mll
