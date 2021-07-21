@@ -40,7 +40,12 @@ public:
 
 	static MObject mInSkelTreeData;
 	static MObject mTime;
+	static MObject nTimeOffset;
 	static MObject mNoiseTrunkVFO;
+	static MObject nNoiseTrunkValue;
+	static MObject nNoiseTrunkUFreq;
+	static MObject nNoiseTrunkUTimeFreq;
+	static MObject nNoiseTrunkTimeFreq;
 	static MObject mNoiseBranchVFO;
 	static MObject mNoiseLeafVFO;
 	static MObject mWindDirection;

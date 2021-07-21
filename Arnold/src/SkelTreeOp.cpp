@@ -23,7 +23,7 @@ node_parameters
 	AiParameterStr("trunkMesh", "");
 	AiParameterStr("foliageMesh", "");
 	AiParameterStr("skelTreeFile", "");
-	AiParameterInt("seed", 0);
+	AiParameterFlt("offset", 0);
 }
 
 operator_init
@@ -34,7 +34,7 @@ operator_init
 	pData->trunkMesh = AiNodeGetStr(op, "trunkMesh");
 	pData->foliageMesh = AiNodeGetStr(op, "foliageMesh");
 	pData->skelTreeFile = AiNodeGetStr(op, "skelTreeFile");
-	pData->seed = AiNodeGetInt(op, "seed");
+	pData->offset = AiNodeGetFlt(op, "offset");
 
 	return true;
 }

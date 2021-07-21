@@ -7,9 +7,13 @@ NS_BEGIN
 STRUCT(AniOpData,
 Vec windDirection;
 Float time;
-Float noiseTrunk[3];
+Float noiseTrunk[4];
 Float noiseBranch[3];
 Float noiseFoliage[3];
+void offsetTime(CFloat offset)
+{
+	time += offset;
+}
 )
 
 STRUCT(AniOpState,

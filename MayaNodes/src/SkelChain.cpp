@@ -113,6 +113,8 @@ void Chain::_updateParam()
 
 	Float x = 0.0f, xLen;
 
+	xParamList.push_back(0);
+
 	for (auto& space : jointList) {
 		xLen = space->xParam();
 		x += xLen;

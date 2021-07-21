@@ -29,3 +29,5 @@ MayaNodes/skelTree.vcxproj
 *.ilk
 *.dll
 *.mll
+*.ipdb
+*.iobj

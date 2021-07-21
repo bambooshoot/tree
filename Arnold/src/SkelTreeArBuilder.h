@@ -11,7 +11,7 @@ struct SkelTreeOpData
 	AtString trunkMesh;
 	AtString foliageMesh;
 	AtString skelTreeFile;
-	int      seed;
+	float    offset;
 };
 
 using namespace skelTree;

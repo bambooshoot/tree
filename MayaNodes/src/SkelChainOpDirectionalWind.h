@@ -12,7 +12,11 @@ public:
 	Quat computeQ(CRAniOpState state, CRAniOpData data) const override
 	{
 		Quat q;
-		Float rtRatio = state.u * data.noiseTrunk[1];
+		Float rtRatio = state.u;
+		CFloat timeURatio = data.time * data.noiseTrunk[2];
+		CFloat timeRatio = data.time * data.noiseTrunk[3];
+		if (data.noiseTrunk[1] > 1e-10f)
+			rtRatio *= Noise::noise.value(state.u * data.noiseTrunk[1] + timeURatio);
 
 		Vec jointLocAxis(1, 0, 0);
 		Vec windDir = data.windDirection;
@@ -21,7 +25,7 @@ public:
 		Vec axis = jointLocAxis.cross(windDir);
 		axis.normalize();
 
-		Float noiseValue = Noise::noise.value(data.time * data.noiseTrunk[2]);
+		Float noiseValue = Noise::noise.value(timeRatio);
 
 		q.setAxisAngle(axis, noiseValue * state.fTrunkValue * rtRatio);
 		return q;

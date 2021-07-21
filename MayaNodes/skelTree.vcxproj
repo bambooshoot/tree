@@ -168,7 +168,7 @@
     <ClInclude Include="src\SkelChain.h" />
     <ClInclude Include="src\SkelChainData.h" />
     <ClInclude Include="src\SkelChainOpBase.h" />
-    <ClInclude Include="src\SkelChainOpNoise.h" />
+    <ClInclude Include="src\SkelChainOpDirectionalWind.h" />
     <ClInclude Include="src\SkelDeformedMesh.h" />
     <ClInclude Include="src\SkelDeformedMeshData.h" />
     <ClInclude Include="src\SkelFrame.h" />

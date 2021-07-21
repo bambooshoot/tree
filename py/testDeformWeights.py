@@ -22,8 +22,10 @@ def testDeformWeights():
         "chain":["joint1"],
         "deform":[
             [["pCylinderShape1", i, "joint1", "pPlaneShape1"] for i in range(pointNum)]
-        ]
+        ],
         "foliage":[]
     })
 
     stc.skelTreeCreator(dataDict)
+
+testDeformWeights()

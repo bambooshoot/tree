@@ -110,6 +110,7 @@ void SkelTreeArBuilder::build(const SkelTreeOpData* skelTreeOpData)
 	fillTreeMesh(&treeData, foliageMeshNode);
 
 	opData.time = getFrame();
+	opData.offsetTime(skelTreeOpData->offset);
 
 	AiMsgInfo("build tree\n");
 	SkelTree tree;

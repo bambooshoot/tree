@@ -25,8 +25,14 @@ MString	SkelTreeVisualization::drawRegistrantId("skelTreeVisualization");
 
 MObject SkelTreeVisualization::mInSkelTreeData;
 MObject SkelTreeVisualization::mTime;
+MObject SkelTreeVisualization::nTimeOffset;
 
 MObject SkelTreeVisualization::mNoiseTrunkVFO;
+MObject SkelTreeVisualization::nNoiseTrunkValue;
+MObject SkelTreeVisualization::nNoiseTrunkUFreq;
+MObject SkelTreeVisualization::nNoiseTrunkUTimeFreq;
+MObject SkelTreeVisualization::nNoiseTrunkTimeFreq;
+
 MObject SkelTreeVisualization::mNoiseBranchVFO;
 MObject SkelTreeVisualization::mNoiseLeafVFO;
 MObject SkelTreeVisualization::mWindDirection;
@@ -60,8 +66,16 @@ MStatus SkelTreeVisualization::initialize()
 	status = addAttribute(mTime);
 
 	MFnNumericAttribute nAttr;
-	mNoiseTrunkVFO = nAttr.createPoint("noiseTrunkValueFreqOffset", "ntv", &status);
-	nAttr.setDefault(0.05, 1, 0, 0);
+	nTimeOffset = nAttr.create("timeOffset", "tof", MFnNumericData::kDouble, 0.0, &status);
+	status = addAttribute(nTimeOffset);
+
+	nNoiseTrunkValue = nAttr.create("noiseTrunkValue", "ntv", MFnNumericData::kDouble, 0.5, &status);
+	nNoiseTrunkUFreq = nAttr.create("noiseTrunkUFreq", "nuq", MFnNumericData::kDouble, 0.5, &status);
+	nNoiseTrunkUTimeFreq = nAttr.create("noiseTrunkUTimeFreq", "nut", MFnNumericData::kDouble, 0.2, &status);
+	nNoiseTrunkTimeFreq = nAttr.create("noiseTrunkTimeFreq", "ntt", MFnNumericData::kDouble, 0.01, &status);
+	
+	mNoiseTrunkVFO = nAttr.create("noiseTrunkValueFreqOffset", "nto", 
+		nNoiseTrunkValue, nNoiseTrunkUFreq, nNoiseTrunkUTimeFreq, nNoiseTrunkTimeFreq, &status);
 	status = addAttribute(mNoiseTrunkVFO);
 
 	mNoiseBranchVFO = nAttr.createPoint("noiseBranchValueFreqOffset", "nbv", &status);
@@ -131,10 +145,14 @@ skelTree::AniOpData SkelTreeVisualization::aniOpData()
 	MPlug timePlug(thisNode, mTime);
 	opData.time = float(timePlug.asMTime().value());
 
+	MPlug timeOffsetPlug(thisNode, nTimeOffset);
+	opData.offsetTime(float(timeOffsetPlug.asDouble()));
+
 	MPlug noiseTrunkPlug(thisNode, mNoiseTrunkVFO);
 	opData.noiseTrunk[0] = float(noiseTrunkPlug.child(0).asDouble());
 	opData.noiseTrunk[1] = float(noiseTrunkPlug.child(1).asDouble());
 	opData.noiseTrunk[2] = float(noiseTrunkPlug.child(2).asDouble());
+	opData.noiseTrunk[3] = float(noiseTrunkPlug.child(3).asDouble());
 
 	MPlug noiseBranchPlug(thisNode, mNoiseBranchVFO);
 	opData.noiseBranch[0] = float(noiseBranchPlug.child(0).asDouble());
