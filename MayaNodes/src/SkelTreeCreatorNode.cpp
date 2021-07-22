@@ -197,8 +197,10 @@ MStatus SkelTreeCreator::compute(const MPlug& plug, MDataBlock& block)
 
 	MDataHandle outSkelTreeH = block.outputValue(mOutSkelTreeData);
 	SkelTreeData* pOutSeklTreeData = (SkelTreeData*)outSkelTreeH.asPluginData();
-	skelTree::SkelTreeData & skelTreeData = pOutSeklTreeData->skelTreeData;
 	build(skelTreeData, block);
+
+	pOutSeklTreeData->pSkelTreeData = &skelTreeData;
+
 	block.setClean(plug);
 
 	return MS::kSuccess;

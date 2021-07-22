@@ -59,4 +59,6 @@ private:
 	void inputChains(skelTree::SkelTreeData& skelTree, MDataBlock& block);
 	void inputDeformedMeshDatas(skelTree::SkelTreeData& skelTree, MDataBlock& block);
 	void inputFoliages(skelTree::SkelTreeData& skelTree, MDataBlock& block);
+
+	skelTree::SkelTreeData skelTreeData;
 };

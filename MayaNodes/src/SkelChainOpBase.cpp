@@ -18,6 +18,8 @@ QuatList AniOpBase::chainOp(RChain chain, CUint chainId, CRAniOpData data)
 	for (Uint i = 0; i < jointNum; ++i) {
 		internalOpData.worldInvMatrix = chain.jointRestInvMatrix(i);
 		internalOpData.u = chain.xParam(i);
+		CRMatrix44 mat = chain.jointMatrix(i);
+		internalOpData.p = mat.translation();
 		
 		qList[i] = computeQ(internalOpData, data);
 	}

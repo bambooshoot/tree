@@ -28,7 +28,7 @@ public:
 	bool            isBounded() const override { return true; }
 	MBoundingBox    boundingBox() const override;
 
-	skelTree::RSkelTreeData getSkelTreeData() const;
+	skelTree::SkelTreeDataP getSkelTreeData() const;
 	skelTree::AniOpData aniOpData();
 	PopulateGeometryData popGeoData() const;
 	DispEnableMap dispEnableData() const;

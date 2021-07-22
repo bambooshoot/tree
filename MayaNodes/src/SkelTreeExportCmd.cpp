@@ -46,7 +46,7 @@ MStatus SkelTreeExportCmd::doIt(const MArgList& args)
 	}
 
 	SkelTreeVisualization* pVisNode = dynamic_cast<SkelTreeVisualization*>(userNode);
-	skelTree::RSkelTreeData treeData = pVisNode->getSkelTreeData();
+	skelTree::RSkelTreeData treeData = *pVisNode->getSkelTreeData();
 	skelTree::AniOpData aniOpData = pVisNode->aniOpData();
 
 	skelTree::File::write(treeData, aniOpData, fileName.asChar());

@@ -13,7 +13,7 @@ MTypeId SkelTreeData::typeId() const
 }
 void SkelTreeData::copy(const MPxData& src)
 {
-	skelTreeData = ((const SkelTreeData*)&src)->skelTreeData;
+	pSkelTreeData = ((const SkelTreeData*)&src)->pSkelTreeData;
 }
 
 void* SkelTreeData::creator()

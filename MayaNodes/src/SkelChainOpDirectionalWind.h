@@ -48,7 +48,7 @@ public:
 		Random rand(state.uIdx);
 		Float randF = rand.nextf(0.0f, data.noiseBranch[2]);
 
-		CFloat noiseValueOffset = state.fIdx * data.noiseBranch[1];
+		CFloat noiseValueOffset = ( state.p.x + state.p.y + state.p.z ) * data.noiseBranch[1];
 
 		Float noiseValue = Noise::noise.value(data.time * randF + noiseValueOffset);
 
@@ -73,7 +73,7 @@ public:
 		Random rand(state.uIdx);
 		Float randF = rand.nextf(0.0f, data.noiseFoliage[2]);
 
-		Float noiseValueOffset = state.fIdx * data.noiseFoliage[1];
+		Float noiseValueOffset = (state.p.x + state.p.y + state.p.z) * data.noiseFoliage[1];
 
 		Float noiseValue = Noise::noise.value(data.time * randF + noiseValueOffset);
 

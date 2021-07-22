@@ -10,7 +10,7 @@ class SkelTreeData : public MPxData
 {
 public:
 	static void* creator();
-	SkelTreeData() {};
+	SkelTreeData() : pSkelTreeData(nullptr) {};
 	virtual ~SkelTreeData() {}
 	virtual MStatus			readASCII(const MArgList& argList,
 		unsigned int& endOfTheLastParsedElement);
@@ -21,7 +21,7 @@ public:
 	virtual MTypeId typeId() const;
 	virtual void copy(const MPxData& src);
 
-	skelTree::SkelTreeData skelTreeData;
+	skelTree::SkelTreeDataP pSkelTreeData;
 
 	static const MString typeName;
 	static const MTypeId id;

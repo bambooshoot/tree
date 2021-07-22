@@ -130,7 +130,7 @@ MBoundingBox SkelTreeVisualization::boundingBox() const
 {
 	MBoundingBox bbox;
 
-	skelTree::RSkelTreeData treeData = getSkelTreeData();
+	skelTree::RSkelTreeData treeData = *getSkelTreeData();
 	skelTree::CRBox stBox = treeData.boundBox;
 
 	bbox.expand(MPoint(stBox.min.x, stBox.min.y, stBox.min.z));
@@ -139,13 +139,13 @@ MBoundingBox SkelTreeVisualization::boundingBox() const
 	return bbox;
 }
 
-skelTree::RSkelTreeData SkelTreeVisualization::getSkelTreeData() const
+skelTree::SkelTreeDataP SkelTreeVisualization::getSkelTreeData() const
 {
 	MObject thisNode = thisMObject();
 	MPlug skelTreeDataPlug(thisNode, mInSkelTreeData);
 	MPxData* pData = skelTreeDataPlug.asMDataHandle().asPluginData();
 	assert(pData!=nullptr);
-	return ((SkelTreeData*)pData)->skelTreeData;
+	return ((SkelTreeData*)pData)->pSkelTreeData;
 }
 
 skelTree::AniOpData SkelTreeVisualization::aniOpData()
@@ -293,18 +293,15 @@ bool SkelTreeVisualizationOverride::requiresUpdate(
 		return true;
 	}
 
-	skelTree::CRSkelTreeData treeData = mVisNode->getSkelTreeData();
-
-	return treeData.isValid();
+	return true;
 }
 
 void SkelTreeVisualizationOverride::update(
 	MHWRender::MSubSceneContainer& container,
 	const MHWRender::MFrameContext& frameContext)
 {
-	pTreeData = &mVisNode->getSkelTreeData();
-
 	if (_geoUpdateFlag) {
+		pTreeData = mVisNode->getSkelTreeData();
 		buildGeometryStruct();
 		_geoUpdateFlag = false;
 	}
