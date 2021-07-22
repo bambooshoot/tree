@@ -56,7 +56,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\asunlab\maya2022_sdk\include;D:\asunlab\maya2022_sdk\include\Python37;D:\asunlab\outsource\vcpkg\installed\x64-windows\include;src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\asunlab\maya2022_sdk\include;D:\asunlab\maya2022_sdk\include\Python37;D:\asunlab\outsource\openexr2_5\include;src</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -86,7 +86,7 @@
     </Midl>
     <Link>
       <AdditionalDependencies>D:\asunlab\maya2022_sdk\lib\OpenMaya.lib;D:\asunlab\maya2022_sdk\lib\Foundation.lib;D:\asunlab\maya2022_sdk\lib\OpenMayaUI.lib;D:\asunlab\maya2022_sdk\lib\OpenMayaRender.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;IexMath-2_5.lib;Iex-2_5.lib;Imath-2_5.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>D:\asunlab\outsource\vcpkg\installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\asunlab\outsource\openexr2_5\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -100,7 +100,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\asunlab\maya2022_sdk\include;D:\asunlab\maya2022_sdk\include\Python37;D:\asunlab\outsource\vcpkg\installed\x64-windows\include;src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\asunlab\maya2022_sdk\include;D:\asunlab\maya2022_sdk\include\Python37;D:\asunlab\outsource\openexr2_5\include;src</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -133,7 +133,7 @@
     </Midl>
     <Link>
       <AdditionalDependencies>D:\asunlab\maya2022_sdk\lib\OpenMaya.lib;D:\asunlab\maya2022_sdk\lib\Foundation.lib;D:\asunlab\maya2022_sdk\lib\OpenMayaUI.lib;D:\asunlab\maya2022_sdk\lib\OpenMayaRender.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;IexMath-2_5.lib;Iex-2_5.lib;Imath-2_5.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>D:\asunlab\outsource\vcpkg\installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\asunlab\outsource\openexr2_5\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -161,6 +161,7 @@
     <ClInclude Include="src\DrawableBufferDeformedPoints.h" />
     <ClInclude Include="src\DrawableBufferFoliages.h" />
     <ClInclude Include="src\DrawableBufferMesh.h" />
+    <ClInclude Include="src\DrawableBufferNoiseGraph.h" />
     <ClInclude Include="src\RenderBuffer.h" />
     <ClInclude Include="src\RenderItemBase.h" />
     <ClInclude Include="src\RenderItemCPVPoint.h" />

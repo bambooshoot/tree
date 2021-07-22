@@ -7,10 +7,13 @@
 #include <maya/MHWGeometry.h>
 
 #include <SkelTree.h>
+#include <SkelChainOpBase.h>
 
 struct PopulateGeometryData
 {
-	float					chainAxisScale;
+	float	chainAxisScale;
+	int		segmentNum;
+	float	noiseGraphScale;
 };
 
 struct DrawableBufferParam
@@ -20,6 +23,7 @@ struct DrawableBufferParam
 	skelTree::SkelTreeP			pTree;
 	std::vector<MIntArray>*		pTriangleVtx;
 	PopulateGeometryData*		pPopGeoData;
+	skelTree::AniOpData			aniOpData;
 };
 
 using namespace MHWRender;

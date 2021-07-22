@@ -17,7 +17,7 @@ struct Noise
 	Float value(CFloat time);
 
 	FloatList noiseSampleList;
-
+	UintList idxList;
 	static Noise noise;
 };
 

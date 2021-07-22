@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <assert.h>
 #include <memory.h>
+#include <functional>
 
 #include <OpenEXR/ImathVec.h>
 #include <OpenEXR/ImathQuat.h>

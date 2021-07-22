@@ -36,6 +36,8 @@ MObject SkelTreeVisualization::nNoiseTrunkTimeFreq;
 MObject SkelTreeVisualization::mNoiseBranchVFO;
 MObject SkelTreeVisualization::mNoiseLeafVFO;
 MObject SkelTreeVisualization::mWindDirection;
+MObject SkelTreeVisualization::mSegmentNum;
+MObject SkelTreeVisualization::mNoiseGraphScale;
 
 MObject SkelTreeVisualization::mDispChainAxisScale;
 
@@ -45,6 +47,7 @@ MObject SkelTreeVisualization::mDispEnableChainBoxes;
 MObject SkelTreeVisualization::mDispEnableChainLine;
 MObject SkelTreeVisualization::mDispEnableAttachedPoint;
 MObject SkelTreeVisualization::mDispEnableFoliages;
+MObject SkelTreeVisualization::mDispEnableNoiseGraph;
 
 void* SkelTreeVisualization::creator()
 {
@@ -110,6 +113,15 @@ MStatus SkelTreeVisualization::initialize()
 
 	mDispEnableFoliages = nAttr.create("dispEnableFoliages", "efg", MFnNumericData::kBoolean, 1, &status);
 	status = addAttribute(mDispEnableFoliages);
+
+	mDispEnableNoiseGraph = nAttr.create("dispEnableNoiseGraph", "eng", MFnNumericData::kBoolean, 1, &status);
+	status = addAttribute(mDispEnableNoiseGraph);
+
+	mSegmentNum = nAttr.create("segementNum", "snm", MFnNumericData::kInt, 5, &status);
+	status = addAttribute(mSegmentNum);
+
+	mNoiseGraphScale = nAttr.create("noiseGraphScale", "ngs", MFnNumericData::kDouble, 0.1, &status);
+	status = addAttribute(mNoiseGraphScale);
 	
 	return status;
 }
@@ -181,6 +193,12 @@ PopulateGeometryData SkelTreeVisualization::popGeoData() const
 	MPlug chainAxisScalePlug(thisNode, mDispChainAxisScale);
 	geoData.chainAxisScale = float(chainAxisScalePlug.asDouble());
 
+	MPlug segNumPlug(thisNode, mSegmentNum);
+	geoData.segmentNum = segNumPlug.asInt();
+
+	MPlug noiseGraphScalePlug(thisNode, mNoiseGraphScale);
+	geoData.noiseGraphScale = float(noiseGraphScalePlug.asDouble());
+
 	return geoData;
 }
 
@@ -212,6 +230,7 @@ const MString SkelTreeVisualizationOverride::sChainLine = "skelTreeChainLine";
 const MString SkelTreeVisualizationOverride::sAttachedPointName = "skelTreeAttachedPoint";
 const MString SkelTreeVisualizationOverride::sDeformedMeshName = "skelTreeDeformedMesh";
 const MString SkelTreeVisualizationOverride::sFoliageName = "skelTreeFoliages";
+const MString SkelTreeVisualizationOverride::sNoiseGraph = "skelTreeNoiseGraph";
 
 DispEnableMap SkelTreeVisualization::dispEnableData() const
 {
@@ -238,6 +257,9 @@ DispEnableMap SkelTreeVisualization::dispEnableData() const
 
 	MPlug enFoliagePlug(thisNode, mDispEnableFoliages);
 	visElementMap[VIS_ELEMENT_FOLIAGES] = { &SkelTreeVisualizationOverride::sFoliageName, enFoliagePlug.asBool(), updateFlag };
+
+	MPlug enNoiseGraphPlug(thisNode, mDispEnableNoiseGraph);
+	visElementMap[VIS_ELEMENT_NOISE_GRAPH] = { &SkelTreeVisualizationOverride::sNoiseGraph, enNoiseGraphPlug.asBool(), updateFlag };
 
 	return visElementMap;
 }
@@ -313,6 +335,8 @@ void SkelTreeVisualizationOverride::updateGeometry()
 
 		_currentTime = opData.time;
 	}
+
+	visElementMap[VIS_ELEMENT_NOISE_GRAPH].update = true;
 }
 
 void SkelTreeVisualizationOverride::buildRenderItems(MHWRender::MSubSceneContainer& container)
@@ -322,6 +346,7 @@ void SkelTreeVisualizationOverride::buildRenderItems(MHWRender::MSubSceneContain
 	param.pTreeData = pTreeData;
 	param.pPopGeoData = &popGeoData;
 	param.pTriangleVtx = &triangleVtx;
+	param.aniOpData = mVisNode->aniOpData();
 
 	MBoundingBox bbox;
 	bbox.expand(MPoint(pTreeData->boundBox.min.x, pTreeData->boundBox.min.y, pTreeData->boundBox.min.z));

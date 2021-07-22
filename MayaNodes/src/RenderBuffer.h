@@ -10,6 +10,7 @@
 #include <DrawableBufferDeformedPoints.h>
 #include <DrawableBufferFoliages.h>
 #include <DrawableBufferMesh.h>
+#include <DrawableBufferNoiseGraph.h>
 
 #include <RenderItemBase.h>
 #include <RenderItemWireframe.h>
@@ -23,6 +24,7 @@
 #define VIS_ELEMENT_DEFORMED_TRIANGLES		3
 #define VIS_ELEMENT_CHAIN_BOXES				4
 #define VIS_ELEMENT_FOLIAGES				5
+#define VIS_ELEMENT_NOISE_GRAPH				6
 
 struct DispElementEnableData
 {

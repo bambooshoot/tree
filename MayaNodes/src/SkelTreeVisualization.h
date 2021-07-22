@@ -49,6 +49,8 @@ public:
 	static MObject mNoiseBranchVFO;
 	static MObject mNoiseLeafVFO;
 	static MObject mWindDirection;
+	static MObject mSegmentNum;
+	static MObject mNoiseGraphScale;
 
 	static MObject mDispChainAxisScale;
 	static MObject mDispEnableDeformedPoints;
@@ -57,6 +59,7 @@ public:
 	static MObject mDispEnableDeformedMeshes;
 	static MObject mDispEnableAttachedPoint;
 	static MObject mDispEnableFoliages;
+	static MObject mDispEnableNoiseGraph;
 };
 
 using namespace MHWRender;
@@ -86,6 +89,7 @@ public:
 	static const MString sDeformedMeshName;
 	static const MString sAttachedPointName;
 	static const MString sFoliageName;
+	static const MString sNoiseGraph;
 
 private:
 	SkelTreeVisualizationOverride(const MObject& obj);

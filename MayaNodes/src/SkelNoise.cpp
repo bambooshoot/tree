@@ -7,39 +7,41 @@ Noise Noise::noise;
 Noise::Noise()
 {
 	Random rnd(0);
-	for (Uint i = 0; i < NOISE_SAMPLE_NUM_LESS_ONE; ++i) {
+	for (Uint i = 0; i < NOISE_SAMPLE_NUM; ++i) {
 		float curValue = rnd.nextf(-1.0f, 1.0f);
 		noiseSampleList.push_back(curValue);
 	}
-	noiseSampleList.push_back(noiseSampleList[0]);
+
+	idxList.push_back(NOISE_SAMPLE_NUM_LESS_ONE);
+	for (Uint i = 0; i < NOISE_SAMPLE_NUM; ++i) {
+		idxList.push_back(i);
+	}
+	idxList.push_back(0);
+	idxList.push_back(1);
 }
 
 Float Noise::value(CFloat time)
 {
-	FloatList vList, uList;
-	Uint utime = 2 + Uint(time) % NOISE_SAMPLE_NUM_LESS_FOUR;
-	Uint utime_p1 = utime - 2;
-	Uint utime_p2 = utime - 1;
-	Uint utime_n1 = utime + 1;
-	Uint utime_n2 = utime + 2;
+	FloatList vList;
+	
+	Float fFlrTime = floor(time);
+	Int utime = Int(fFlrTime) % NOISE_SAMPLE_NUM;
 
-	uList.push_back(Float(utime_p1));
-	uList.push_back(Float(utime_p2));
-	uList.push_back(Float(utime));
-	uList.push_back(Float(utime_n1));
-	uList.push_back(Float(utime_n2));
+	if (utime < 0)
+		utime = NOISE_SAMPLE_NUM + utime;
 
-	vList.push_back(noiseSampleList[utime_p1]);
-	vList.push_back(noiseSampleList[utime_p2]);
-	vList.push_back(noiseSampleList[utime]);
-	vList.push_back(noiseSampleList[utime_n1]);
-	vList.push_back(noiseSampleList[utime_n2]);
+	++utime;
+
+	static CFloatList uList = { 0.0f,1.0f,2.0f,3.0f };
+
+	for (Int i = -1; i < 3; ++i)
+		vList.push_back(noiseSampleList[idxList[utime + i]]);
 
 	Spline1D spline(vList, uList);
 
-	Float locTime = utime + (time - floorf(time));
+	Float frac = time - fFlrTime;
 
-	return spline.value(locTime);
+	return spline.value(1.0f + frac);
 }
 
 NS_END

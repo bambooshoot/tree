@@ -35,4 +35,9 @@ void RenderBufferManager::_build()
 	pRenderItem = new RenderItemTriangles();
 	pDrawBuf = new DrawableBufferFoliages();
 	registerBuffer(SkelTreeVisualizationOverride::sFoliageName, pRenderItem, pDrawBuf);
+
+	// draw noise graph
+	pRenderItem = new RenderItemCPVPoint();
+	pDrawBuf = new DrawableBufferNoiseGraph();
+	registerBuffer(SkelTreeVisualizationOverride::sNoiseGraph, pRenderItem, pDrawBuf);
 }

@@ -138,7 +138,7 @@ public:
 
 private:
 	FloatList	_valueList;
-	UParamTrainK<5> _uTrain;
+	UParamTrainK<4> _uTrain;
 };
 
 template<Int WEIGHT_NUM>
