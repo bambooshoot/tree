@@ -23,7 +23,7 @@ struct DrawableBufferParam
 	skelTree::SkelTreeP			pTree;
 	std::vector<MIntArray>*		pTriangleVtx;
 	PopulateGeometryData*		pPopGeoData;
-	skelTree::AniOpData			aniOpData;
+	skelTree::CAniOpDataP		pAniOpData;
 };
 
 using namespace MHWRender;

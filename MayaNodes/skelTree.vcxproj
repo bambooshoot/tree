@@ -118,6 +118,8 @@
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
       <OpenMPSupport>true</OpenMPSupport>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;NT_PLUGIN;PARTIO_WIN32;CMAKE_INTDIR=\"Release\";skelTree_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>

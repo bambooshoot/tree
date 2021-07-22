@@ -2,6 +2,8 @@
 #include <SkelTreeData.h>
 #include <SkelDeformedMesh.h>
 
+#include <omp.h>
+
 NS_BEGIN
 
 UAniOpBasePtr SkelTree::trunkOp = MAKE_UNIQUE<TrunkOpDirectionalWind>();

@@ -65,7 +65,7 @@ protected:
 			};
 		};
 
-		noisePosition(param.aniOpData, trunkNoiseFunc());
+		noisePosition(*param.pAniOpData, trunkNoiseFunc());
 
 		auto branchNoiseFunc = [&]() -> std::function<float(skelTree::CRAniOpData, float)> {
 			return [&](skelTree::CRAniOpData param, float inX) -> float {
@@ -74,7 +74,7 @@ protected:
 			};
 		};
 
-		noisePosition(param.aniOpData, branchNoiseFunc());
+		noisePosition(*param.pAniOpData, branchNoiseFunc());
 
 		auto foliageNoiseFunc = [&]() -> std::function<float(skelTree::CRAniOpData, float)> {
 			return [&](skelTree::CRAniOpData param, float inX) -> float {
@@ -83,7 +83,7 @@ protected:
 			};
 		};
 
-		noisePosition(param.aniOpData, foliageNoiseFunc());
+		noisePosition(*param.pAniOpData, foliageNoiseFunc());
 
 		const float noiseSampleStep = scale;
 		float xMatch = 0;
@@ -101,15 +101,19 @@ protected:
 		const int sampleNum = NOISE_GRAPH_SAMPLE_NUM(param.pPopGeoData->segmentNum);
 		const float sampleStep = NOISE_GRAPH_SAMPLE_STEP(param.pPopGeoData->segmentNum);
 		const int clrSize = sizeof(float) * 4;
-		memset(buf, 0, (sampleNum * 3 + NOISE_SAMPLE_NUM) * clrSize);
 
 		uint idx = 0;
 		for (uint gId = 0; gId < 3; ++gId) {
 			for (uint i = 0; i < NOISE_GRAPH_SAMPLE_LENGTH; ++i) {
 				float ratio = 0;
 				for (int j = 0; j < param.pPopGeoData->segmentNum; ++j) {
-					buf[idx + gId] = ratio;
+					buf[idx    ] = 0;
+					buf[idx + 1] = 0;
+					buf[idx + 2] = 0;
 					buf[idx + 3] = 1;
+
+					buf[idx + gId] = ratio;
+					
 					idx += 4;
 					ratio += sampleStep;
 				}

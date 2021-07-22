@@ -64,12 +64,21 @@ void Chain::updateMatrix(CRQuatList qList, CMatrix44P pRootMat)
 	mat = *iter;
 	++iter;
 
+	deformMatrixList.resize(jointNum());
+
+	auto dmIter = deformMatrixList.begin();
+	auto rInvIter = restInvMatrixList.begin() + 1;
 	auto qIter = qList.begin();
+
 	for (auto& space : jointList) {
 		mat = space->matrix(*qIter) * mat;
+		*dmIter = *rInvIter * mat;
 		*iter = mat;
+
 		++iter;
 		++qIter;
+		++dmIter;
+		++rInvIter;
 	}
 }
 
@@ -150,6 +159,11 @@ CRMatrix44 Chain::jointRestMatrix(CUint jointId) const
 CRMatrix44 Chain::jointRestInvMatrix(CUint jointId) const
 {
 	return restInvMatrixList[jointId + 1];
+}
+
+CRMatrix44 Chain::jointDeformMatrix(CUint jointId) const
+{
+	return deformMatrixList[jointId];
 }
 
 CFloat Chain::xLen(CUint boneId) const

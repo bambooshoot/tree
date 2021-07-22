@@ -323,20 +323,21 @@ void SkelTreeVisualizationOverride::buildGeometryStruct()
 void SkelTreeVisualizationOverride::updateGeometry()
 {
 	// prepare geometries
-	skelTree::AniOpData opData = mVisNode->aniOpData();
+	aniOpData = mVisNode->aniOpData();
 	popGeoData = mVisNode->popGeoData();
 	visElementMap = mVisNode->dispEnableData();
 
-	if (_currentTime != opData.time) {
-		skelTree.deformAndFoliages(pTreeData, opData, visElementMap[VIS_ELEMENT_FOLIAGES].enable);
+	if (_currentTime != aniOpData.time) {
+		skelTree.deformAndFoliages(pTreeData, aniOpData, visElementMap[VIS_ELEMENT_FOLIAGES].enable);
 		for (auto& vis : visElementMap) {
 			vis.second.update = true;
 		}
 
-		_currentTime = opData.time;
+		_currentTime = aniOpData.time;
 	}
 
-	visElementMap[VIS_ELEMENT_NOISE_GRAPH].update = true;
+	if(visElementMap[VIS_ELEMENT_NOISE_GRAPH].enable)
+		visElementMap[VIS_ELEMENT_NOISE_GRAPH].update = true;
 }
 
 void SkelTreeVisualizationOverride::buildRenderItems(MHWRender::MSubSceneContainer& container)
@@ -346,7 +347,7 @@ void SkelTreeVisualizationOverride::buildRenderItems(MHWRender::MSubSceneContain
 	param.pTreeData = pTreeData;
 	param.pPopGeoData = &popGeoData;
 	param.pTriangleVtx = &triangleVtx;
-	param.aniOpData = mVisNode->aniOpData();
+	param.pAniOpData = &aniOpData;
 
 	MBoundingBox bbox;
 	bbox.expand(MPoint(pTreeData->boundBox.min.x, pTreeData->boundBox.min.y, pTreeData->boundBox.min.z));

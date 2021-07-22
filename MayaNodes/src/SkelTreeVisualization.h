@@ -104,6 +104,7 @@ private:
 	SkelTreeVisualization*		mVisNode;
 	skelTree::SkelTreeDataP		pTreeData;
 	skelTree::SkelTree			skelTree;
+	skelTree::AniOpData			aniOpData;
 
 	PopulateGeometryData		popGeoData;
 	DispEnableMap				visElementMap;
