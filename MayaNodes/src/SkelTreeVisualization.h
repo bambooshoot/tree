@@ -52,6 +52,11 @@ public:
 	static MObject mSegmentNum;
 	static MObject mNoiseGraphScale;
 
+	static MObject nNoiseLeafValue;
+	static MObject nNoiseLeafFreq;
+	static MObject nNoiseLeafTimeFreq;
+	static MObject nNoiseLeafTimeFreq2;
+
 	static MObject mDispChainAxisScale;
 	static MObject mDispEnableDeformedPoints;
 	static MObject mDispEnableChainBoxes;

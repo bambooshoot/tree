@@ -39,6 +39,11 @@ MObject SkelTreeVisualization::mWindDirection;
 MObject SkelTreeVisualization::mSegmentNum;
 MObject SkelTreeVisualization::mNoiseGraphScale;
 
+MObject SkelTreeVisualization::nNoiseLeafValue;
+MObject SkelTreeVisualization::nNoiseLeafFreq;
+MObject SkelTreeVisualization::nNoiseLeafTimeFreq;
+MObject SkelTreeVisualization::nNoiseLeafTimeFreq2;
+
 MObject SkelTreeVisualization::mDispChainAxisScale;
 
 MObject SkelTreeVisualization::mDispEnableDeformedPoints;
@@ -77,16 +82,21 @@ MStatus SkelTreeVisualization::initialize()
 	nNoiseTrunkUTimeFreq = nAttr.create("noiseTrunkUTimeFreq", "nut", MFnNumericData::kDouble, 0.2, &status);
 	nNoiseTrunkTimeFreq = nAttr.create("noiseTrunkTimeFreq", "ntt", MFnNumericData::kDouble, 0.01, &status);
 	
-	mNoiseTrunkVFO = nAttr.create("noiseTrunkValueFreqOffset", "nto", 
+	mNoiseTrunkVFO = nAttr.create("noiseTrunkValueFreqSpeed", "nto", 
 		nNoiseTrunkValue, nNoiseTrunkUFreq, nNoiseTrunkUTimeFreq, nNoiseTrunkTimeFreq, &status);
 	status = addAttribute(mNoiseTrunkVFO);
 
-	mNoiseBranchVFO = nAttr.createPoint("noiseBranchValueFreqOffset", "nbv", &status);
+	mNoiseBranchVFO = nAttr.createPoint("noiseBranchValueFreqSpeed", "nbv", &status);
 	nAttr.setDefault(0.1, 5, 0, 0);
 	status = addAttribute(mNoiseBranchVFO);
 
-	mNoiseLeafVFO = nAttr.createPoint("noiseLeafValueFreqOffset","nlv", &status);
-	nAttr.setDefault(1, 20, 0, 0);
+	nNoiseLeafValue = nAttr.create("noiseLeafValue", "nlv", MFnNumericData::kDouble, 0.5, &status);
+	nNoiseLeafFreq = nAttr.create("noiseLeafFreq", "nlf", MFnNumericData::kDouble, 0.5, &status);
+	nNoiseLeafTimeFreq = nAttr.create("noiseLeafTimeFreq", "nlt", MFnNumericData::kDouble, 0.2, &status);
+	nNoiseLeafTimeFreq2 = nAttr.create("noiseLeafTimeFreq2", "nlt2", MFnNumericData::kDouble, 2.0, &status);
+
+	mNoiseLeafVFO = nAttr.create("noiseLeafValueFreqSpeed", "nlp",
+		nNoiseLeafValue, nNoiseLeafFreq, nNoiseLeafTimeFreq, nNoiseLeafTimeFreq2, &status);
 	status = addAttribute(mNoiseLeafVFO);
 
 	mWindDirection = nAttr.createPoint("windDirection", "wdn", &status);
@@ -175,6 +185,7 @@ skelTree::AniOpData SkelTreeVisualization::aniOpData()
 	opData.noiseFoliage[0] = float(noiseFoliagePlug.child(0).asDouble());
 	opData.noiseFoliage[1] = float(noiseFoliagePlug.child(1).asDouble());
 	opData.noiseFoliage[2] = float(noiseFoliagePlug.child(2).asDouble());
+	opData.noiseFoliage[3] = float(noiseFoliagePlug.child(3).asDouble());
 
 	MPlug windDirPlug(thisNode, mWindDirection);
 	opData.windDirection.x = float(windDirPlug.child(0).asDouble());
@@ -325,7 +336,7 @@ void SkelTreeVisualizationOverride::updateGeometry()
 	visElementMap = mVisNode->dispEnableData();
 
 	if (_currentTime != aniOpData.time) {
-		skelTree.deformAndFoliages(pTreeData, aniOpData, visElementMap[VIS_ELEMENT_FOLIAGES].enable);
+		skelTree.deformAndFoliages(pTreeData, aniOpData, visElementMap[VIS_ELEMENT_FOLIAGES].enable | visElementMap[VIS_ELEMENT_ATTACHED_POINT].enable);
 		for (auto& vis : visElementMap) {
 			vis.second.update = true;
 		}

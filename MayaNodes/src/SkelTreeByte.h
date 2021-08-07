@@ -325,14 +325,14 @@ struct AniOpDataByte
 {
 	static Uint byteSize(AniOpData& opData)
 	{
-		return sizeof(Float) * 3 + sizeof(Float) * 10;
+		return sizeof(Float) * 3 + sizeof(Float) * 11;
 	}
 	static Uint toByte(AniOpData& opData, Char* data)
 	{
 		Uint dataSize = byteFill<Vec>(opData.windDirection, data);
 		dataSize += byteArrayFill<Float,4>(opData.noiseTrunk, data + dataSize);
 		dataSize += byteArrayFill<Float,3>(opData.noiseBranch, data + dataSize);
-		dataSize += byteArrayFill<Float,3>(opData.noiseFoliage, data + dataSize);
+		dataSize += byteArrayFill<Float,4>(opData.noiseFoliage, data + dataSize);
 		return dataSize;
 	}
 	static Uint toObj(AniOpData& opData, Char* data)
@@ -340,7 +340,7 @@ struct AniOpDataByte
 		Uint dataSize = objFill<Vec>(opData.windDirection, data);
 		dataSize += objArrayFill<Float, 4>(opData.noiseTrunk, data + dataSize);
 		dataSize += objArrayFill<Float, 3>(opData.noiseBranch, data + dataSize);
-		dataSize += objArrayFill<Float, 3>(opData.noiseFoliage, data + dataSize);
+		dataSize += objArrayFill<Float, 4>(opData.noiseFoliage, data + dataSize);
 		return dataSize;
 	}
 };

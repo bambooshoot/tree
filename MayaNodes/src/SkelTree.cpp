@@ -158,11 +158,16 @@ void SkelTree::buildStruct(SkelTreeDataP pTreeData)
 
 void SkelTree::deformAndFoliages(SkelTreeDataP pTreeData, CRAniOpData opData, bool bUpdateFoliage)
 {
+	AniOpData locOpData = opData;
 	reset(pTreeData);
-	deform(opData);
+	locOpData.offsetTime(12.345f);
+	locOpData.scaleTime();
+	deform(locOpData);
 
+	locOpData.offsetTime(4.5641f);
+	locOpData.scaleTime();
 	if(bUpdateFoliage)
-		updateFoliages(opData);
+		updateFoliages(locOpData);
 }
 
 NS_END

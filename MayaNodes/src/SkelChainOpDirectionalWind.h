@@ -28,6 +28,7 @@ public:
 		Float noiseValue = Noise::noise.value(timeRatio);
 
 		q.setAxisAngle(axis, noiseValue * state.fTrunkValue * rtRatio);
+
 		return q;
 	}
 };
@@ -39,20 +40,21 @@ public:
 	Quat computeQ(CRAniOpState state, CRAniOpData data) const override
 	{
 		Quat q;
-
 		Vec axis;
-		axis.x = Noise::noise.value(state.p.x);
-		axis.y = Noise::noise.value(state.p.y);
-		axis.z = Noise::noise.value(state.p.z);
 
-		Random rand(state.uIdx);
-		Float randF = rand.nextf(0.0f, data.noiseBranch[2]);
+		CVec noiseValueOffset = state.p * data.noiseBranch[1];
+		CFloat timeValue = data.time * data.noiseBranch[2];
 
-		CFloat noiseValueOffset = ( state.p.x + state.p.y + state.p.z ) * data.noiseBranch[1];
+		axis.x = 0.0f;
+		axis.y = 1.0f;
+		axis.z = 0.0f;
 
-		Float noiseValue = Noise::noise.value(data.time * randF + noiseValueOffset);
+		Float noiseValue = Noise::noise.value(timeValue + noiseValueOffset.x)
+			* Noise::noise.value(timeValue + noiseValueOffset.y)
+			* Noise::noise.value(timeValue + noiseValueOffset.z);
 
-		q.setAxisAngle(axis, noiseValue * state.fBranchValue * state.u);
+		//axis.normalize();
+		q.setAxisAngle(axis, noiseValue * state.fBranchValue);
 		return q;
 	}
 };
@@ -64,20 +66,28 @@ public:
 	Quat computeQ(CRAniOpState state, CRAniOpData data) const override
 	{
 		Quat q;
-		
 		Vec axis;
-		axis.x = Noise::noise.value(state.p.x);
-		axis.y = Noise::noise.value(state.p.y);
-		axis.z = Noise::noise.value(state.p.z);
+
+		CVec noiseValueOffset = state.p * data.noiseFoliage[1];
+		Float timeValue = data.time * data.noiseFoliage[2];
+
+		axis.x = 1.0f;
+		axis.y = 0.0f;
+		axis.z = 0.0f;
 
 		Random rand(state.uIdx);
-		Float randF = rand.nextf(0.0f, data.noiseFoliage[2]);
+		CFloat randF = rand.nextf() * data.noiseFoliage[3];
 
-		Float noiseValueOffset = (state.p.x + state.p.y + state.p.z) * data.noiseFoliage[1];
+		CRVec windDir = data.windDirection;
+		CFloat windPosRatio = noiseValueOffset.dot(windDir);
 
-		Float noiseValue = Noise::noise.value(data.time * randF + noiseValueOffset);
+		timeValue += windPosRatio + randF;
 
-		axis.normalize();
+		Float noiseValue = Noise::noise.value(timeValue + noiseValueOffset.x)
+			* Noise::noise.value(timeValue + noiseValueOffset.y)
+			* Noise::noise.value(timeValue + noiseValueOffset.z);
+
+		//axis.normalize();
 		q.setAxisAngle(axis, noiseValue * data.noiseFoliage[0]);
 		return q;
 	}

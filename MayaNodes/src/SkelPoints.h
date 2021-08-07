@@ -12,6 +12,7 @@ STRUCT(	Points,
 		RVecList rest() { return attrList[AttrType::Rest]; };
 		RVecList deformed() { return attrList[AttrType::Deformed]; };
 		void addDeformed() { if (attrList.size() < 2) attrList.push_back(rest()); };
+		CRVecList crest() const { return attrList[AttrType::Rest]; };
 		CRVecList finalPositions() const { return (attrList.size() < 2) ? attrList[AttrType::Rest] : attrList[AttrType::Deformed]; };
 		Uint pointNum() const { return Uint(attrList[AttrType::Rest].size()); };
 		void clear() { for (auto& attr : attrList) attr.clear(); };

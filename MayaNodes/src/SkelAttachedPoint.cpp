@@ -19,11 +19,27 @@ CRVecList AttachedPoint::_points() const
 	return (*_pPointsList)[_data->pointsId].finalPositions();
 }
 
+CRVecList AttachedPoint::_restPoints() const
+{
+	return (*_pPointsList)[_data->pointsId].crest();
+}
+
+Vec AttachedPoint::point(CRVecList pnts) const
+{
+	Vec p3[3] = { pnts[_data->vid[0]], pnts[_data->vid[1]], pnts[_data->vid[2]] };
+	return p3[0] * _data->w[0] + p3[1] * _data->w[1] + p3[2] * (1 - _data->w[0] - _data->w[1]);
+}
+
 Vec AttachedPoint::point() const
 {
 	CRVecList pnts = _points();
-	Vec p3[3] = { pnts[_data->vid[0]], pnts[_data->vid[1]], pnts[_data->vid[2]] };
-	return p3[0] * _data->w[0] + p3[1] * _data->w[1] + p3[2] * (1 - _data->w[0] - _data->w[1]);
+	return point(pnts);
+}
+
+Vec AttachedPoint::restPoint() const
+{
+	CRVecList pnts = _restPoints();
+	return point(pnts);
 }
 
 Matrix44 AttachedPoint::matrix() const

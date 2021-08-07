@@ -9,10 +9,14 @@ Vec windDirection;
 Float time;
 Float noiseTrunk[4];
 Float noiseBranch[3];
-Float noiseFoliage[3];
+Float noiseFoliage[4];
 void offsetTime(CFloat offset)
 {
 	time += offset;
+}
+void scaleTime()
+{
+	time *= 0.05f;
 }
 )
 

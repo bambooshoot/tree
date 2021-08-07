@@ -56,16 +56,17 @@ protected:
 	void fillColors(float *buf, DrawableBufferParam& param) override
 	{
 		uint idx = 0;
-		buf[idx++] = 0; buf[idx++] = 0; buf[idx++] = 0;
-		buf[idx++] = 1; buf[idx++] = 0; buf[idx++] = 0;
-		buf[idx++] = 0; buf[idx++] = 1; buf[idx++] = 0;
-		buf[idx++] = 0; buf[idx++] = 0; buf[idx++] = 1;
+		buf[idx++] = 0; buf[idx++] = 0; buf[idx++] = 0; buf[idx++] = 1;
+		buf[idx++] = 1; buf[idx++] = 0; buf[idx++] = 0; buf[idx++] = 1;
+		buf[idx++] = 0; buf[idx++] = 1; buf[idx++] = 0; buf[idx++] = 1;
+		buf[idx++] = 0; buf[idx++] = 0; buf[idx++] = 1; buf[idx++] = 1;
 	}
 
 	void fillIndices(uint* indices, DrawableBufferParam& param) override
 	{
 		uint idx = 0;
-		indices[idx++] = 0; indices[idx++] = 1; indices[idx++] = 0;
-		indices[idx++] = 2; indices[idx++] = 0; indices[idx++] = 3;
+		indices[idx++] = 0; indices[idx++] = 1; 
+		indices[idx++] = 0;	indices[idx++] = 2; 
+		indices[idx++] = 0; indices[idx++] = 3;
 	}
 };

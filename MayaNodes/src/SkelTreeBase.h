@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <assert.h>
 #include <memory.h>
+#include <random>
 #include <functional>
 
 #include <OpenEXR/ImathVec.h>

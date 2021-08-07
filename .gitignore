@@ -31,3 +31,5 @@ MayaNodes/skelTree.vcxproj
 *.mll
 *.ipdb
 *.iobj
+tmp
+Arnold/x64/Debug/SkelTreeForArnold.vcxproj.FileListAbsolute.txt

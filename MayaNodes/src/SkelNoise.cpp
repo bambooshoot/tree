@@ -7,8 +7,18 @@ Noise Noise::noise;
 Noise::Noise()
 {
 	Random rnd(0);
+	auto Valid = [&](CFloat value, CUint i) {
+		if (i % 2 == 0)
+			return value > -0.3;
+
+		return value < 0.3;
+	};
 	for (Uint i = 0; i < NOISE_SAMPLE_NUM; ++i) {
-		float curValue = rnd.nextf(-1.0f, 1.0f);
+		float curValue;
+		do {
+			curValue = rnd.nextf(-1.0f, 1.0f);
+		} while (Valid(curValue, i));
+
 		noiseSampleList.push_back(curValue);
 	}
 

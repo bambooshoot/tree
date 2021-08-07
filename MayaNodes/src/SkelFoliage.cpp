@@ -14,12 +14,13 @@ void Foliage::update(CUint foliageId, CSkelTreeDataP pTreeData, CRAniOpData opDa
 	Quat q1 = foliageData.q;
 
 	AniOpState state;
+	state.uIdx = foliageId;
 	state.fIdx = Float(foliageId);
-	state.p = p;
+	state.p = ap.restPoint();
 
 	Quat q = (*pAniOp).computeQ(state, opData);
 
-	q1 *= q;
+	q1 = q * q1;
 
 	_matrix = Matrix44();
 	_matrix.setScale(foliageData.scale);

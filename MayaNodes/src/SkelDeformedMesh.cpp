@@ -33,8 +33,8 @@ void DeformedMesh::deform()
 
 	CInt wListNum = (CInt)wList.size();
 #pragma omp parallel for
-	for (Int i = 0; i < wListNum; ++i) {
-		auto& w = wList[i];
+	for (Int k = 0; k < wListNum; ++k) {
+		auto& w = wList[k];
 		auto dIter = deformedPoints.begin() + w.pId;
 		auto rIter = restPoints.begin() + w.pId;
 		*dIter = Vec(0.0f, 0.0f, 0.0f);
