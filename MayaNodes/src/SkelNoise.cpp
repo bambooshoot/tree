@@ -8,16 +8,20 @@ Noise::Noise()
 {
 	Random rnd(0);
 	auto Valid = [&](CFloat value, CUint i) {
-		if (i % 2 == 0)
-			return value > -0.3;
+		const float bound = 0.15, bound2 = 0.3;
+		if (i % 2 == 1)
+			return value > -bound && value < bound;
 
-		return value < 0.3;
+		if ((i / 2) % 2 == 0)
+			return value < -bound2;
+
+		return value > bound2;
 	};
 	for (Uint i = 0; i < NOISE_SAMPLE_NUM; ++i) {
 		float curValue;
 		do {
 			curValue = rnd.nextf(-1.0f, 1.0f);
-		} while (Valid(curValue, i));
+		} while (!Valid(curValue, i));
 
 		noiseSampleList.push_back(curValue);
 	}
@@ -42,16 +46,16 @@ Float Noise::value(CFloat time)
 
 	++utime;
 
-	static CFloatList uList = { 0.0f,1.0f,2.0f,3.0f };
-
-	for (Int i = -1; i < 3; ++i)
-		vList.push_back(noiseSampleList[idxList[utime + i]]);
+	FloatList uList;
+	Int idx;
+	for (Int i = -1; i < 3; ++i) {
+		idx = utime + i;
+		vList.push_back(noiseSampleList[idxList[idx]]);
+		uList.push_back(fFlrTime + float(i));
+	}
 
 	Spline1D spline(vList, uList);
-
-	Float frac = time - fFlrTime;
-
-	return spline.value(1.0f + frac);
+	return spline.value(time);
 }
 
 NS_END
