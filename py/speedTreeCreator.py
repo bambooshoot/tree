@@ -85,8 +85,9 @@ def createObjects(objects):
         fnMesh.assignUVs(triCounts, obj["vtxIdx"], "map1")
         meshDagNode = om.MFnDagNode(meshNode)
         meshDagNode.setName(obj["name"])
-        objNameList.append(pm.PyNode(obj["name"]).getShape().name())
+        objNameList.append(pm.PyNode(obj["name"]).getShape().fullPathName())
 
+    print("objects",objNameList)
     return objNameList
 
 def createMeshes(meshes):
@@ -100,19 +101,23 @@ def createMeshes(meshes):
         for p in lod["vtx"]["pnt"]:
             pArray.append(om.MPoint(p))
 
-        quadCounts = [4]*int(len(lod["quadIdx"])/4)
+        triCounts = [3]*int(len(lod["triIdx"])/3)
+
+        uvSetName = "map1"
+
         meshNode = fnMesh.create(
             pArray,
-            quadCounts,
-            lod["quadIdx"],
+            triCounts,
+            lod["triIdx"],
             lod["vtx"]["u"], 
             lod["vtx"]["v"]
         )
 
-        fnMesh.assignUVs(quadCounts, lod["quadIdx"], "map1")
+        fnMesh.assignUVs(triCounts, lod["triIdx"], uvSetName)
+
         meshDagNode = om.MFnDagNode(meshNode)
         meshDagNode.setName(mesh["name"])
-        objNameList.append(pm.PyNode(mesh["name"]).getShape().name())
+        objNameList.append(pm.PyNode(mesh["name"]).getShape().fullPathName())
 
     return objNameList
 
@@ -175,4 +180,5 @@ def create(xmlFile):
 
     stc.skelTreeCreator(dataDict)
 
-create("D:/asunlab/github/infTree/example/pine1.xml")
+# import speedTreeCreator
+# speedTreeCreator.create("D:/asunlab/github/infTree/example/pine.xml")

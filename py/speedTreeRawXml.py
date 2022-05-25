@@ -21,11 +21,12 @@ def meshQuadIndices(lod):
 def meshData(mesh):
     return {
         "id":mesh.attributes["ID"].value,
-        "name":mesh.attributes["Name"].value,
+        "name":mesh.attributes["Name"].value.replace(" ","_"),
         "LOD":[{
             "level":float(lod.attributes["Level"].value),
             "scale":float(lod.attributes["OriginalScale"].value),
             "quadIdx":meshQuadIndices(lod),
+            "triIdx":xmlElementToType(lod, "TriangleIndices", int),
             "vtx":meshVertices(lod)} for lod in mesh.getElementsByTagName("LOD")]
         }
 
@@ -79,9 +80,9 @@ def readBones(doc):
 
 def readObjects(doc):
     objList = []
-    for obj in doc.getElementsByTagName('Object'):
+    for obj in doc.getElementsByTagName('Object')[1:]:
         objData={}
-        objData['name'] = obj.attributes["Name"].value
+        objData['name'] = obj.attributes["Name"].value.replace(" ","_")
         objData['id'] = int(obj.attributes["ID"].value)
         
         points = obj.getElementsByTagName('Points')[0]

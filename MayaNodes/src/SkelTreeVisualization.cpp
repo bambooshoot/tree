@@ -140,12 +140,14 @@ MBoundingBox SkelTreeVisualization::boundingBox() const
 {
 	MBoundingBox bbox;
 
-	skelTree::RSkelTreeData treeData = *getSkelTreeData();
-	skelTree::CRBox stBox = treeData.boundBox;
+	skelTree::SkelTreeDataP treeData = getSkelTreeData();
+	if (treeData != nullptr) {
+		skelTree::CRBox stBox = treeData->boundBox;
 
-	bbox.expand(MPoint(stBox.min.x, stBox.min.y, stBox.min.z));
-	bbox.expand(MPoint(stBox.max.x, stBox.max.y, stBox.max.z));
-
+		bbox.expand(MPoint(stBox.min.x, stBox.min.y, stBox.min.z));
+		bbox.expand(MPoint(stBox.max.x, stBox.max.y, stBox.max.z));
+	}
+	
 	return bbox;
 }
 
@@ -313,13 +315,16 @@ void SkelTreeVisualizationOverride::update(
 {
 	if (_geoUpdateFlag) {
 		pTreeData = mVisNode->getSkelTreeData();
-		buildGeometryStruct();
+		if(pTreeData!=nullptr)
+			buildGeometryStruct();
+
 		_geoUpdateFlag = false;
 	}
 
-	updateGeometry();
-	buildRenderItems(container);
-
+	if (pTreeData != nullptr) {
+		updateGeometry();
+		buildRenderItems(container);
+	}
 }
 
 void SkelTreeVisualizationOverride::buildGeometryStruct()

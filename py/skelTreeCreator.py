@@ -145,9 +145,9 @@ def skelTreeCreator(meshDataDict):
     treeNode = pm.PyNode(cmds.createNode('skelTreeCreator'))
     visNode = pm.PyNode(cmds.createNode('skelTreeVisualization'))
 
-    visNode.noiseTrunkValueFreqOffset.set([0.2,.1,0.05])
-    visNode.noiseBranchValueFreqOffset.set([0.2,.2,1])
-    visNode.noiseLeafValueFreqOffset.set([1,.2,1])
+    visNode.noiseTrunkValueFreqSpeed.set([0.2,.1,0.05,0.1])
+    visNode.noiseBranchValueFreqSpeed.set([0.2,.2,1])
+    visNode.noiseLeafValueFreqSpeed.set([1,.2,1,2])
     visNode.windDirection.set([1,0,0])
     visNode.dispChainScale.set(0.1)
 
