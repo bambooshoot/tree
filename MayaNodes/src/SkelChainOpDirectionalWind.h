@@ -68,7 +68,6 @@ public:
 		Quat q;
 		Vec axis;
 
-		CVec noiseValueOffset = state.p * data.noiseFoliage[1];
 		Float timeValue = data.time * data.noiseFoliage[2];
 
 		axis.x = 1.0f;
@@ -78,14 +77,23 @@ public:
 		Random rand(state.uIdx);
 		CFloat randF = rand.nextf() * data.noiseFoliage[3];
 
-		CRVec windDir = data.windDirection;
-		CFloat windPosRatio = noiseValueOffset.dot(windDir);
+		CRVec windDir = data.windDirection.normalized();
+		CVec windZDir = windDir.cross(CVec(0.0f, 1.0f, 0.0f)).normalized();
+		CVec windYDir = windZDir.cross(windDir).normalized();
 
-		timeValue += windPosRatio + randF;
+		Vec noiseValueOffset(
+			state.p.dot(windDir),
+			state.p.dot(windYDir),
+			state.p.dot(windZDir)
+		);
 
-		Float noiseValue = Noise::noise.value(timeValue + noiseValueOffset.x)
-			* Noise::noise.value(timeValue + noiseValueOffset.y)
-			* Noise::noise.value(timeValue + noiseValueOffset.z);
+		noiseValueOffset *= data.noiseFoliage[1];
+
+		noiseValueOffset.x += timeValue + randF;
+
+		Float noiseValue = Noise::noise.value(noiseValueOffset.x)
+			* Noise::noise.value(noiseValueOffset.y)
+			* Noise::noise.value(noiseValueOffset.z);
 
 		//axis.normalize();
 		q.setAxisAngle(axis, noiseValue * data.noiseFoliage[0]);

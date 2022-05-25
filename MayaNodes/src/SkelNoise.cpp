@@ -8,7 +8,7 @@ Noise::Noise()
 {
 	Random rnd(0);
 	auto Valid = [&](CFloat value, CUint i) {
-		const float bound = 0.15, bound2 = 0.3;
+		const float bound = 0.15f, bound2 = 0.3f;
 		if (i % 2 == 1)
 			return value > -bound && value < bound;
 

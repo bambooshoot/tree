@@ -20,7 +20,7 @@ void Foliage::update(CUint foliageId, CSkelTreeDataP pTreeData, CRAniOpData opDa
 
 	Quat q = (*pAniOp).computeQ(state, opData);
 
-	q1 = q * q1;
+	q1 = q1 * q;
 
 	_matrix = Matrix44();
 	_matrix.setScale(foliageData.scale);
