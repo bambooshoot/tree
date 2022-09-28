@@ -1,0 +1,6 @@
+arnold渲染tree只需要加一个SkelTreeOp
+这个方法很generic，既不需要mtoa translator也不需要给tree做procedural primtive。
+实际上，arnold眼中，op框架已经包含了procedural。
+SkelTreeOp的工作原理很简单，找到tree的mesh，变形它。
+这样整个场景只需要静态的mesh，这样比较方便场景优化，都是一样的mesh。
+每棵树的不同是在渲染的时候op根据不同的树给的不同变化。

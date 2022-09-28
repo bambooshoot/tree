@@ -32,7 +32,7 @@ def meshData(mesh):
 
 def readMeshes(doc):
     meshes = doc.getElementsByTagName('Meshes')
-    print(meshes[0].firstChild.toxml())
+    # print(meshes[0].firstChild.toxml())
     meshList = []
     
     for mesh in meshes[0].getElementsByTagName('Mesh'):
@@ -40,19 +40,22 @@ def readMeshes(doc):
 
     return meshList
 
-def readFoliages(doc):
-    LeafReferences = doc.getElementsByTagName('LeafReferences')[0]
-    pntList = [ xmlElementToType(LeafReferences, tag, float) for tag in ["X","Y","Z"] ]
-    rotAxisList = [ xmlElementToType(LeafReferences, tag, float) for tag in ["RotAxisX","RotAxisY","RotAxisZ"] ]
+# def readFoliages(doc):
+#     foliages = []
+#     for LeafReferences in doc.getElementsByTagName('LeafReferences'):
+#         pntList = [ xmlElementToType(LeafReferences, tag, float) for tag in ["X","Y","Z"] ]
+#         rotAxisList = [ xmlElementToType(LeafReferences, tag, float) for tag in ["RotAxisX","RotAxisY","RotAxisZ"] ]
 
-    return {
-        "pnt":list(zip(*pntList)),
-        "rotAxis":list(zip(*rotAxisList)),
-        "rotRadian":[math.radians(angle) for angle in xmlElementToType(LeafReferences, "RotAngle", float)],
-        "scale":xmlElementToType(LeafReferences, "Scale", float),
-        "meshId":xmlElementToType(LeafReferences, "MeshID", int),
-        "boneId":xmlElementToType(LeafReferences, "BoneID", int)
-    }
+#         foliages.append( {
+#             "pnt":list(zip(*pntList)),
+#             "rotAxis":list(zip(*rotAxisList)),
+#             "rotRadian":[math.radians(angle) for angle in xmlElementToType(LeafReferences, "RotAngle", float)],
+#             "scale":xmlElementToType(LeafReferences, "Scale", float),
+#             "meshId":xmlElementToType(LeafReferences, "MeshID", int),
+#             "boneId":xmlElementToType(LeafReferences, "BoneID", int)
+#         } )
+
+#     return foliages
 
 def boneData(bone):
     return {
@@ -64,8 +67,7 @@ def boneData(bone):
         "end":[float(bone.attributes["EndX"].value),float(bone.attributes["EndY"].value),float(bone.attributes["EndZ"].value)]
     }
 
-def spineData(doc):
-    spine = doc.getElementsByTagName('Spine')[0]
+def spineData(spine):
     pntList = [ xmlElementToType(spine, tag, float) for tag in ["X","Y","Z"] ]
     return {
         "pnt":list(zip(*pntList)),
@@ -74,7 +76,7 @@ def spineData(doc):
 
 def readBones(doc):
     return {
-        "spine":spineData(doc),
+        "spine":[spineData(spine) for spine in doc.getElementsByTagName('Spine')],
         "bones":[boneData(bone) for bone in doc.getElementsByTagName('Bone')]
         }
 
@@ -101,6 +103,24 @@ def readObjects(doc):
         objData["pntIdx"] = xmlElementToType(tri, "PointIndices", int)
         objData["vtxIdx"] = xmlElementToType(tri, "VertexIndices", int)
 
+        objData["orgP"] = [ float(obj.attributes['AbsX'].value), float(obj.attributes['AbsY'].value), float(obj.attributes['AbsZ'].value) ]
+
+        leafRefList = obj.getElementsByTagName('LeafReferences')
+
+        if leafRefList:
+            leafRef = leafRefList[0]
+            pntList = [ xmlElementToType(leafRef, tag, float) for tag in ["X","Y","Z"] ]
+            rotAxisList = [ xmlElementToType(leafRef, tag, float) for tag in ["RotAxisX","RotAxisY","RotAxisZ"] ]
+
+            objData["LeafRef"] = {
+                "pnt":list(zip(*pntList)),
+                "rotAxis":list(zip(*rotAxisList)),
+                "rotRadian":[math.radians(angle) for angle in xmlElementToType(leafRef, "RotAngle", float)],
+                "scale":xmlElementToType(leafRef, "Scale", float),
+                "meshId":xmlElementToType(leafRef, "MeshID", int),
+                "boneId":xmlElementToType(leafRef, "BoneID", int)
+            }
+
         objList.append(objData)
 
     return objList
@@ -110,7 +130,7 @@ def readTree(xmlFile):
     return {
         "objects":readObjects(doc),
         "meshes":readMeshes(doc),
-        "foliages":readFoliages(doc),
+        # "foliages":readFoliages(doc),
         "bones":readBones(doc)
     }
 

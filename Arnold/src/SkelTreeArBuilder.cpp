@@ -103,6 +103,7 @@ void SkelTreeArBuilder::build(const SkelTreeOpData* skelTreeOpData)
 	AiMsgInfo("read tree file.\n");
 	skelTree::File::read(treeData, opData, skelTreeOpData->skelTreeFile);
 
+	// initialize the treeData from turnkMeshNode and foliageMeshNode, which are two static mesh nodes in the arnold scene.
 	AiMsgInfo("fill trunk mesh\n");
 	fillTreeMesh(&treeData, trunkMeshNode);
 
@@ -115,8 +116,9 @@ void SkelTreeArBuilder::build(const SkelTreeOpData* skelTreeOpData)
 	AiMsgInfo("build tree\n");
 	SkelTree tree;
 	tree.buildStruct(&treeData);
-	tree.deformAndFoliages(&treeData, opData, true);
+	tree.deformAndFoliages(&treeData, opData, true); // deform treeData with opData to get the animated pose of the tree.
 
+	// then put the animated pose data back to the two static mesh node for rendering.
 	AiMsgInfo("set deformed mesh points for trunk\n");
 	setTrunkMeshPoints(&treeData, trunkMeshNode);
 
